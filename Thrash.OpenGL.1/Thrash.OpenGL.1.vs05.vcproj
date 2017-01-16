@@ -193,7 +193,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="kernel32.lib user32.lib gdi32.lib msvcrt.lib"
-				OutputFile="D:\Games\IS_NFS_3\common\Drivers\opengl1\opengl1z.dll"
+				OutputFile="$(SolutionDir)\builds\opengl1\opengl1z.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateManifest="true"

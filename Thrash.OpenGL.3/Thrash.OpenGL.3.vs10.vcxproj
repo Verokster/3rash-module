@@ -154,7 +154,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;msvcrt.lib</AdditionalDependencies>
-      <OutputFile>D:\Games\IS_NFS_3\common\Drivers\opengl3\opengl3z.dll</OutputFile>
+      <OutputFile>$(SolutionDir)\builds\opengl3\opengl3z.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ModuleDefinitionFile>$(SolutionDir)\Thrash.Core\Thrash.def</ModuleDefinitionFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
