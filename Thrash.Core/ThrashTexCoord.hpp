@@ -1,0 +1,9 @@
+#ifndef _THRASH_TYPE_TEXTURE_COORDINATES_HPP_
+#define _THRASH_TYPE_TEXTURE_COORDINATES_HPP_
+
+struct ThrashTexCoord {
+	FLOAT u;
+	FLOAT v;
+};
+
+#endif

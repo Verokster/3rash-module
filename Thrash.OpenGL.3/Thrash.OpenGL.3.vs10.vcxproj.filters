@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="GL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StdAfx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Buffer.cpp">
+      <Filter>Source Files\Thrash\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="Line.cpp">
+      <Filter>Source Files\Thrash\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="Point.cpp">
+      <Filter>Source Files\Thrash\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="Quad.cpp">
+      <Filter>Source Files\Thrash\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="Sprite.cpp">
+      <Filter>Source Files\Thrash\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="Tri.cpp">
+      <Filter>Source Files\Thrash\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files\Thrash</Filter>
+    </ClCompile>
+    <ClCompile Include="Rect.cpp">
+      <Filter>Source Files\Thrash</Filter>
+    </ClCompile>
+    <ClCompile Include="Resolution.cpp">
+      <Filter>Source Files\Thrash</Filter>
+    </ClCompile>
+    <ClCompile Include="State.cpp">
+      <Filter>Source Files\Thrash</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source Files\Thrash</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Source Files\Thrash</Filter>
+    </ClCompile>
+    <ClCompile Include="DllMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Shaders.cpp">
+      <Filter>Source Files\Thrash</Filter>
+    </ClCompile>
+    <ClCompile Include="Context.cpp">
+      <Filter>Source Files\Thrash</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GL.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ThrashForced.hpp">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="ThrashViewport.hpp">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="ThrashBuffer.hpp">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Buffer.hpp">
+      <Filter>Header Files\Thrash\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="Resolution.hpp">
+      <Filter>Header Files\Thrash</Filter>
+    </ClInclude>
+    <ClInclude Include="ThrashDesktopMode.hpp">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="ThrashBufferVertex.hpp">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="ThrashBindedTextureId.hpp">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders.hpp">
+      <Filter>Header Files\Thrash</Filter>
+    </ClInclude>
+    <ClInclude Include="Context.hpp">
+      <Filter>Header Files\Thrash</Filter>
+    </ClInclude>
+    <ClInclude Include="Tri.hpp">
+      <Filter>Header Files\Thrash\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.hpp">
+      <Filter>Header Files\Thrash</Filter>
+    </ClInclude>
+    <ClInclude Include="Main.hpp">
+      <Filter>Header Files\Thrash</Filter>
+    </ClInclude>
+    <ClInclude Include="Global.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\vertex.glsl">
+      <Filter>Resource Files\Shaders Files</Filter>
+    </None>
+    <None Include="Shaders\fragment.glsl">
+      <Filter>Resource Files\Shaders Files</Filter>
+    </None>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{7fe11465-95da-4045-8c32-54b5dcb3a01e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{d8a27344-34c1-4f16-b32d-a327cbcf2700}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{1887e98b-4d2b-4db5-93eb-31deba052b1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Types">
+      <UniqueIdentifier>{b0003c4a-1f28-4cfa-a6c4-09074b7cb51d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Thrash">
+      <UniqueIdentifier>{40066343-db5a-40a0-86e4-08f4afbfeedf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Thrash\Draw">
+      <UniqueIdentifier>{bca7dfb2-59e0-46b2-95ac-b407f5d7a8f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Thrash">
+      <UniqueIdentifier>{abc62375-7f62-45c6-8943-32232e8cf8a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Thrash\Draw">
+      <UniqueIdentifier>{9c8e9eac-f7bc-4101-8561-24ba2eba8a46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders Files">
+      <UniqueIdentifier>{1bbb463a-b123-4e71-ad17-437d7ea11f8b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Thrash.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,76 @@
+#ifndef _THRASH_TYPE_STATE_HPP_
+#define _THRASH_TYPE_STATE_HPP_
+
+enum ThrashState
+{
+	SetTexture				= 1,
+	CullFace				= 2,
+	ClearColor				= 3,
+	EnableDepthBuffer		= 4,
+	EnableDither			= 5,
+	ShadeModel				= 6,
+	TextureFilter			= 7,
+	LodBias					= 8,
+	EnableSmoothPolygon		= 9,
+	EnableAlphaBlend		= 10,
+	TextureMipMap			= 11,
+	ChromaColor				= 12,
+	TextureWrap				= 13,
+	FogDensity				= 14,
+	FogColor				= 15,
+	LineWidth				= 16,
+	FlatFans				= 17,
+	Unknown_18				= 18,
+	Functions				= 19,
+	EnableFog				= 20,
+	FogMode					= 21,
+	FogStart				= 22,
+	FogEnd					= 23,
+	DepthMode				= 24,
+	WindowHandle			= 25,
+	MessageBoxFunction		= 26,
+	Unknown_27				= 27,
+	Unknown_28				= 28,
+	CurrentWindow			= 29,
+	Unknown_30				= 30,
+	ThrashApiVersion		= 31,
+	MallocFunction			= 32,
+	FreeFunction			= 33,
+	AlphaMode				= 36,
+	Unknown_39				= 39,
+	DepthCompare			= 40,
+	TexturesCombine			= 41,
+	VertexLayout			= 42,
+	BackBufferType			= 43,
+	TextureColorPalette		= 44,
+	Gamma					= 46,
+	EnableStencilBuffer		= 47,
+	StencilFunc				= 48, // 1-8
+	StencilFail				= 52, // 1-8
+	StencilDepthFail		= 53, // 1-8
+	StencilPass				= 54, // 1-8
+	Unknown_55				= 55,
+	BlendMode				= 56,
+	EnableDepthWrite		= 57,
+	DisplayMode				= 58,
+	BufferMode				= 59,
+	FlipRate				= 60,
+	ShamelessPlug			= 61,
+	Unknown_62				= 62,
+	ClearDepth				= 67, // value * 65535.0
+	Gamma2					= 101,
+	DepthMode2				= 102,
+	SwapInterval			= 103,
+	BlendMode2				= 104,
+	EnableFog2				= 105,
+	EnableDepthWrite2		= 106,
+	PassThru				= 108,
+	MaxPending				= 109,
+	LibHandle				= 110,
+	Hint					= 304,
+	LineDouble				= 305,
+	Software				= 703,
+	Unknown_65577			= 65577
+};
+
+#endif
