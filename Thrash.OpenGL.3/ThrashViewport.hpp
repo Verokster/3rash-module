@@ -1,5 +1,4 @@
-#ifndef _THRASH_TYPE_VIEWPORT_HPP_
-#define _THRASH_TYPE_VIEWPORT_HPP_
+#pragma once
 
 struct ThrashViewport
 {
@@ -9,5 +8,3 @@ struct ThrashViewport
 	POINTFLOAT viewFactor;
 	POINTFLOAT clipFactor;
 };
-
-#endif

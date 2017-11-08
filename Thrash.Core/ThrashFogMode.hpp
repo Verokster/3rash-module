@@ -1,5 +1,4 @@
-#ifndef _THRASH_TYPE_FOG_MODE_HPP_
-#define _THRASH_TYPE_FOG_MODE_HPP_
+#pragma once
 
 enum ThrashFogMode
 {
@@ -9,5 +8,3 @@ enum ThrashFogMode
 	Exp = 4,
 	Exp2 = 6
 };
-
-#endif

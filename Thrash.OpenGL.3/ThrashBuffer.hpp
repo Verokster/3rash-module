@@ -1,5 +1,4 @@
-#ifndef _THRASH_TYPE_BUFFER_HPP_
-#define _THRASH_TYPE_BUFFER_HPP_
+#pragma once
 
 struct ThrashBuffer
 {
@@ -8,7 +7,7 @@ struct ThrashBuffer
 	GLuint vName;
 	DWORD vSize;
 	
-	ThrashBufferVertex* vData;
+	ThrashVertexV1* vData;
 
 	GLuint iName;
 	DWORD iSize;
@@ -17,5 +16,3 @@ struct ThrashBuffer
 	BOOL isIndexed;
 	DWORD type;
 };
-
-#endif

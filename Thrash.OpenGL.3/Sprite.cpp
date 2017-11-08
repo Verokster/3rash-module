@@ -3,35 +3,37 @@
 
 namespace Sprite
 {
-	VOID __stdcall Draw(ThrashVertex* vertex1, ThrashVertex* vertex2)
+	VOID THRASHAPI Draw(ThrashVertex* vertex1, ThrashVertex* vertex2)
 	{
 		Buffer::Check(GL_TRIANGLES);
-		Texture::CheckWrap();
 		
 		DWORD index1, index2;
 
-		ThrashVertex vertexData = *vertex1;
-		vertexData.vertCoord.x = (*vertex2).vertCoord.x;
-		vertexData.texCoord.u = (*vertex2).texCoord.u;
+		ThrashVertexV1* v1 = (ThrashVertexV1*)vertex1;
+		ThrashVertexV1* v2 = (ThrashVertexV1*)vertex2;
 
-		BOOL check = Tri::CheckCullFace(vertex1, &vertexData, vertex2);
+		ThrashVertexV1 vertexData = *v1;
+		vertexData.vertCoord.x = (*v2).vertCoord.x;
+		vertexData.texCoord0.u = (*v2).texCoord0.u;
+
+		BOOL check = Tri::CheckCullFace(v1, &vertexData, v2);
 		if (check)
 		{
-			index1 = Buffer::AddVertex(vertex1);
+			index1 = Buffer::AddVertex(v1);
 					 Buffer::AddVertex(&vertexData);
-			index2 = Buffer::AddVertex(vertex2);
+			index2 = Buffer::AddVertex(v2);
 		}
 
-		vertexData = *vertex2;
-		vertexData.vertCoord.x = (*vertex1).vertCoord.x;
-		vertexData.texCoord.u = (*vertex1).texCoord.u;
+		vertexData = *v2;
+		vertexData.vertCoord.x = (*v1).vertCoord.x;
+		vertexData.texCoord0.u = (*v1).texCoord0.u;
 
-		if (Tri::CheckCullFace(vertex1, vertex2, &vertexData))
+		if (Tri::CheckCullFace(v1, v2, &vertexData))
 		{
 			if (!check || Buffer::Check(GL_TRIANGLES))
 			{
-				Buffer::AddVertex(vertex1);
-				Buffer::AddVertex(vertex2);
+				Buffer::AddVertex(v1);
+				Buffer::AddVertex(v2);
 			}
 			else
 			{
@@ -42,43 +44,45 @@ namespace Sprite
 		}
 	}
 
-	VOID __stdcall DrawMesh(DWORD count, ThrashVertex vertexPtrArray[], DWORD indexes[])
+	VOID THRASHAPI DrawMesh(DWORD count, ThrashVertex vertexArray[], DWORD indexes[])
 	{
 		if (count > 0)
 		{
 			Buffer::Check(GL_TRIANGLES);
-			Texture::CheckWrap();
 
+			ThrashVertexV1* vArray = (ThrashVertexV1*)vertexArray;
+			ThrashVertexV1 vertexData;
 			DWORD index1, index2;
 
 			do
 			{
 				Buffer::Check(GL_TRIANGLES);
 
-				ThrashVertex* vertex1 = &vertexPtrArray[*indexes++];
-				ThrashVertex* vertex2 = &vertexPtrArray[*indexes++];
-				ThrashVertex vertexData = *vertex1;
-				vertexData.vertCoord.x = (*vertex2).vertCoord.x;
-				vertexData.texCoord.u = (*vertex2).texCoord.u;
+				ThrashVertexV1* v1 = &vArray[*indexes++];
+				ThrashVertexV1* v2 = &vArray[*indexes++];
 
-				BOOL check = Tri::CheckCullFace(vertex1, &vertexData, vertex2);
+				vertexData = *v1;
+				vertexData.vertCoord.x = (*v2).vertCoord.x;
+				vertexData.texCoord0.u = (*v2).texCoord0.u;
+
+				BOOL check = Tri::CheckCullFace(v1, &vertexData, v2);
 				if (check)
 				{
-					index1 = Buffer::AddVertex(vertex1);
+					index1 = Buffer::AddVertex(v1);
 							 Buffer::AddVertex(&vertexData);
-					index2 = Buffer::AddVertex(vertex2);
+					index2 = Buffer::AddVertex(v2);
 				}
 
-				vertexData = *vertex2;
-				vertexData.vertCoord.x = (*vertex1).vertCoord.x;
-				vertexData.texCoord.u = (*vertex1).texCoord.u;
+				vertexData = *v2;
+				vertexData.vertCoord.x = (*v1).vertCoord.x;
+				vertexData.texCoord0.u = (*v1).texCoord0.u;
 
-				if (Tri::CheckCullFace(vertex1, vertex2, &vertexData))
+				if (Tri::CheckCullFace(v1, v2, &vertexData))
 				{
 					if (!check || Buffer::Check(GL_TRIANGLES))
 					{
-						Buffer::AddVertex(vertex1);
-						Buffer::AddVertex(vertex2);
+						Buffer::AddVertex(v1);
+						Buffer::AddVertex(v2);
 					}
 					else
 					{

@@ -1,13 +1,12 @@
-#ifndef _THRASH_TYPE_WINDOW_HPP_
-#define _THRASH_TYPE_WINDOW_HPP_
+#pragma once
 
-struct ThrashWindow
+typedef struct ThrashWindow
 {
 	VOID* data;
 	DWORD bytesPerRow;
 	ThrashColorFormatIndex colorFormatIndex;
 	DWORD width;
 	DWORD height;
-};
-
-#endif
+	DWORD buffer;
+	DWORD unknown;
+} *LPTHRASHWINDOW;

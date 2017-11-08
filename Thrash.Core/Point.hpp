@@ -1,11 +1,8 @@
-#ifndef _THRASH_POINT_HPP_
-#define _THRASH_POINT_HPP_
+#pragma once
 
 namespace Point
 {
-	VOID __stdcall Draw(ThrashVertex* vertex);
-	VOID __stdcall DrawStrip(DWORD count, ThrashVertex vertexArray[]);
-	VOID __stdcall DrawMesh(DWORD count, ThrashVertex vertexPtrArray[], DWORD indexes[]);
+	VOID THRASHAPI Draw(ThrashVertex* vertex);
+	VOID THRASHAPI DrawStrip(DWORD count, ThrashVertex vertexArray[]);
+	VOID THRASHAPI DrawMesh(DWORD count, ThrashVertex vertexArray[], DWORD indexes[]);
 }
-
-#endif

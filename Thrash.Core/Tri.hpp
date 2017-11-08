@@ -1,14 +1,11 @@
-#ifndef _THRASH_TRI_HPP_
-#define _THRASH_TRI_HPP_
+#pragma once
 
 namespace Tri
 {
-	VOID __stdcall Draw(ThrashVertex* vertex1, ThrashVertex* vertex2, ThrashVertex* vertex3);
-	VOID __stdcall DrawStrip(DWORD count, ThrashVertex vertexArray[]);
-	VOID __stdcall DrawStrip(DWORD count, ThrashVertex vertexPtrArray[], DWORD indexes[]);
-	VOID __stdcall DrawFan(DWORD count, ThrashVertex vertexArray[]);
-	VOID __stdcall DrawFan(DWORD count, ThrashVertex vertexPtrArray[], DWORD indexes[]);
-	VOID __stdcall DrawMesh(DWORD count, ThrashVertex vertexPtrArray[], DWORD indexes[]);
+	VOID THRASHAPI Draw(ThrashVertex* vertex1, ThrashVertex* vertex2, ThrashVertex* vertex3);
+	VOID THRASHAPI DrawStrip(DWORD count, ThrashVertex vertexArray[]);
+	VOID THRASHAPI DrawStrip(DWORD count, ThrashVertex vertexArray[], DWORD indexes[]);
+	VOID THRASHAPI DrawFan(DWORD count, ThrashVertex vertexArray[]);
+	VOID THRASHAPI DrawFan(DWORD count, ThrashVertex vertexArray[], DWORD indexes[]);
+	VOID THRASHAPI DrawMesh(DWORD count, ThrashVertex vertexArray[], DWORD indexes[]);
 }
-
-#endif

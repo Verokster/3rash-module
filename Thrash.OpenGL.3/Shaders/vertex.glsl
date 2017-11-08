@@ -4,6 +4,7 @@ precision highp float;
 
 uniform mat4 mvp;
 
+uniform bool fogEnabled;
 uniform uint fogMode;
 uniform vec4 fogColor;
 uniform float fogStart;
@@ -11,14 +12,15 @@ uniform float fogEnd;
 uniform float fogDensity;
 
 in vec4 vCoord;
-in vec4 vColor;
+in vec4 vDiffuse;
+in vec4 vSpecular;
 in vec2 vTexCoord;
-in uint vTexUnit;
 
-out vec4 fColorSmooth;
-flat out vec4 fColorFlat;
+out vec4 fDiffuseSmooth;
+flat out vec4 fDiffuseFlat;
+out vec4 fSpecularSmooth;
+flat out vec4 fSpecularFlat;
 out vec2 fTexCoord;
-flat out uint fTexUnit;
 out float fogFactor;
 
 void main()
@@ -30,28 +32,31 @@ void main()
 	else
 		gl_Position = mvp * vec4(vCoord.xy * w, (1.0 - 1.0 / vCoord.z) * w, w);
 
-	fColorFlat = fColorSmooth = vColor.bgra;
+	fDiffuseFlat = fDiffuseSmooth = vDiffuse.bgra;
+	fSpecularFlat = fSpecularSmooth = vSpecular.bgra;
 	fTexCoord = vTexCoord;
-	fTexUnit = vTexUnit;
 
-	switch (fogMode)
+	if (fogEnabled)
 	{
-		case 2u:
-			fogFactor = (1.0 - clamp((fogEnd - w) / (fogEnd - fogStart), 0.0, 1.0)) * fogColor.a;
-			break;
+		switch (fogMode)
+		{
+			case 2u:
+				fogFactor = (1.0 - clamp((fogEnd - w) / (fogEnd - fogStart), 0.0, 1.0)) * fogColor.a;
+				break;
 
-		case 4u:
-			fogFactor = (1.0 - clamp(exp(-fogDensity * w), 0.0, 1.0)) * fogColor.a;
-			break;
+			case 4u:
+				fogFactor = (1.0 - clamp(exp(-fogDensity * w), 0.0, 1.0)) * fogColor.a;
+				break;
 
-		case 8u:
-			const float LOG2 = -1.442695;
-			float d = fogDensity * w;
-			fogFactor = (1.0 - clamp(exp2(d * d * LOG2), 0.0, 1.0)) * fogColor.a;
-			break;
+			case 8u:
+				const float LOG2 = -1.442695;
+				float d = fogDensity * w;
+				fogFactor = (1.0 - clamp(exp2(d * d * LOG2), 0.0, 1.0)) * fogColor.a;
+				break;
 
-		default:
-			fogFactor = 0.0;
-			break;
+			default:
+				fogFactor = 0.0;
+				break;
+		}
 	}
 }

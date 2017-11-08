@@ -3,24 +3,7 @@
 
 namespace Texture
 {
-	DWORD __fastcall GetPixelsCount(ThrashTexture* texture)
-	{
-		DWORD size = (*texture).width * (*texture).height;
-		DWORD count = (*texture).level + 1;
-		DWORD total = 0;
-
-		do
-		{
-			total += size;
-			size >>= 2;
-			--count;
-		}
-		while (count);
-
-		return total;
-	}
-
-	DWORD colorPalate16[] = {
+	/*DWORD colorPalate16[] = {
 		0xFF000000,		// 0 — black
 		0xFF800000,		// 1 — maroon
 		0xFF008000,		// 2 — green
@@ -37,108 +20,119 @@ namespace Texture
 		0xFFFF00FF,		// 13 — fuchsia
 		0xFF00FFFF,		// 14 — aqua
 		0xFFFFFFFF		// 15 — white
-	};
+	};*/
 
-	VOID* __fastcall Convert_BGR_2_To_BGR_24(ThrashTexture* texture, VOID* memory, BYTE pallete[])
+	VOID* __fastcall Convert_BGR_4_To_RGB_24(ThrashTexture* texture, VOID* memory, BYTE pallete[])
 	{
-		DWORD total = GetPixelsCount(texture);
-
-		VOID* ptr = Memory::Allocate(total * 4);
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
 		if (ptr)
 		{
 			BYTE* dest = (BYTE*)ptr;
 			BYTE* source = (BYTE*)memory;
-
-			if (pallete == NULL)
-				pallete = (BYTE*)colorPalate16;
 
 			BOOL lowPart = TRUE;
+			DWORD total = texture->pixels;
 			do
 			{
-				DWORD index = lowPart ? (*source & 0x0F) : (*source++ >> 4);
-				BYTE* color = &pallete[index];
-				
-				*dest++ = *color++;
-				*dest++ = *color++;
-				*dest++ = *color;
-
+				DWORD index = (lowPart ? (*source & 0x0F) : (*source++ >> 4));
 				lowPart = !lowPart;
-				--total;
-			}
-			while (total);
-		}
-		else
-			Main::ShowError("Out of memory.", __FILE__, __FUNCTION__, __LINE__);
 
-		return ptr;
-	}
-
-	VOID* __fastcall Convert_BGR_8_To_BGR_24(ThrashTexture* texture, VOID* memory, BYTE pallete[])
-	{
-		DWORD total = GetPixelsCount(texture);
-
-		VOID* ptr = Memory::Allocate(total * 3);
-		if (ptr)
-		{
-			BYTE* dest = (BYTE*)ptr;
-			BYTE* source = (BYTE*)memory;
-			do
-			{
 				BYTE* color = &pallete[*source * 3];
 
-				*dest++ = *color++;
-				*dest++ = *color++;
+				*dest++ = *(color + 2);
+				*dest++ = *(color + 1);
 				*dest++ = *color;
 
-				++source;
 				--total;
-			}
-			while (total);
+			} while (total);
 		}
 		else
-			Main::ShowError("Out of memory.", __FILE__, __FUNCTION__, __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGR_4_To_BGR_24", __LINE__);
 
 		return ptr;
 	}
 
-	VOID* __fastcall Convert_BGRA_8_To_BGRA_32(ThrashTexture* texture, VOID* memory, BYTE pallete[])
+	VOID* __fastcall Convert_BGRA_4_To_RGBA_32(ThrashTexture* texture, VOID* memory, BYTE pallete[])
 	{
-		DWORD total = GetPixelsCount(texture);
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
+		if (ptr)
+		{
+			DWORD* dest = (DWORD*)ptr;
+			BYTE* source = (BYTE*)memory;
 
-		VOID* ptr = Memory::Allocate(total * 4);
+			BOOL lowPart = TRUE;
+			DWORD total = texture->pixels;
+			do
+			{
+				DWORD index = (lowPart ? (*source & 0x0F) : (*source++ >> 4));
+				lowPart = !lowPart;
+
+				*dest++ = Color::Swap(*(DWORD*)&pallete[index << 2]);
+				--total;
+			} while (total);
+		}
+		else
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGRA_4_To_BGRA_32", __LINE__);
+
+		return ptr;
+	}
+
+	VOID* __fastcall Convert_BGR_8_To_RGB_24(ThrashTexture* texture, VOID* memory, BYTE pallete[])
+	{
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
 		if (ptr)
 		{
 			BYTE* dest = (BYTE*)ptr;
 			BYTE* source = (BYTE*)memory;
+
+			DWORD total = texture->pixels;
 			do
 			{
-				BYTE* color = &pallete[*source << 2];
+				BYTE* color = &pallete[*source++ * 3];
 
-				*dest++ = *color++;
-				*dest++ = *color++;
-				*dest++ = *color++;
+				*dest++ = *(color + 2);
+				*dest++ = *(color + 1);
 				*dest++ = *color;
 
-				++source;
 				--total;
-			}
-			while (total);
+			} while (total);
 		}
 		else
-			Main::ShowError("Out of memory.", __FILE__, __FUNCTION__, __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGR_8_To_BGR_24", __LINE__);
+
+		return ptr;
+	}
+
+	VOID* __fastcall Convert_BGRA_8_To_RGBA_32(ThrashTexture* texture, VOID* memory, BYTE pallete[])
+	{
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
+		if (ptr)
+		{
+			DWORD* dest = (DWORD*)ptr;
+			BYTE* source = (BYTE*)memory;
+
+			DWORD total = texture->pixels;
+			do
+			{
+				*dest++ = Color::Swap(*(DWORD*)&pallete[*source++ << 2]);
+				--total;
+			} while (total);
+		}
+		else
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGRA_8_To_BGRA_32", __LINE__);
 
 		return ptr;
 	}
 
 	VOID* __fastcall Convert_BGR5_A1_To_BGRA_32(ThrashTexture* texture, VOID* memory)
 	{
-		DWORD total = GetPixelsCount(texture);
-
-		VOID* ptr = Memory::Allocate(total * 4);
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
 		if (ptr)
 		{
 			BYTE* dest = (BYTE*)ptr;
 			WORD* source = (WORD*)memory;
+
+			DWORD total = texture->pixels;
 			do
 			{
 				*dest++ = (*source >> 7) & 0xF8;
@@ -148,24 +142,23 @@ namespace Texture
 
 				++source;
 				--total;
-			}
-			while (total);
+			} while (total);
 		}
 		else
-			Main::ShowError("Out of memory.", __FILE__, __FUNCTION__, __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGR5_A1_To_BGRA_32", __LINE__);
 
 		return ptr;
 	}
 
 	VOID* __fastcall Convert_RGB565_To_RGB(ThrashTexture* texture, VOID* memory)
 	{
-		DWORD total = GetPixelsCount(texture);
-
-		VOID* ptr = Memory::Allocate(total * 3);
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
 		if (ptr)
 		{
 			BYTE* dest = (BYTE*)ptr;
 			WORD* source = (WORD*)memory;
+
+			DWORD total = texture->pixels;
 			do
 			{
 				*dest++ = (*source >> 8) & 0xF8;
@@ -174,24 +167,23 @@ namespace Texture
 
 				++source;
 				--total;
-			}
-			while (total);
+			} while (total);
 		}
 		else
-			Main::ShowError("Out of memory.", __FILE__, __FUNCTION__, __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert_RGB565_To_RGB", __LINE__);
 
 		return ptr;
 	}
 
 	VOID* __fastcall Convert_BGR_24_To_RGB_24(ThrashTexture* texture, VOID* memory)
 	{
-		DWORD total = GetPixelsCount(texture);
-
-		VOID* ptr = Memory::Allocate(total * 3);
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
 		if (ptr)
 		{
 			BYTE* dest = (BYTE*)ptr;
 			BYTE* source = (BYTE*)memory;
+
+			DWORD total = texture->pixels;
 			do
 			{
 				*dest++ = *(source + 2);
@@ -200,63 +192,66 @@ namespace Texture
 
 				source += 3;
 				--total;
-			}
-			while (total);
+			} while (total);
 		}
 		else
-			Main::ShowError("Out of memory.", __FILE__, __FUNCTION__, __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGR_24_To_RGB_24", __LINE__);
 
 		return ptr;
 	}
 
 	VOID* __fastcall Convert_BGRA_32_To_RGBA_32(ThrashTexture* texture, VOID* memory)
 	{
-		DWORD total = GetPixelsCount(texture);
-
-		VOID* ptr = Memory::Allocate(total * 4);
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
 		if (ptr)
-			memcpy(ptr, memory, total * 4);
+		{
+			DWORD* dest = (DWORD*)ptr;
+			DWORD* source = (DWORD*)memory;
+
+			DWORD total = texture->pixels;
+			do
+			{
+				*dest++ = Color::Swap(*source++);
+				--total;
+			} while (total);
+		}
 		else
-			Main::ShowError("Out of memory.", __FILE__, __FUNCTION__, __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "dConvert_BGRA_32_To_RGBA_32", __LINE__);
 
 		return ptr;
 	}
 
-	VOID* __fastcall Convert_BGRA4_To_RGBA_32(ThrashTexture* texture, VOID* memory)
+	VOID* __fastcall Convert_BGRA_16_To_RGBA_32(ThrashTexture* texture, VOID* memory)
 	{
-		DWORD total = GetPixelsCount(texture);
-
-		VOID* ptr = Memory::Allocate(total * 4);
-		if ( ptr )
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
+		if (ptr)
 		{
-			BYTE* dest = (BYTE*)ptr;
-			BYTE* source = (BYTE*)memory;
-			total <<= 1;
+			DWORD* dest = (DWORD*)ptr;
+			WORD* source = (WORD*)memory;
+
+			DWORD total = texture->pixels;
 			do
 			{
-				*dest++ = *source << 4;
-				*dest++ = *source & 0xF0;
-
+				*dest++ = (*source & 0x0F00) >> 4 | (*source & 0x00F0) << 8 | (*source & 0x000F) << 20 | (*source & 0xF000) << 16;
 				++source;
 				--total;
-			}
-			while (total);
+			} while (total);
 		}
 		else
-			Main::ShowError("Out of memory.", __FILE__, __FUNCTION__, __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGRA4_To_RGBA_32", __LINE__);
 
 		return ptr;
 	}
 
 	/*VOID* __fastcall Convert1(ThrashTexture* texture, VOID* memory, BYTE* pallete)
 	{
-		DWORD total = GetPixelsCount(texture);
-
-		VOID* ptr = Memory::Allocate(total * 2);
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
 		if (ptr)
 		{
 			DWORD* dest = (DWORD*)ptr;
 			BYTE* source = (BYTE*)memory;
+
+			DWORD total = texture->pixels;
 			do
 			{
 				BYTE* color = &pallete[*source * 3];
@@ -267,28 +262,27 @@ namespace Texture
 
 				++source;
 				--total;
-			}
-			while (total);
+			} while (total);
 		}
 		else
-			ShowError("Out of memory.", __FILE__, __FUNCTION__, __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert1", __LINE__);
 
 		return ptr;
 	}
 
 	VOID* __fastcall Convert2(ThrashTexture* texture, VOID* memory, BYTE* pallete)
 	{
-		DWORD total = GetPixelsCount(texture);
-
-		VOID* ptr = Memory::Allocate(total * 2);
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
 		if (ptr)
 		{
 			BYTE* dest = (BYTE*)ptr;
 			BYTE* source = (BYTE*)memory;
+
+			DWORD total = texture->pixels;
 			do
 			{
 				BYTE* color = &pallete[*source << 2];
-				
+
 				*dest = *color++ >> 4;
 				*dest++ |= (*color++ >> 4 << 4);
 				*dest = *color++ >> 4;
@@ -296,24 +290,23 @@ namespace Texture
 
 				++source;
 				--total;
-			}
-			while (total);
+			} while (total);
 		}
 		else
-			ShowError("Out of memory.", __FILE__, __FUNCTION__, __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert2", __LINE__);
 
 		return ptr;
 	}
 
 	VOID* __fastcall Convert5(ThrashTexture* texture, VOID* memory)
 	{
-		DWORD total = GetPixelsCount(texture);
-
-		VOID* ptr = Memory::Allocate(total * 2);
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
 		if (ptr)
 		{
 			DWORD* dest = (DWORD*)ptr;
 			BYTE* source = (BYTE*)memory;
+
+			DWORD total = texture->pixels;
 			do
 			{
 				*dest = *source++ >> 3 << 3;
@@ -321,24 +314,23 @@ namespace Texture
 				*dest++ |= *source++ >> 3 << 8;
 
 				--total;
-			}
-			while (total);
+			} while (total);
 		}
 		else
-			ShowError("Out of memory.", __FILE__, __FUNCTION__, __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert5", __LINE__);
 
 		return ptr;
 	}
 
 	VOID* __fastcall Convert6(ThrashTexture* texture, VOID* memory)
 	{
-		DWORD total = GetPixelsCount(texture);
-
-		VOID* ptr = Memory::Allocate(total * 2);
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
 		if (ptr)
 		{
 			BYTE* dest = (BYTE*)ptr;
 			BYTE* source = (BYTE*)memory;
+
+			DWORD total = texture->pixels;
 			do
 			{
 				*dest = *source++ >> 4;
@@ -347,11 +339,10 @@ namespace Texture
 				*dest++ |= (*source++ >> 4 << 4);
 
 				--total;
-			}
-			while (total);
+			} while (total);
 		}
 		else
-			ShowError("Out of memory.", __FILE__, __FUNCTION__, __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert6", __LINE__);
 
 		return ptr;
 	}*/

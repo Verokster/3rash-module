@@ -1,15 +1,10 @@
-#ifndef _THRASH_WINDOW_HPP_
-#define _THRASH_WINDOW_HPP_
-
-#include "stdafx.h"
+#pragma once
 
 namespace Window
 {
-	VOID __stdcall Clear();
-	VOID __stdcall Flush();
-	BOOL __stdcall Window(DWORD bufferIndex);
-	ThrashWindow* __stdcall Lock();
-	BOOL __stdcall Unlock(ThrashWindow* window);
+	VOID THRASHAPI Clear();
+	VOID THRASHAPI Flush();
+	BOOL THRASHAPI Window(DWORD bufferIndex);
+	LPTHRASHWINDOW THRASHAPI Lock();
+	BOOL THRASHAPI Unlock(ThrashWindow* window);
 }
-
-#endif

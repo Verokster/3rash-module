@@ -14,16 +14,16 @@ namespace Shaders
 	GLuint __fastcall CompileFromResource(DWORD name, GLenum shaderType)
 	{
 		HRSRC hResource = FindResource(hDllModule, MAKEINTRESOURCE(name), RT_RCDATA);
-		if (hResource == nullptr)
-			Main::ShowError("FindResource failed", __FILE__, __FUNCTION__, __LINE__);
+		if (!hResource)
+			Main::ShowError("FindResource failed", __FILE__, "CompileFromResource", __LINE__);
 
 		HGLOBAL hResourceData = LoadResource(hDllModule, hResource);
-		if (hResourceData == nullptr)
-			Main::ShowError("LoadResource failed", __FILE__, __FUNCTION__, __LINE__);
+		if (!hResourceData)
+			Main::ShowError("LoadResource failed", __FILE__, "CompileFromResource", __LINE__);
 
 		LPVOID pData = LockResource(hResourceData);
-		if (pData == nullptr)
-			Main::ShowError("LockResource failed", __FILE__, __FUNCTION__, __LINE__);
+		if (!pData)
+			Main::ShowError("LockResource failed", __FILE__, "CompileFromResource", __LINE__);
 
 		GLuint shader = GLCreateShader(shaderType);
 
@@ -64,14 +64,18 @@ namespace Shaders
 		GLUseProgram(shProgram);
 
 		uniMVPLoc = GLGetUniformLocation(shProgram, "mvp");
+		uniTexEnabledLoc = GLGetUniformLocation(shProgram, "texEnabled");
 		uniShadeModelLoc = GLGetUniformLocation(shProgram, "shadeModel");
-		uniAlphaEnabledLoc = GLGetUniformLocation(shProgram, "alphaEnabled");
 		uniAlphaFuncLoc = GLGetUniformLocation(shProgram, "alphaFunc");
+		uniAlphaValLoc = GLGetUniformLocation(shProgram, "alphaValue");
+
+		uniFogEnabledLoc = GLGetUniformLocation(shProgram, "fogEnabled");
 		uniFogModeLoc = GLGetUniformLocation(shProgram, "fogMode");
 		uniFogColorLoc = GLGetUniformLocation(shProgram, "fogColor");
 		uniFogStartLoc = GLGetUniformLocation(shProgram, "fogStart");
 		uniFogEndLoc = GLGetUniformLocation(shProgram, "fogEnd");
 		uniFogDensityLoc = GLGetUniformLocation(shProgram, "fogDensity");
+		uniSpecularEnabledLoc = GLGetUniformLocation(shProgram, "specularEnabled");
 		uniGammaLoc = GLGetUniformLocation(shProgram, "gamma");
 
 		GLuint id = 0;
@@ -81,9 +85,9 @@ namespace Shaders
 		GLUniform1i(GLGetUniformLocation(shProgram, "tex04"), id++);
 
 		attrCoordsLoc = GLGetAttribLocation(shProgram, "vCoord");
-		attrColorLoc = GLGetAttribLocation(shProgram, "vColor");
+		attrDiffuseLoc = GLGetAttribLocation(shProgram, "vDiffuse");
+		attrSpecularLoc = GLGetAttribLocation(shProgram, "vSpecular");
 		attrTexCoordsLoc = GLGetAttribLocation(shProgram, "vTexCoord");
-		attrTexUnitLoc = GLGetAttribLocation(shProgram, "vTexUnit");
 	}
 
 	VOID __fastcall Release()

@@ -3,57 +3,949 @@
 
 namespace State
 {
-	BOOL __stdcall Set(ThrashState key, DWORD value)
+	DWORD __fastcall Set(ThrashState key, DWORD tmu, DWORD value)
 	{
-		GLfloat color[4];
-		FLOAT gammaFactor;
-		switch (key)
+		BOOL force = tmu & 0xFFFF0000;
+		tmu &= 0x0000FFFF;
+
+		DWORD* stateStorage = NULL;
+		INT index = GetKeyIndex(key);
+		if (index >= 0)
+			stateStorage = &stateValueArray[tmu][index];
+
+		if (key == DrawPrimitives)
 		{
+			ThrashPrimitiveIndexed* indexedList = (ThrashPrimitiveIndexed*)value;
+			specularEnabled = indexedList->type & 0x080; // D3DFVF_SPECULAR
+			if (indexedList->indices && indexedList->indicesCount)
+			{
+				switch (indexedList->type)
+				{
+				case PT_POINTLIST:
+					Vertex::DrawIndexedArray(GL_POINTS, 0, indexedList->indicesCount, indexedList->vertexArray, indexedList->indices);
+					break;
+				case PT_LINELIST:
+					Vertex::DrawIndexedArray(GL_LINES, 0, indexedList->indicesCount, indexedList->vertexArray, indexedList->indices);
+					break;
+				case PT_LINESTRIP:
+					Vertex::DrawIndexedArray(GL_LINE_STRIP, 0, indexedList->indicesCount, indexedList->vertexArray, indexedList->indices);
+					break;
+				case PT_TRIANGLELIST:
+					Vertex::DrawIndexedArray(GL_TRIANGLES, 0, indexedList->indicesCount, indexedList->vertexArray, indexedList->indices);
+					break;
+				case PT_TRIANGLESTRIP:
+					Vertex::DrawIndexedArray(GL_TRIANGLE_STRIP, 0, indexedList->indicesCount, indexedList->vertexArray, indexedList->indices);
+					break;
+				case PT_TRIANGLEFAN:
+					Vertex::DrawIndexedArray(GL_TRIANGLE_FAN, 0, indexedList->indicesCount, indexedList->vertexArray, indexedList->indices);
+					break;
+				default: break;
+				}
+			}
+			else
+			{
+				ThrashPrimitiveList* list = (ThrashPrimitiveList*)value;
+				switch (list->type)
+				{
+				case PT_POINTLIST:
+					Vertex::DrawArray(GL_POINTS, 0, list->vertexCount, list->vertexArray);
+					break;
+				case PT_LINELIST:
+					Vertex::DrawArray(GL_LINES, 0, list->vertexCount, list->vertexArray);
+					break;
+				case PT_LINESTRIP:
+					Vertex::DrawArray(GL_LINE_STRIP, 0, list->vertexCount, list->vertexArray);
+					break;
+				case PT_TRIANGLELIST:
+					Vertex::DrawArray(GL_TRIANGLES, 0, list->vertexCount, list->vertexArray);
+					break;
+				case PT_TRIANGLESTRIP:
+					Vertex::DrawArray(GL_TRIANGLE_STRIP, 0, list->vertexCount, list->vertexArray);
+					break;
+				case PT_TRIANGLEFAN:
+					Vertex::DrawArray(GL_TRIANGLE_FAN, 0, list->vertexCount, list->vertexArray);
+					break;
+				default: break;
+				}
+			}
+		}
+		else
+		{
+			if (stateStorage && !force && *stateStorage == value)
+				return 1;
+
+			switch (key)
+			{
+#pragma region Texture
 			case SetTexture:
 				if (value)
-				{
-					if (!texturesEnabled)
-					{
-						texturesEnabled = true;
-						GLEnable(GL_TEXTURE_2D);
-					}
-
-					if (bindedTexture != (ThrashTexture*)value)
-					{
-						bindedTexture = (ThrashTexture*)value;
-						GLBindTexture(GL_TEXTURE_2D, (*bindedTexture).id);
-					}
-				}
-				else if (texturesEnabled)
-				{
-					texturesEnabled = false;
+					GLEnable(GL_TEXTURE_2D);
+				else
 					GLDisable(GL_TEXTURE_2D);
+
+				texturesEnabled = value;
+				Texture::Bind((ThrashTexture*)value);
+
+				break;
+
+			case TextureMipMap:
+				textureMipMap = value;
+				break;
+
+			case TextureFilter:
+			case Texture0Filter:
+				textureFilterEnabled = value;
+				break;
+
+			case TextureLodBias:
+				textureLodBias = *(FLOAT*)&value;
+				break;
+
+			case TexturesCombine:
+				if (glVersion < GL_VER_1_2)
+					GLTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+				else
+				{
+					switch (value)
+					{
+					case 0:
+						GLTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+
+						GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_TEXTURE);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+
+						GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_ALPHA_SCALE, 1);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+						break;
+
+					case 1:
+						GLTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+
+						GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_ADD);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_TEXTURE);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PREVIOUS);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+
+						GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_ADD);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_ALPHA_SCALE, 1);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+						break;
+
+						/*case 2:
+							GLTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+
+							GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_REPLACE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+
+							GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_ALPHA_SCALE, 1);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+							break;*/
+
+					case 3:
+						GLTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+
+						GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_TEXTURE);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PREVIOUS);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+
+						GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_ALPHA_SCALE, 1);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+						break;
+
+						/*case 4:
+							GLTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+
+							GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_SUBTRACT);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_TEXTURE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PREVIOUS);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+
+							GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_ALPHA_SCALE, 1);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+							break;
+
+						case 5:
+							GLTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+
+							GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_REPLACE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PREVIOUS);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+
+							GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_ADD_SIGNED);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_ALPHA_SCALE, 1);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PREVIOUS);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+							break;
+
+						case 6:
+							GLTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+
+							GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 2);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_TEXTURE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PREVIOUS);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+
+							GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_ALPHA_SCALE, 2);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+							break;
+
+						case 7:
+							GLTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+
+							GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 4);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_TEXTURE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PREVIOUS);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+
+							GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_ALPHA_SCALE, 4);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+							break;
+
+						case 8:
+							GLTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+
+							GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_TEXTURE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+
+							GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_ALPHA_SCALE, 1);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+							break;
+
+						case 97:
+							GLTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+
+							GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_ADD_SIGNED);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_TEXTURE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PREVIOUS);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+
+							GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_ADD_SIGNED);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_ALPHA_SCALE, 1);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+							GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+							break;*/
+
+							/*case 98:
+								GLTexEnvi(GL_TEXTURE_ENV, D3DTSS_COLOROP, D3DTOP_ADD);
+								GLTexEnvi(GL_TEXTURE_ENV, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+								GLTexEnvi(GL_TEXTURE_ENV, D3DTSS_COLORARG2, D3DTA_CURRENT);
+
+								GLTexEnvi(GL_TEXTURE_ENV, D3DTSS_ALPHAOP, D3DTOP_BLENDFACTORALPHA);
+								GLTexEnvi(GL_TEXTURE_ENV, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+								GLTexEnvi(GL_TEXTURE_ENV, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
+								break;
+
+							case 99:
+								GLTexEnvi(GL_TEXTURE_ENV, D3DTSS_COLOROP, D3DTOP_BLENDFACTORALPHA);
+								GLTexEnvi(GL_TEXTURE_ENV, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+								GLTexEnvi(GL_TEXTURE_ENV, D3DTSS_COLORARG2, D3DTA_CURRENT);
+
+								GLTexEnvi(GL_TEXTURE_ENV, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+								GLTexEnvi(GL_TEXTURE_ENV, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+								GLTexEnvi(GL_TEXTURE_ENV, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
+								break;*/
+
+					default: return NULL;
+					}
 				}
 
 				break;
 
+#pragma endregion
+#pragma region Texture clamp
+			case TextureClamp:
+				switch (value)
+				{
+				case 0:
+					textureClampS = textureClampT = GL_CLAMP_TO_EDGE;
+					break;
+
+				case 1:
+					textureClampS = textureClampT = GL_REPEAT;
+					break;
+
+				case 2:
+					textureClampS = textureClampT = GL_MIRRORED_REPEAT;
+					break;
+
+				default:
+					break;
+				}
+
+				break;
+
+			case TextureClampS:
+				switch (value)
+				{
+				case 0:
+					textureClampS = GL_CLAMP_TO_EDGE;
+					break;
+
+				case 1:
+					textureClampS = GL_REPEAT;
+					break;
+
+				case 2:
+					textureClampS = GL_MIRRORED_REPEAT;
+					break;
+
+				default:
+					break;
+				}
+
+				break;
+
+			case TextureClampT:
+				switch (value)
+				{
+				case 0:
+					textureClampT = GL_CLAMP_TO_EDGE;
+					break;
+
+				case 1:
+					textureClampT = GL_REPEAT;
+					break;
+
+				case 2:
+					textureClampT = GL_MIRRORED_REPEAT;
+					break;
+
+				default:
+					break;
+				}
+
+				break;
+
+#pragma endregion
+#pragma region Vertex
+			case VertexLayout:
+				Set(VertexSize, !value ? sizeof(ThrashVertexV1) : sizeof(ThrashVertexV2));
+				break;
+
+			case VertexSize:
+				switch (value)
+				{
+				case sizeof(ThrashVertexV1) :
+					extendedVertex = FALSE;
+					break;
+
+				case sizeof(ThrashVertexV2) :
+					extendedVertex = TRUE;
+					break;
+
+				default:
+					return false;
+				}
+				break;
+
+#pragma endregion
+#pragma region Depth Buffer
+			case EnableDepthBuffer:
+				switch (value)
+				{
+				case 0:
+					GLDisable(GL_DEPTH_TEST);
+					depthEnabled = FALSE;
+					break;
+
+				case 1:
+					GLEnable(GL_DEPTH_TEST);
+					GLDepthFunc(depthCmp);
+					depthEnabled = TRUE;
+					break;
+
+				default:
+					return false;
+				}
+
+			case DepthBias:
+			case DepthBias2:
+				if (value)
+				{
+					GLEnable(GL_POLYGON_OFFSET_FILL);
+					GLPolygonOffset(0.0, (FLOAT)*(INT*)&value);
+				}
+				else
+					GLDisable(GL_POLYGON_OFFSET_FILL);
+
+				break;
+
+			case DepthCompare:
+				switch (value)
+				{
+				case 0:
+					depthCmp = GL_NEVER;
+					break;
+
+				case 1:
+					depthCmp = GL_LESS;
+					break;
+
+				case 2:
+					depthCmp = GL_EQUAL;
+					break;
+
+				case 3:
+					depthCmp = GL_LEQUAL;
+					break;
+
+				case 4:
+					depthCmp = GL_GREATER;
+					break;
+
+				case 5:
+					depthCmp = GL_NOTEQUAL;
+					break;
+
+				case 6:
+					depthCmp = GL_GEQUAL;
+					break;
+
+				case 7:
+					depthCmp = GL_ALWAYS;
+					break;
+
+				default: break;
+				}
+				GLDepthFunc(depthCmp);
+				break;
+
+			case EnableDepthWrite:
+			case EnableDepthWrite2:
+				GLDepthMask((GLboolean)value);
+				break;
+
+#pragma endregion
+#pragma region Alpha & Blend
+			case EnableAlphaBlend:
+				switch (value)
+				{
+				case 0:
+				case 1:
+					GLDisable(GL_ALPHA_TEST);
+					GLDisable(GL_BLEND);
+					break;
+
+				case 2:
+				case 3:
+					GLEnable(GL_ALPHA_TEST);
+					GLEnable(GL_BLEND);
+
+					GLAlphaFunc(GL_GREATER, GL_ZERO);
+					GLBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					break;
+
+				default:
+					break;
+				}
+
+				break;
+
+			case AlphaMode:
+				if (value)
+				{
+					alphaVal = (FLOAT)value / FLOAT_255;
+					GLAlphaFunc(alphaCmp, alphaVal);
+				}
+				else
+					alphaVal = GL_ZERO;
+
+				break;
+
+			case AlphaCompare:
+				switch (value)
+				{
+				case 0:
+					alphaCmp = GL_NEVER;
+					break;
+
+				case 1:
+					alphaCmp = GL_LESS;
+					break;
+
+				case 2:
+					alphaCmp = GL_EQUAL;
+					break;
+
+				case 3:
+					alphaCmp = GL_LEQUAL;
+					break;
+
+				case 4:
+					alphaCmp = GL_GREATER;
+					break;
+
+				case 5:
+					alphaCmp = GL_NOTEQUAL;
+					break;
+
+				case 6:
+					alphaCmp = GL_GEQUAL;
+					break;
+
+				case 7:
+					alphaCmp = GL_ALWAYS;
+					break;
+
+				default: return FALSE;
+				}
+
+				GLAlphaFunc(alphaCmp, alphaVal);
+				break;
+
+			case BlendMode:
+			case BlendMode2:
+				switch (value)
+				{
+				case 0:
+					blendSrc = GL_SRC_ALPHA;
+					blendDest = GL_ONE_MINUS_SRC_ALPHA;
+					break;
+				case 1:
+					blendSrc = GL_SRC_ALPHA;
+					blendDest = GL_ONE;
+					break;
+				case 2:
+					blendSrc = GL_ZERO;
+					blendDest = GL_ONE_MINUS_SRC_ALPHA;
+					break;
+				case 3:
+					blendSrc = GL_DST_COLOR;
+					blendDest = GL_ZERO;
+					break;
+				default:
+					return false;
+				}
+
+				GLBlendFunc(blendSrc, blendDest);
+				break;
+
+			case BlendSourceFactor:
+				switch (value)
+				{
+				case 0:
+					blendSrc = GL_ONE;
+					break;
+				case 1:
+					blendSrc = GL_ZERO;
+					break;
+				case 2:
+					blendSrc = GL_SRC_ALPHA;
+					break;
+				case 3:
+					blendSrc = GL_ONE_MINUS_SRC_ALPHA;
+					break;
+				case 4:
+					blendSrc = GL_DST_ALPHA;
+					break;
+				case 5:
+					blendSrc = GL_ONE_MINUS_DST_ALPHA;
+					break;
+				case 6:
+					blendSrc = GL_SRC_COLOR;
+					break;
+				case 7:
+					blendSrc = GL_DST_COLOR;
+					break;
+				case 8:
+					blendSrc = GL_ONE_MINUS_SRC_COLOR;
+					break;
+				case 9:
+					blendSrc = GL_ONE_MINUS_DST_COLOR;
+					break;
+				default:
+					return false;
+				}
+
+				GLBlendFunc(blendSrc, blendDest);
+				break;
+
+			case BlendDestinationFactor:
+				switch (value)
+				{
+				case 0:
+					blendDest = GL_ONE;
+					break;
+				case 1:
+					blendDest = GL_ZERO;
+					break;
+				case 2:
+					blendDest = GL_SRC_ALPHA;
+					break;
+				case 3:
+					blendDest = GL_ONE_MINUS_SRC_ALPHA;
+					break;
+				case 4:
+					blendDest = GL_DST_ALPHA;
+					break;
+				case 5:
+					blendDest = GL_ONE_MINUS_DST_ALPHA;
+					break;
+				case 6:
+					blendDest = GL_SRC_COLOR;
+					break;
+				case 7:
+					blendDest = GL_DST_COLOR;
+					break;
+				case 8:
+					blendDest = GL_ONE_MINUS_SRC_COLOR;
+					break;
+				case 9:
+					blendDest = GL_ONE_MINUS_DST_COLOR;
+					break;
+				default:
+					return false;
+				}
+
+				GLBlendFunc(blendSrc, blendDest);
+				break;
+
+#pragma endregion
+#pragma region Fog
+			case EnableFog:
+			case EnableFog2:
+			case FogMode:
+				switch (value)
+				{
+				case Disabled:
+					fogEnabled = FALSE;
+					GLDisable(GL_FOG);
+
+					break;
+				case Enabled:
+					fogEnabled = TRUE;
+					GLEnable(GL_FOG);
+					GLFogi(GL_FOG_COORD_SRC, GL_FOG_COORD);
+
+					break;
+				case Linear:
+					GLFogi(GL_FOG_MODE, GL_LINEAR);
+
+					break;
+				case Exp:
+					GLFogi(GL_FOG_MODE, GL_EXP);
+
+					break;
+				case Exp2:
+					GLFogi(GL_FOG_MODE, GL_EXP2);
+
+					break;
+				default:
+					return false;
+				}
+				break;
+
+			case FogColor:
+			{
+				GLfloat color[4];
+				color[2] = (UINT8)value / FLOAT_255;
+				color[1] = (UINT8)(value >> 8) / FLOAT_255;
+				color[0] = (UINT8)(value >> 16) / FLOAT_255;
+				color[3] = (UINT8)(value >> 24) / FLOAT_255;
+				GLFogfv(GL_FOG_COLOR, color);
+			}
+
+			break;
+
+			case FogStart:
+				GLFogf(GL_FOG_START, value & 0xFFFF0000 ? *(GLfloat*)&value * FLOAT_65536 : (GLfloat)value);
+				break;
+
+			case FogEnd:
+				GLFogf(GL_FOG_END, value & 0xFFFF0000 ? *(GLfloat*)&value * FLOAT_65536 : (GLfloat)value);
+				break;
+
+			case FogDensity:
+				if (value == 0 || value & 0xFFFFF000)
+					GLFogf(GL_FOG_DENSITY, *(GLfloat*)&value);
+				else
+					GLFogf(GL_FOG_DENSITY, GLfloat(1.0 / value));
+
+				break;
+
+#pragma endregion
+#pragma region Functions
+			case Functions:
+				if (value)
+					memcpy(&functions, (DWORD*)value, sizeof(ThrashFunctions));
+				else
+					memset(&functions, NULL, sizeof(ThrashFunctions));
+
+				break;
+
+			case MessageBoxFunction:
+				functions.ErrorMessageBox = (DWORD(__stdcall *)(DWORD, LPCSTR))value;
+				break;
+
+			case EventFuncion:
+				functions.Event = (VOID(__stdcall *)(UINT, PROC))value;
+				break;
+
+			case LockStatusFunction:
+				functions.LockStatus = (VOID(__stdcall *)(BOOL))value;
+				break;
+
+			case MallocFunction:
+				functions.Malloc = (VOID* (__stdcall *)(size_t))value;
+				break;
+
+			case FreeFunction:
+				functions.Free = (VOID(__stdcall *)(VOID*))value;
+				break;
+
+			case StateFunction:
+				functions.State = (DWORD(__stdcall *)(DWORD, DWORD))value;
+				break;
+
+#pragma endregion
+#pragma region Stencil buffer
+			case EnableStencilBuffer:
+				if (value)
+					GLEnable(GL_STENCIL_TEST);
+				else
+					GLDisable(GL_STENCIL_TEST);
+
+				stencilEnabled = value;
+				break;
+
+			case StencilFunc:
+				switch (value)
+				{
+				case 0:
+					GLStencilFunc(GL_NEVER, 2, 0xFF);
+					break;
+
+				case 1:
+					GLStencilFunc(GL_LESS, 2, 0xFF);
+					break;
+
+				case 2:
+					GLStencilFunc(GL_EQUAL, 2, 0xFF);
+					break;
+
+				case 3:
+					GLStencilFunc(GL_LEQUAL, 2, 0xFF);
+					break;
+
+				case 4:
+					GLStencilFunc(GL_GREATER, 2, 0xFF);
+					break;
+
+				case 5:
+					GLStencilFunc(GL_NOTEQUAL, 2, 0xFF);
+					break;
+
+				case 6:
+					GLStencilFunc(GL_GEQUAL, 2, 0xFF);
+					break;
+
+				case 7:
+					GLStencilFunc(GL_ALWAYS, 2, 0xFF);
+					break;
+
+				default: break;
+				}
+
+				break;
+
+			case StencilFail:
+				switch (value)
+				{
+				case 0:
+					stencilFail = GL_KEEP;
+					break;
+
+				case 1:
+					stencilFail = GL_ZERO;
+					break;
+
+				case 2:
+					stencilFail = GL_REPLACE;
+					break;
+
+				case 3:
+					stencilFail = GL_INCR;
+					break;
+
+				case 4:
+					stencilFail = GL_DECR;
+					break;
+
+				case 5:
+					stencilFail = GL_INVERT;
+					break;
+
+				case 6:
+					stencilFail = GL_INCR_WRAP;
+					break;
+
+				case 7:
+					stencilFail = GL_DECR_WRAP;
+					break;
+
+				default: break;
+				}
+
+				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
+				break;
+
+			case StencilDepthFail:
+				switch (value)
+				{
+				case 0:
+					stencilDepthFail = GL_KEEP;
+					break;
+
+				case 1:
+					stencilDepthFail = GL_ZERO;
+					break;
+
+				case 2:
+					stencilDepthFail = GL_REPLACE;
+					break;
+
+				case 3:
+					stencilDepthFail = GL_INCR;
+					break;
+
+				case 4:
+					stencilDepthFail = GL_DECR;
+					break;
+
+				case 5:
+					stencilDepthFail = GL_INVERT;
+					break;
+
+				case 6:
+					stencilDepthFail = GL_INCR_WRAP;
+					break;
+
+				case 7:
+					stencilDepthFail = GL_DECR_WRAP;
+					break;
+
+				default: break;
+				}
+
+				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
+				break;
+
+			case StencilPass:
+				switch (value)
+				{
+				case 0:
+					stencilPass = GL_KEEP;
+					break;
+
+				case 1:
+					stencilPass = GL_ZERO;
+					break;
+
+				case 2:
+					stencilPass = GL_REPLACE;
+					break;
+
+				case 3:
+					stencilPass = GL_INCR;
+					break;
+
+				case 4:
+					stencilPass = GL_DECR;
+					break;
+
+				case 5:
+					stencilPass = GL_INVERT;
+					break;
+
+				case 6:
+					stencilPass = GL_INCR_WRAP;
+					break;
+
+				case 7:
+					stencilPass = GL_DECR_WRAP;
+					break;
+
+				default: break;
+				}
+
+				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
+				break;
+
+#pragma endregion
+#pragma region Others
 			case CullFace:
 				if (value >= 0 && value <= 2)
 				{
-					if (cullFaceMode != value)
+					switch (value)
 					{
-						cullFaceMode = value;
-						switch (value)
-						{
-							case 1:
-								GLEnable(GL_CULL_FACE);
-								GLFrontFace(GL_CW);
-								break;
+					case 1:
+						GLEnable(GL_CULL_FACE);
+						GLFrontFace(GL_CW);
+						break;
 
-							case 2:
-								GLEnable(GL_CULL_FACE);
-								GLFrontFace(GL_CCW);
-								break;
+					case 2:
+						GLEnable(GL_CULL_FACE);
+						GLFrontFace(GL_CCW);
+						break;
 
-							default:
-								GLDisable(GL_CULL_FACE);
-								break;
-						}
+					default:
+						GLDisable(GL_CULL_FACE);
+						break;
 					}
 
 					break;
@@ -69,16 +961,12 @@ namespace State
 
 				break;
 
-			case EnableDepthBuffer:
-				if (value)
-				{
-					if (value == 1)
-						GLEnable(GL_DEPTH_TEST);
-					else return false;
-				}
-				else
-					GLDisable(GL_DEPTH_TEST);
+			case ClearDepth:
+				GLClearDepth(*(FLOAT*)&value);
+				break;
 
+			case LineWidth:
+				GLLineWidth(value);
 				break;
 
 			case EnableDither:
@@ -92,506 +980,103 @@ namespace State
 			case ShadeModel:
 				switch (value)
 				{
-					case 0:
-						GLShadeModel(GL_FLAT);
-						//GLDisable(GL_LIGHTING);
-						break;
+				case 0:
+					GLShadeModel(GL_FLAT);
+					specularEnabled = FALSE;
+					break;
 
-					case 1:
-						GLShadeModel(GL_SMOOTH);
-						//GLDisable(GL_LIGHTING);
-						break;
+				case 1:
+					GLShadeModel(GL_SMOOTH);
+					specularEnabled = FALSE;
+					break;
 
-					case 2:
-						GLShadeModel(GL_SMOOTH);
-						//GLEnable(GL_LIGHTING);
-						break;
+				case 2:
+					GLShadeModel(GL_SMOOTH);
+					specularEnabled = TRUE;
+					break;
 
-					case 3:
-						return false;
+				case 3:
+					return false;
 
-					default:
-						break;
+				default:
+					break;
 				}
-
-				break;
-
-			case TextureFilter:
-				textureFilterEnabled = value;
 				break;
 
 			case EnableSmoothPolygon:
-				if (value)
+				switch (value)
 				{
-					if (value == 1)
-					{
-						GLEnable(GL_POINT_SMOOTH);
-						GLEnable(GL_LINE_SMOOTH);
-						GLEnable(GL_POLYGON_SMOOTH);
-					}
-					else return false;
-				}
-				else
-				{
+				case 0:
 					GLDisable(GL_POINT_SMOOTH);
 					GLDisable(GL_LINE_SMOOTH);
 					GLDisable(GL_POLYGON_SMOOTH);
+					break;
+
+				case 1:
+					GLEnable(GL_POINT_SMOOTH);
+					GLEnable(GL_LINE_SMOOTH);
+					GLEnable(GL_POLYGON_SMOOTH);
+					break;
+
+				default:
+					return NULL;
 				}
 
-				break;
-
-			case EnableAlphaBlend:
-				if (value)
-				{
-					if (value == 2)
-					{
-						GLEnable(GL_BLEND);
-						GLEnable(GL_ALPHA_TEST);
-					}
-					else return false;
-				}
-				else
-				{
-					GLDisable(GL_BLEND);
-					GLDisable(GL_ALPHA_TEST);
-				}
-
-				break;
-
-			case TextureMipMap:
-				textureMipMap = value;
-				break;
-
-			case TextureWrap:
-				textureWrap = value;
-				break;
-
-			case FogDensity:
-				if (value != 0)
-					GLFogf(GL_FOG_DENSITY, (GLfloat)(1.0 / value));
-				else
-					GLFogf(GL_FOG_DENSITY, GL_ZERO);
-
-				break;
-
-			case FogColor:
-				if (fogColor != value)
-				{
-					fogColor = value;
-					color[2] = (UINT8)value / FLOAT_255;
-					color[1] = (UINT8)(value >> 8) / FLOAT_255;
-					color[0] = (UINT8)(value >> 16) / FLOAT_255;
-					color[3] = (UINT8)(value >> 24) / FLOAT_255;
-					GLFogfv(GL_FOG_COLOR, color);
-				}
-
-				break;
-
-			case LineWidth:
-				GLLineWidth(value);
-				break;
-
-			case Functions:
-				if (value)
-				{
-					funcGetHWND = (HWND(__stdcall *)())*((DWORD*)value + 1);
-					funcResolution = (VOID(__stdcall *)(UINT, PROC))*((DWORD*)value + 2);
-					funcErrorMessageBox = (DWORD(__stdcall *)(DWORD, LPCSTR))*((DWORD*)value + 6);
-				}
-				else
-				{
-					funcGetHWND = NULL;
-					funcResolution = NULL;
-					funcErrorMessageBox = NULL;
-				}
-
-				break;
-
-			case EnableFog:
-			case FogMode:
-				switch (value)
-				{
-					case Disabled:
-						if (fogEnabled)
-						{
-							fogEnabled = FALSE;
-							GLDisable(GL_FOG);
-						}
-
-						break;
-					case Enabled:
-						if (!fogEnabled)
-						{
-							fogEnabled = TRUE;
-							GLEnable(GL_FOG);
-							GLFogi(GL_FOG_COORD_SRC, GL_FOG_COORD);
-						}
-
-						break;
-					case Linear:
-						if (fogMode != value)
-						{
-							fogMode = value;
-							GLFogi(GL_FOG_MODE, GL_LINEAR);
-						}
-
-						break;
-					case Exp:
-						if (fogMode != value)
-						{
-							fogMode = value;
-							GLFogi(GL_FOG_MODE, GL_EXP);
-						}
-
-						break;
-					case Exp2:
-						if (fogMode != value)
-						{
-							fogMode = value;
-							GLFogi(GL_FOG_MODE, GL_EXP2);
-						}
-
-						break;
-					default:
-						return false;
-				}
-				break;
-
-			case FogStart:
-				GLFogf(GL_FOG_START, (GLfloat)value);
-				break;
-
-			case FogEnd:
-				GLFogf(GL_FOG_END, (GLfloat)value);
-				break;
-
-			case DepthMode:
-			case DepthMode2:
-				//if (!value)// && depthFunctionBinded != value)
-					//GLDepthFunc(GL_LEQUAL);
 				break;
 
 			case WindowHandle:
 				hWnd = (HWND)value;
 				break;
 
-			case MessageBoxFunction:
-				funcErrorMessageBox = (DWORD(__stdcall *)(DWORD, LPCSTR))value;
-				break;
+			case CurrentWindow:
+				if (!value && !force)
+					return NULL;
 
-			case ThrashApiVersion: // set api version
+			case ThrashApiVersion:
 				API_VERSION = value;
-				//if (value < 104 || (API_VERSION = (int)a2, (signed int)a2 > 107) )
-					//API_VERSION = 107;
 				break;
 
-			case MallocFunction:
-				funcMalloc = (VOID* (__stdcall *)(size_t))value;
-				break;
-
-			case FreeFunction:
-				funcFree = (VOID(__stdcall *)(VOID*))value;
-				break;
-
-			case AlphaMode:
-				if (value)
-					GLAlphaFunc(GL_GEQUAL, (GLclampf)(value / FLOAT_255));
-				else
-					GLAlphaFunc(GL_ALWAYS, GL_ZERO);
-				break;
-
-			case Unknown_39:
-				funcState = (DWORD(__stdcall *)(DWORD, DWORD))value;
-				break;
-
-			case DepthCompare:
-				switch (value)
-				{
-					case 0:
-						depthCmp = GL_NEVER;
-						break;
-
-					case 1:
-						depthCmp = GL_LESS;
-						break;
-
-					case 2:
-						depthCmp = GL_EQUAL;
-						break;
-
-					case 3:
-						depthCmp = GL_LEQUAL;
-						break;
-
-					case 4:
-						depthCmp = GL_GREATER;
-						break;
-
-					case 5:
-						depthCmp = GL_NOTEQUAL;
-						break;
-
-					case 6:
-						depthCmp = GL_GEQUAL;
-						break;
-
-					case 7:
-						depthCmp = GL_ALWAYS;
-						break;
-
-					default: break;
-				}
-
-				GLDepthFunc(depthCmp);
-
-				break;
-
-			case EnableStencilBuffer:
-				if (value)
-					GLEnable(GL_STENCIL_TEST);
-				else
-					GLDisable(GL_STENCIL_TEST);
-				break;
-
-			case StencilFunc:
-				switch (value)
-				{
-					case 0:
-						GLStencilFunc(GL_NEVER, 2, 0xFF);
-						break;
-
-					case 1:
-						GLStencilFunc(GL_LESS, 2, 0xFF);
-						break;
-
-					case 2:
-						GLStencilFunc(GL_EQUAL, 2, 0xFF);
-						break;
-
-					case 3:
-						GLStencilFunc(GL_LEQUAL, 2, 0xFF);
-						break;
-
-					case 4:
-						GLStencilFunc(GL_GREATER, 2, 0xFF);
-						break;
-
-					case 5:
-						GLStencilFunc(GL_NOTEQUAL, 2, 0xFF);
-						break;
-
-					case 6:
-						GLStencilFunc(GL_GEQUAL, 2, 0xFF);
-						break;
-
-					case 7:
-						GLStencilFunc(GL_ALWAYS, 2, 0xFF);
-						break;
-
-					default: break;
-				}
-
-				break;
-
-			case StencilFail:
-				switch (value)
-				{
-					case 0:
-						stencilFail = GL_KEEP;
-						break;
-
-					case 1:
-						stencilFail = GL_ZERO;
-						break;
-
-					case 2:
-						stencilFail = GL_REPLACE;
-						break;
-
-					case 3:
-						stencilFail = GL_INCR;
-						break;
-
-					case 4:
-						stencilFail = GL_DECR;
-						break;
-
-					case 5:
-						stencilFail = GL_INVERT;
-						break;
-
-					case 6:
-						stencilFail = GL_INCR_WRAP;
-						break;
-
-					case 7:
-						stencilFail = GL_DECR_WRAP;
-						break;
-
-					default: break;
-				}
-
-				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
-				break;
-
-			case StencilDepthFail:
-				switch (value)
-				{
-					case 0:
-						stencilDepthFail = GL_KEEP;
-						break;
-
-					case 1:
-						stencilDepthFail = GL_ZERO;
-						break;
-
-					case 2:
-						stencilDepthFail = GL_REPLACE;
-						break;
-
-					case 3:
-						stencilDepthFail = GL_INCR;
-						break;
-
-					case 4:
-						stencilDepthFail = GL_DECR;
-						break;
-
-					case 5:
-						stencilDepthFail = GL_INVERT;
-						break;
-
-					case 6:
-						stencilDepthFail = GL_INCR_WRAP;
-						break;
-
-					case 7:
-						stencilDepthFail = GL_DECR_WRAP;
-						break;
-
-					default: break;
-				}
-
-				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
-				break;
-
-			case StencilPass:
-				switch (value)
-				{
-					case 0:
-						stencilPass = GL_KEEP;
-						break;
-
-					case 1:
-						stencilPass = GL_ZERO;
-						break;
-
-					case 2:
-						stencilPass = GL_REPLACE;
-						break;
-
-					case 3:
-						stencilPass = GL_INCR;
-						break;
-
-					case 4:
-						stencilPass = GL_DECR;
-						break;
-
-					case 5:
-						stencilPass = GL_INVERT;
-						break;
-
-					case 6:
-						stencilPass = GL_INCR_WRAP;
-						break;
-
-					case 7:
-						stencilPass = GL_DECR_WRAP;
-						break;
-
-					default: break;
-				}
-
-				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
-				break;
-
-			case EnableDepthWrite:
-			case EnableDepthWrite2:
-				GLDepthMask((GLboolean)value);
-				break;
-
-			case BlendMode: // set blend function
-			case BlendMode2:
-				switch (value)
-				{
-					case 0:
-						GLBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-						break;
-					case 1:
-						GLBlendFunc(GL_SRC_ALPHA, GL_ONE);
-						break;
-					case 2:
-						GLBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
-						break;
-					case 3:
-						GLBlendFunc(GL_DST_COLOR, GL_ZERO);
-						break;
-					default:
-						return false;
-				}
-
+			case BufferMode:
+				bufferMode = value;
 				break;
 
 			case Gamma:
 			case Gamma2:
 				GammaRamp::Set(*(FLOAT*)&value);
-				
 				break;
 
-			/*case Hint:
-				if (value)
-				{
-					GLHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-					GLHint(GL_FOG_HINT, GL_NICEST);
-					GLHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-					GLHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-					GLHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-				}
-				else
-				{
-					GLHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-					GLHint(GL_FOG_HINT, GL_FASTEST);
-					GLHint(GL_POINT_SMOOTH_HINT, GL_FASTEST);
-					GLHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
-					GLHint(GL_POLYGON_SMOOTH_HINT, GL_FASTEST);
-				}
+				/*case Hint:
+					if (value)
+					{
+						GLHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+						GLHint(GL_FOG_HINT, GL_NICEST);
+						GLHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+						GLHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+						GLHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+					}
+					else
+					{
+						GLHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+						GLHint(GL_FOG_HINT, GL_FASTEST);
+						GLHint(GL_POINT_SMOOTH_HINT, GL_FASTEST);
+						GLHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
+						GLHint(GL_POLYGON_SMOOTH_HINT, GL_FASTEST);
+					}
 
-				break;*/
+					break;*/
 
-			default:
-				break;
+#pragma endregion
+
+			default: break;
+			}
 		}
 
-		if (value)
-		{
-			DWORD index = GetKeyIndex(key);
-			if (index >= 0)
-				stateValueArray[index] = value;
+		if (stateStorage)
+			*stateStorage = value;
 
-			if (funcState != NULL)
-				funcState(index, value);
-		}
+		if (functions.State)
+			functions.State(index, value);
 
-		return true;
-	}
-
-	DWORD __stdcall Get(ThrashState key)
-	{
-		DWORD index = GetKeyIndex(key);
-		if (index >= 0)
-			return stateValueArray[index];
-
-		return index;
+		return 1;
 	}
 }

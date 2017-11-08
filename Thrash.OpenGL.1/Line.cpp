@@ -3,27 +3,35 @@
 
 namespace Line
 {
-	VOID __stdcall Draw(ThrashVertex* vertex1, ThrashVertex* vertex2)
+	VOID THRASHAPI Draw(ThrashVertex* vertex1, ThrashVertex* vertex2)
 	{
 		GLBegin(GL_LINES);
 		{
-			Vertex::Draw(vertex1);
-			Vertex::Draw(vertex2);
+			if (!extendedVertex)
+			{
+				Vertex::Draw((ThrashVertexV1*)vertex1);
+				Vertex::Draw((ThrashVertexV1*)vertex2);
+			}
+			else
+			{
+				Vertex::Draw((ThrashVertexV2*)vertex1);
+				Vertex::Draw((ThrashVertexV2*)vertex2);
+			}
 		}
 		GLEnd();
 	}
 
-	VOID __stdcall DrawStrip(DWORD count, ThrashVertex vertexArray[])
+	VOID THRASHAPI DrawStrip(DWORD count, ThrashVertex vertexArray[])
 	{
 		Vertex::DrawArray(GL_LINE_STRIP, 1, count, vertexArray);
 	}
 
-	VOID __stdcall DrawStrip(DWORD count, ThrashVertex vertexArray[], DWORD indexes[])
+	VOID THRASHAPI DrawStrip(DWORD count, ThrashVertex vertexArray[], DWORD indexes[])
 	{
 		Vertex::DrawIndexedArray(GL_LINE_STRIP, 1, count, vertexArray, indexes);
 	}
 
-	VOID __stdcall DrawMesh(DWORD count, ThrashVertex vertexArray[], DWORD indexes[])
+	VOID THRASHAPI DrawMesh(DWORD count, ThrashVertex vertexArray[], DWORD indexes[])
 	{
 		Vertex::DrawIndexedArray(GL_LINES, 0, count * 2, vertexArray, indexes);
 	}

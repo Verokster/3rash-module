@@ -3,13 +3,11 @@
 
 namespace Quad
 {
-	VOID __stdcall Draw(ThrashVertex* vertex1, ThrashVertex* vertex2, ThrashVertex* vertex3, ThrashVertex* vertex4)
+	VOID THRASHAPI Draw(ThrashVertex* vertex1, ThrashVertex* vertex2, ThrashVertex* vertex3, ThrashVertex* vertex4)
 	{
 		Buffer::Check(GL_TRIANGLES);
-		Texture::CheckWrap();
 
 		DWORD index1, index3;
-
 		BOOL check = Tri::CheckCullFace(vertex1, vertex2, vertex3);
 		if (check)
 		{
@@ -34,23 +32,23 @@ namespace Quad
 		}
 	}
 
-	VOID __stdcall DrawMesh(DWORD count, ThrashVertex vertexArray[], DWORD indexes[])
+	VOID THRASHAPI DrawMesh(DWORD count, ThrashVertex vertexArray[], DWORD indexes[])
 	{
 		if (count > 0)
 		{
 			Buffer::Check(GL_TRIANGLES);
-			Texture::CheckWrap();
 
+			ThrashVertexV1* vArray = (ThrashVertexV1*)vertexArray;
 			DWORD index1, index3;
 
 			do
 			{
 				Buffer::Check(GL_TRIANGLES);
 
-				ThrashVertex* vertex1 = &vertexArray[*indexes++];
-				ThrashVertex* vertex2 = &vertexArray[*indexes++];
-				ThrashVertex* vertex3 = &vertexArray[*indexes++];
-				ThrashVertex* vertex4 = &vertexArray[*indexes++];
+				ThrashVertex* vertex1 = &vArray[*indexes++];
+				ThrashVertex* vertex2 = &vArray[*indexes++];
+				ThrashVertex* vertex3 = &vArray[*indexes++];
+				ThrashVertex* vertex4 = &vArray[*indexes++];
 
 				BOOL check = Tri::CheckCullFace(vertex1, vertex2, vertex3);
 				if (check)

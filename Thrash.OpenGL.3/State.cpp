@@ -1,61 +1,710 @@
 #include "stdafx.h"
 #include "Global.hpp"
+#include "math.h"
+
+BOOL specularEnabled;
 
 namespace State
 {
-	BOOL __stdcall Set(ThrashState key, DWORD value)
-	{
-		FLOAT tempFloat;
+	ThrashState drawStates[] = {
+		SetTexture,
+		TextureMipMap,
+		TextureFilter, Texture0Filter,
+		TextureLodBias,
+		TextureClamp,
+		TextureClampS,
+		TextureClampT,
+		EnableDepthBuffer,
+		DepthBias, DepthBias2,
+		DepthCompare,
+		EnableDepthWrite, EnableDepthWrite2,
+		EnableAlphaBlend,
+		AlphaMode,
+		AlphaCompare,
+		BlendMode, BlendMode2,
+		BlendSourceFactor,
+		BlendDestinationFactor,
+		EnableFog, EnableFog2, FogMode,
+		FogColor,
+		FogStart,
+		FogEnd,
+		FogDensity,
+		ClearColor,
+		ClearDepth,
+		EnableDither,
+		ShadeModel,
+		EnableSmoothPolygon,
+		Gamma, Gamma2
+	};
 
-		switch (key)
+	VOID __fastcall SetSpecular(BOOL value)
+	{
+		if (specularEnabled != value)
 		{
+			specularEnabled = value;
+			GLUniform1ui(uniSpecularEnabledLoc, value);
+		}
+	}
+
+	DWORD __fastcall Set(ThrashState key, DWORD tmu, DWORD value)
+	{
+		BOOL force = tmu & 0xFFFF0000;
+		tmu &= 0x0000FFFF;
+
+		DWORD* stateStorage = NULL;
+		INT index = GetKeyIndex(key);
+		if (index >= 0)
+			stateStorage = &stateValueArray[tmu][index];
+
+		if (key == DrawPrimitives)
+		{
+			ThrashPrimitiveIndexed* indexedList = (ThrashPrimitiveIndexed*)value;
+
+			SetSpecular(indexedList->type & 0x080); // D3DFVF_SPECULAR
+			if (indexedList->indices && indexedList->indicesCount)
+			{
+				switch (indexedList->type)
+				{
+				case PT_POINTLIST:
+					Point::DrawMesh(indexedList->indicesCount, indexedList->vertexArray, indexedList->indices);
+					break;
+				case PT_LINELIST:
+					Line::DrawMesh(indexedList->indicesCount / 2, indexedList->vertexArray, indexedList->indices);
+					break;
+				case PT_LINESTRIP:
+					Line::DrawStrip(indexedList->indicesCount - 1, indexedList->vertexArray, indexedList->indices);
+					break;
+				case PT_TRIANGLELIST:
+					Tri::DrawMesh(indexedList->indicesCount / 3, indexedList->vertexArray, indexedList->indices);
+					break;
+				case PT_TRIANGLESTRIP:
+					Tri::DrawStrip(indexedList->indicesCount - 2, indexedList->vertexArray, indexedList->indices);
+					break;
+				case PT_TRIANGLEFAN:
+					Tri::DrawFan(indexedList->indicesCount - 2, indexedList->vertexArray, indexedList->indices);
+					break;
+				default: break;
+				}
+			}
+			else
+			{
+				ThrashPrimitiveList* list = (ThrashPrimitiveList*)value;
+				switch (list->type)
+				{
+				case PT_POINTLIST:
+					Point::DrawStrip(list->vertexCount, list->vertexArray);
+					break;
+				case PT_LINELIST:
+					Line::DrawMesh(list->vertexCount / 2, list->vertexArray);
+					break;
+				case PT_LINESTRIP:
+					Line::DrawStrip(list->vertexCount - 1, list->vertexArray);
+					break;
+				case PT_TRIANGLELIST:
+					Tri::DrawMesh(list->vertexCount / 3, list->vertexArray);
+					break;
+				case PT_TRIANGLESTRIP:
+					Tri::DrawStrip(list->vertexCount - 2, list->vertexArray);
+					break;
+				case PT_TRIANGLEFAN:
+					Tri::DrawFan(list->vertexCount - 2, list->vertexArray);
+					break;
+				default: break;
+				}
+			}
+		}
+		else
+		{
+			if (stateStorage && !force)
+			{
+				BOOL found = FALSE;
+				for (DWORD i = 0; i < sizeof(drawStates) / sizeof(ThrashState); ++i)
+				{
+					if (drawStates[i] == key)
+					{
+						if (*stateStorage != value)
+							Buffer::Draw();
+						found = TRUE;
+						break;
+					}
+				}
+
+				if (!found && *stateStorage == value)
+					return 1;
+			}
+
+			switch (key)
+			{
+#pragma region Texture
 			case SetTexture:
 				texturesEnabled = value;
+				GLUniform1ui(uniTexEnabledLoc, value);
 				Texture::Bind((ThrashTexture*)value);
+				break;
+
+			case TextureMipMap:
+				textureMipMap = value;
+				break;
+
+			case TextureFilter:
+			case Texture0Filter:
+				textureFilterEnabled = value;
+				break;
+
+			case TextureLodBias:
+				textureLodBias = *(FLOAT*)&value;
+				break;
+
+#pragma endregion
+#pragma region Texture clamp
+			case TextureClamp:
+				switch (value)
+				{
+				case 0:
+					textureClampS = textureClampT = GL_CLAMP_TO_EDGE;
+					break;
+
+				case 1:
+					textureClampS = textureClampT = GL_REPEAT;
+					break;
+
+				case 2:
+					textureClampS = textureClampT = GL_MIRRORED_REPEAT;
+					break;
+
+				default:
+					break;
+				}
 
 				break;
 
-			case CullFace:
-				if (value >= 0 && value <= 2)
+			case TextureClampS:
+				switch (value)
 				{
-					cullFace = value;
+				case 0:
+					textureClampS = GL_CLAMP_TO_EDGE;
+					break;
+
+				case 1:
+					textureClampS = GL_REPEAT;
+					break;
+
+				case 2:
+					textureClampS = GL_MIRRORED_REPEAT;
+					break;
+
+				default:
 					break;
 				}
-				else return false;
+
+				break;
+
+			case TextureClampT:
+				switch (value)
+				{
+				case 0:
+					textureClampT = GL_CLAMP_TO_EDGE;
+					break;
+
+				case 1:
+					textureClampT = GL_REPEAT;
+					break;
+
+				case 2:
+					textureClampT = GL_MIRRORED_REPEAT;
+					break;
+
+				default:
+					break;
+				}
+
+				break;
+
+#pragma endregion
+#pragma region Vertex
+#pragma endregion
+#pragma region Depth Buffer
+			case EnableDepthBuffer:
+				switch (value)
+				{
+				case 0:
+					GLDisable(GL_DEPTH_TEST);
+					depthEnabled = FALSE;
+					break;
+
+				case 1:
+					GLEnable(GL_DEPTH_TEST);
+					GLDepthFunc(depthCmp);
+					depthEnabled = TRUE;
+					break;
+
+				default:
+					return NULL;
+				}
+
+				break;
+
+			case DepthBias:
+			case DepthBias2:
+				depthBias = (FLOAT)*(INT*)&value * DEPTH_CORRECTION;
+				break;
+
+			case DepthCompare:
+				switch (value)
+				{
+				case 0:
+					depthCmp = GL_NEVER;
+					break;
+
+				case 1:
+					depthCmp = GL_LESS;
+					break;
+
+				case 2:
+					depthCmp = GL_EQUAL;
+					break;
+
+				case 3:
+					depthCmp = GL_LEQUAL;
+					break;
+
+				case 4:
+					depthCmp = GL_GREATER;
+					break;
+
+				case 5:
+					depthCmp = GL_NOTEQUAL;
+					break;
+
+				case 6:
+					depthCmp = GL_GEQUAL;
+					break;
+
+				case 7:
+					depthCmp = GL_ALWAYS;
+					break;
+
+				default:
+					return NULL;
+				}
+
+				GLDepthFunc(depthCmp);
+				break;
+
+			case EnableDepthWrite:
+			case EnableDepthWrite2:
+				GLDepthMask(value);
+				break;
+
+#pragma endregion
+#pragma region Alpha & Blend
+			case EnableAlphaBlend:
+				switch (value)
+				{
+				case 0:
+				case 1:
+					GLUniform1ui(uniAlphaFuncLoc, 7);
+
+					GLDisable(GL_BLEND);
+					break;
+
+				case 2:
+				case 3:
+					GLUniform1ui(uniAlphaFuncLoc, 4);
+					GLUniform1f(uniAlphaValLoc, 0.0f);
+
+					GLEnable(GL_BLEND);
+					GLBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					break;
+
+				default:
+					break;
+				}
+
+				break;
+
+			case AlphaMode:
+				GLUniform1f(uniAlphaValLoc, value != 0 ? (FLOAT)value / FLOAT_255 : 0.0f);
+				break;
+
+			case AlphaCompare:
+				GLUniform1ui(uniAlphaFuncLoc, alphaCmp);
+				break;
+
+			case BlendMode:
+			case BlendMode2:
+				switch (value)
+				{
+				case 0:
+					blendSrc = GL_SRC_ALPHA;
+					blendDest = GL_ONE_MINUS_SRC_ALPHA;
+					break;
+				case 1:
+					blendSrc = GL_SRC_ALPHA;
+					blendDest = GL_ONE;
+					break;
+				case 2:
+					blendSrc = GL_ZERO;
+					blendDest = GL_ONE_MINUS_SRC_ALPHA;
+					break;
+				case 3:
+					blendSrc = GL_DST_COLOR;
+					blendDest = GL_ZERO;
+					break;
+				default:
+					return NULL;
+				}
+
+				GLBlendFunc(blendSrc, blendDest);
+				break;
+
+			case BlendSourceFactor:
+				switch (value)
+				{
+				case 0:
+					blendSrc = GL_ONE;
+					break;
+				case 1:
+					blendSrc = GL_ZERO;
+					break;
+				case 2:
+					blendSrc = GL_SRC_ALPHA;
+					break;
+				case 3:
+					blendSrc = GL_ONE_MINUS_SRC_ALPHA;
+					break;
+				case 4:
+					blendSrc = GL_DST_ALPHA;
+					break;
+				case 5:
+					blendSrc = GL_ONE_MINUS_DST_ALPHA;
+					break;
+				case 6:
+					blendSrc = GL_SRC_COLOR;
+					break;
+				case 7:
+					blendSrc = GL_DST_COLOR;
+					break;
+				case 8:
+					blendSrc = GL_ONE_MINUS_SRC_COLOR;
+					break;
+				case 9:
+					blendSrc = GL_ONE_MINUS_DST_COLOR;
+					break;
+				default:
+					return NULL;
+				}
+
+				GLBlendFunc(blendSrc, blendDest);
+				break;
+
+			case BlendDestinationFactor:
+				switch (value)
+				{
+				case 0:
+					blendDest = GL_ONE;
+					break;
+				case 1:
+					blendDest = GL_ZERO;
+					break;
+				case 2:
+					blendDest = GL_SRC_ALPHA;
+					break;
+				case 3:
+					blendDest = GL_ONE_MINUS_SRC_ALPHA;
+					break;
+				case 4:
+					blendDest = GL_DST_ALPHA;
+					break;
+				case 5:
+					blendDest = GL_ONE_MINUS_DST_ALPHA;
+					break;
+				case 6:
+					blendDest = GL_SRC_COLOR;
+					break;
+				case 7:
+					blendDest = GL_DST_COLOR;
+					break;
+				case 8:
+					blendDest = GL_ONE_MINUS_SRC_COLOR;
+					break;
+				case 9:
+					blendDest = GL_ONE_MINUS_DST_COLOR;
+					break;
+				default:
+					return NULL;
+				}
+
+				GLBlendFunc(blendSrc, blendDest);
+				break;
+
+#pragma endregion
+#pragma region Fog
+			case EnableFog:
+			case EnableFog2:
+			case FogMode:
+				if (value <= 1)
+					GLUniform1ui(uniFogEnabledLoc, value);
+				else
+					GLUniform1ui(uniFogModeLoc, value);
+				break;
+
+			case FogColor:
+				GLUniform4f(uniFogColorLoc,
+					GLfloat((UINT8)(value >> 16) / FLOAT_255),
+					GLfloat((UINT8)(value >> 8) / FLOAT_255),
+					GLfloat((UINT8)(value) / FLOAT_255),
+					GLfloat((UINT8)(value >> 24) / FLOAT_255));
+
+				break;
+
+			case FogStart:
+				GLUniform1f(uniFogStartLoc, value);
+				break;
+
+			case FogEnd:
+				GLUniform1f(uniFogEndLoc, value);
+				break;
+
+			case FogDensity:
+				GLUniform1f(uniFogDensityLoc, value == 0 || value & 0xFFFFF000 ? *(GLfloat*)&value : (GLfloat)(1.0 / value));
+				break;
+
+#pragma endregion
+#pragma region Functions
+			case Functions:
+				if (value)
+					memcpy(&functions, (DWORD*)value, sizeof(ThrashFunctions));
+				else
+					memset(&functions, NULL, sizeof(ThrashFunctions));
+
+				break;
+
+			case MessageBoxFunction:
+				functions.ErrorMessageBox = (DWORD(__stdcall *)(DWORD, LPCSTR))value;
+				break;
+
+			case EventFuncion:
+				functions.Event = (VOID(__stdcall *)(UINT, PROC))value;
+				break;
+
+			case LockStatusFunction:
+				functions.LockStatus = (VOID(__stdcall *)(BOOL))value;
+				break;
+
+			case MallocFunction:
+				functions.Malloc = (VOID* (__stdcall *)(size_t))value;
+				break;
+
+			case FreeFunction:
+				functions.Free = (VOID(__stdcall *)(VOID*))value;
+				break;
+
+			case StateFunction:
+				functions.State = (DWORD(__stdcall *)(DWORD, DWORD))value;
+				break;
+
+#pragma endregion
+#pragma region Stencil buffer
+			case EnableStencilBuffer:
+				if (value)
+					GLEnable(GL_STENCIL_TEST);
+				else
+					GLDisable(GL_STENCIL_TEST);
+
+				stencilEnabled = value;
+				break;
+
+			case StencilFunc:
+				switch (value)
+				{
+				case 0:
+					GLStencilFunc(GL_NEVER, 2, 0xFF);
+					break;
+
+				case 1:
+					GLStencilFunc(GL_LESS, 2, 0xFF);
+					break;
+
+				case 2:
+					GLStencilFunc(GL_EQUAL, 2, 0xFF);
+					break;
+
+				case 3:
+					GLStencilFunc(GL_LEQUAL, 2, 0xFF);
+					break;
+
+				case 4:
+					GLStencilFunc(GL_GREATER, 2, 0xFF);
+					break;
+
+				case 5:
+					GLStencilFunc(GL_NOTEQUAL, 2, 0xFF);
+					break;
+
+				case 6:
+					GLStencilFunc(GL_GEQUAL, 2, 0xFF);
+					break;
+
+				case 7:
+					GLStencilFunc(GL_ALWAYS, 2, 0xFF);
+					break;
+
+				default: break;
+				}
+
+				break;
+
+			case StencilFail:
+				switch (value)
+				{
+				case 0:
+					stencilFail = GL_KEEP;
+					break;
+
+				case 1:
+					stencilFail = GL_ZERO;
+					break;
+
+				case 2:
+					stencilFail = GL_REPLACE;
+					break;
+
+				case 3:
+					stencilFail = GL_INCR;
+					break;
+
+				case 4:
+					stencilFail = GL_DECR;
+					break;
+
+				case 5:
+					stencilFail = GL_INVERT;
+					break;
+
+				case 6:
+					stencilFail = GL_INCR_WRAP;
+					break;
+
+				case 7:
+					stencilFail = GL_DECR_WRAP;
+					break;
+
+				default: break;
+				}
+
+				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
+				break;
+
+			case StencilDepthFail:
+				switch (value)
+				{
+				case 0:
+					stencilDepthFail = GL_KEEP;
+					break;
+
+				case 1:
+					stencilDepthFail = GL_ZERO;
+					break;
+
+				case 2:
+					stencilDepthFail = GL_REPLACE;
+					break;
+
+				case 3:
+					stencilDepthFail = GL_INCR;
+					break;
+
+				case 4:
+					stencilDepthFail = GL_DECR;
+					break;
+
+				case 5:
+					stencilDepthFail = GL_INVERT;
+					break;
+
+				case 6:
+					stencilDepthFail = GL_INCR_WRAP;
+					break;
+
+				case 7:
+					stencilDepthFail = GL_DECR_WRAP;
+					break;
+
+				default: break;
+				}
+
+				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
+				break;
+
+			case StencilPass:
+				switch (value)
+				{
+				case 0:
+					stencilPass = GL_KEEP;
+					break;
+
+				case 1:
+					stencilPass = GL_ZERO;
+					break;
+
+				case 2:
+					stencilPass = GL_REPLACE;
+					break;
+
+				case 3:
+					stencilPass = GL_INCR;
+					break;
+
+				case 4:
+					stencilPass = GL_DECR;
+					break;
+
+				case 5:
+					stencilPass = GL_INVERT;
+					break;
+
+				case 6:
+					stencilPass = GL_INCR_WRAP;
+					break;
+
+				case 7:
+					stencilPass = GL_DECR_WRAP;
+					break;
+
+				default: break;
+				}
+
+				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
+				break;
+
+#pragma endregion
+#pragma region Others
+			case CullFace:
+				if (value >= 0 && value <= 2)
+					cullFace = value;
+				else
+					return NULL;
+
+				break;
 
 			case ClearColor:
-				Buffer::Draw();
-
-				tempFloat = 1.0 / (*(FLOAT*)&gamma * forced.gamma);
+			{
+				FLOAT tempFloat = 1.0 / (*(FLOAT*)&gamma * forced.gamma);
 				GLClearColor(
 					GLclampf(pow((UINT8)(value >> 16) / FLOAT_255, tempFloat)),
 					GLclampf(pow((UINT8)(value >> 8) / FLOAT_255, tempFloat)),
 					GLclampf(pow((UINT8)(value) / FLOAT_255, tempFloat)),
 					GLclampf(pow((UINT8)(value >> 24) / FLOAT_255, tempFloat)));
+			}
 
-				break;
+			break;
 
-			case EnableDepthBuffer:
-				if (value)
-				{
-					if (value == 1)
-					{
-						Buffer::Draw();
-						GLEnable(GL_DEPTH_TEST);
-					}
-					else return false;
-				}
-				else
-				{
-					Buffer::Draw();
-					GLDisable(GL_DEPTH_TEST);
-				}
-
+			case ClearDepth:
+				GLClearDepth(*(FLOAT*)&value);
 				break;
 
 			case EnableDither:
-				Buffer::Draw();
-
 				if (value)
 					GLEnable(GL_DITHER);
 				else
@@ -66,542 +715,99 @@ namespace State
 			case ShadeModel:
 				switch (value)
 				{
-					case 0:
-						if (shadeModel)
-						{
-							Buffer::Draw();
-							shadeModel = FALSE;
-							GLUniform1ui(uniShadeModelLoc, shadeModel);
-						}
-						break;
+				case 0:
+					GLUniform1ui(uniShadeModelLoc, FALSE);
+					SetSpecular(FALSE);
+					break;
 
-					case 1:
-					case 2:
-						if (!shadeModel)
-						{
-							Buffer::Draw();
-							shadeModel = TRUE;
-							GLUniform1ui(uniShadeModelLoc, shadeModel);
-						}
-						break;
+				case 1:
+					GLUniform1ui(uniShadeModelLoc, TRUE);
+					SetSpecular(FALSE);
+					break;
 
-					case 3:
-						return false;
+				case 2:
+					GLUniform1ui(uniShadeModelLoc, TRUE);
+					SetSpecular(TRUE);
+					break;
 
-					default:
-						break;
+				default:
+					return NULL;
 				}
 
-				break;
-
-			case TextureFilter:
-				textureFilterEnabled = value;
 				break;
 
 			case EnableSmoothPolygon:
-				if (value)
+				switch (value)
 				{
-					if (value == 1)
-					{
-						Buffer::Draw();
-
-						GLEnable(GL_POINT_SMOOTH);
-						GLEnable(GL_LINE_SMOOTH);
-						GLEnable(GL_POLYGON_SMOOTH);
-					}
-					else return false;
-				}
-				else
-				{
-					Buffer::Draw();
-
+				case 0:
 					GLDisable(GL_POINT_SMOOTH);
 					GLDisable(GL_LINE_SMOOTH);
 					GLDisable(GL_POLYGON_SMOOTH);
+					break;
+
+				case 1:
+					GLEnable(GL_POINT_SMOOTH);
+					GLEnable(GL_LINE_SMOOTH);
+					GLEnable(GL_POLYGON_SMOOTH);
+					break;
+
+				default:
+					return NULL;
 				}
 
-				break;
-
-			case EnableAlphaBlend:
-				if (value)
-				{
-					if (value == 2 && !alphaEnabled)
-					{
-						Buffer::Draw();
-
-						GLEnable(GL_BLEND);
-
-						alphaEnabled = TRUE;
-						GLUniform1ui(uniAlphaEnabledLoc, alphaEnabled);
-					}
-					else return false;
-				}
-				else if (alphaEnabled)
-				{
-					Buffer::Draw();
-
-					GLDisable(GL_BLEND);
-
-					alphaEnabled = FALSE;
-					GLUniform1ui(uniAlphaEnabledLoc, alphaEnabled);
-				}
-
-				break;
-
-			case TextureMipMap:
-				textureMipMap = value;
-				break;
-
-			case TextureWrap:
-				if (textureWrap != value)
-				{
-					Buffer::Draw();
-					textureWrap = value;
-				}
-				break;
-
-			case FogDensity:
-				if (fogDensity != value)
-				{
-					Buffer::Draw();
-					fogDensity = value;
-					GLUniform1f(uniFogDensityLoc, value != 0 ? 1.0 / value : 0.0);
-				}
-
-				break;
-
-			case FogColor:
-				if (fogColor != value)
-				{
-					Buffer::Draw();
-
-					fogColor = value;
-					GLUniform4f(uniFogColorLoc,
-						GLfloat((UINT8)(value >> 16) / FLOAT_255),
-						GLfloat((UINT8)(value >> 8) / FLOAT_255),
-						GLfloat((UINT8)(value) / FLOAT_255),
-						GLfloat((UINT8)(value >> 24) / FLOAT_255));
-				}
-
-				break;
-
-			case Functions:
-				if (value)
-				{
-					funcGetHWND = (HWND(__stdcall *)())*((DWORD*)value + 1);
-					funcResolution = (VOID(__stdcall *)(UINT, PROC))*((DWORD*)value + 2);
-					//dword_6000A81C = *(value + 5);
-					funcErrorMessageBox = (DWORD(__stdcall *)(DWORD, LPCSTR))*((DWORD*)value + 6);
-				}
-				else
-				{
-					funcGetHWND = NULL;
-					funcResolution = NULL;
-					//dword_6000A81C = 0;
-					funcErrorMessageBox = NULL;
-				}
-
-				break;
-
-			case EnableFog:
-			case FogMode:
-				if (value <= 1)
-				{
-					if (fogEnabled != value)
-					{
-						Buffer::Draw();
-						fogEnabled = value;
-						if (!fogEnabled)
-							GLUniform1ui(uniFogModeLoc, 0);
-						else
-							GLUniform1ui(uniFogModeLoc, fogMode);
-					}
-				}
-				else if (fogMode != value)
-				{
-					Buffer::Draw();
-					fogMode = value;
-					GLUniform1ui(uniFogModeLoc, fogMode);
-				}
-
-				break;
-
-			case FogStart:
-				if (fogStart != value)
-				{
-					Buffer::Draw();
-					fogStart = value;
-					GLUniform1f(uniFogStartLoc, fogStart);
-				}
-				break;
-
-			case FogEnd:
-				if (fogEnd != value)
-				{
-					Buffer::Draw();
-					fogEnd = value;
-					GLUniform1f(uniFogEndLoc, fogEnd);
-				}
-				break;
-
-			case DepthMode:
-			case DepthMode2:
-				//if (!value)// && depthFunctionBinded != value)
-					//GLDepthFunc(GL_LEQUAL);
 				break;
 
 			case WindowHandle:
 				hWnd = (HWND)value;
 				break;
 
-			case MessageBoxFunction:
-				funcErrorMessageBox = (DWORD(__stdcall *)(DWORD, LPCSTR))value;
-				break;
+			case CurrentWindow:
+				if (!value && !force)
+					return NULL;
 
-			case ThrashApiVersion: // set api version
+			case ThrashApiVersion:
 				API_VERSION = value;
-				//if (value < 104 || (API_VERSION = (int)a2, (signed int)a2 > 107) )
-					//API_VERSION = 107;
 				break;
 
-			case MallocFunction:
-				funcMalloc = (VOID* (__stdcall *)(size_t))value;
-				break;
-
-			case FreeFunction:
-				funcFree = (VOID(__stdcall *)(VOID*))value;
-				break;
-
-			case AlphaMode:
-				if (alphaFunc != value)
-				{
-					Buffer::Draw();
-					alphaFunc = value;
-					GLUniform1f(uniAlphaFuncLoc, value != 0 ? (FLOAT)value / FLOAT_255 : 0.0);
-				}
-
-				break;
-
-			case Unknown_39: // unknown function
-				funcState = (DWORD(__stdcall *)(DWORD, DWORD))value;
-				break;
-
-			case DepthCompare:
-				Buffer::Draw();
-
-				switch (value)
-				{
-					case 0:
-						depthCmp = GL_NEVER;
-						GLDepthFunc(depthCmp);
-						break;
-
-					case 1:
-						depthCmp = GL_LESS;
-						GLDepthFunc(depthCmp);
-						break;
-
-					case 2:
-						depthCmp = GL_EQUAL;
-						GLDepthFunc(depthCmp);
-						break;
-
-					case 3:
-						depthCmp = GL_LEQUAL;
-						GLDepthFunc(depthCmp);
-						break;
-
-					case 4:
-						depthCmp = GL_GREATER;
-						GLDepthFunc(depthCmp);
-						break;
-
-					case 5:
-						depthCmp = GL_NOTEQUAL;
-						GLDepthFunc(depthCmp);
-						break;
-
-					case 6:
-						depthCmp = GL_GEQUAL;
-						GLDepthFunc(depthCmp);
-						break;
-
-					case 7:
-						depthCmp = GL_ALWAYS;
-						GLDepthFunc(depthCmp);
-						break;
-
-					default: break;
-				}
-
-				break;
-
-			case EnableStencilBuffer:
-				Buffer::Draw();
-
-				if (value)
-					GLEnable(GL_STENCIL_TEST);
-				else
-					GLDisable(GL_STENCIL_TEST);
-
-				break;
-
-			case StencilFunc:
-				Buffer::Draw();
-
-				switch (value)
-				{
-					case 0:
-						GLStencilFunc(GL_NEVER, 2, 0xFF);
-						break;
-
-					case 1:
-						GLStencilFunc(GL_LESS, 2, 0xFF);
-						break;
-
-					case 2:
-						GLStencilFunc(GL_EQUAL, 2, 0xFF);
-						break;
-
-					case 3:
-						GLStencilFunc(GL_LEQUAL, 2, 0xFF);
-						break;
-
-					case 4:
-						GLStencilFunc(GL_GREATER, 2, 0xFF);
-						break;
-
-					case 5:
-						GLStencilFunc(GL_NOTEQUAL, 2, 0xFF);
-						break;
-
-					case 6:
-						GLStencilFunc(GL_GEQUAL, 2, 0xFF);
-						break;
-
-					case 7:
-						GLStencilFunc(GL_ALWAYS, 2, 0xFF);
-						break;
-
-					default: break;
-				}
-
-				break;
-
-			case StencilFail:
-				Buffer::Draw();
-
-				switch (value)
-				{
-					case 0:
-						stencilFail = GL_KEEP;
-						break;
-
-					case 1:
-						stencilFail = GL_ZERO;
-						break;
-
-					case 2:
-						stencilFail = GL_REPLACE;
-						break;
-
-					case 3:
-						stencilFail = GL_INCR;
-						break;
-
-					case 4:
-						stencilFail = GL_DECR;
-						break;
-
-					case 5:
-						stencilFail = GL_INVERT;
-						break;
-
-					case 6:
-						stencilFail = GL_INCR_WRAP;
-						break;
-
-					case 7:
-						stencilFail = GL_DECR_WRAP;
-						break;
-
-					default: break;
-				}
-
-				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
-				break;
-
-			case StencilDepthFail:
-				Buffer::Draw();
-
-				switch (value)
-				{
-					case 0:
-						stencilDepthFail = GL_KEEP;
-						break;
-
-					case 1:
-						stencilDepthFail = GL_ZERO;
-						break;
-
-					case 2:
-						stencilDepthFail = GL_REPLACE;
-						break;
-
-					case 3:
-						stencilDepthFail = GL_INCR;
-						break;
-
-					case 4:
-						stencilDepthFail = GL_DECR;
-						break;
-
-					case 5:
-						stencilDepthFail = GL_INVERT;
-						break;
-
-					case 6:
-						stencilDepthFail = GL_INCR_WRAP;
-						break;
-
-					case 7:
-						stencilDepthFail = GL_DECR_WRAP;
-						break;
-
-					default: break;
-				}
-
-				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
-				break;
-
-			case StencilPass:
-				Buffer::Draw();
-
-				switch (value)
-				{
-					case 0:
-						stencilPass = GL_KEEP;
-						break;
-
-					case 1:
-						stencilPass = GL_ZERO;
-						break;
-
-					case 2:
-						stencilPass = GL_REPLACE;
-						break;
-
-					case 3:
-						stencilPass = GL_INCR;
-						break;
-
-					case 4:
-						stencilPass = GL_DECR;
-						break;
-
-					case 5:
-						stencilPass = GL_INVERT;
-						break;
-
-					case 6:
-						stencilPass = GL_INCR_WRAP;
-						break;
-
-					case 7:
-						stencilPass = GL_DECR_WRAP;
-						break;
-
-					default: break;
-				}
-
-				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
-				break;
-
-			case EnableDepthWrite:
-			case EnableDepthWrite2:
-				Buffer::Draw();
-
-				GLDepthMask((GLboolean)value);
-				break;
-
-			case BlendMode: // set blend function
-			case BlendMode2:
-				switch (value)
-				{
-					case 0:
-						Buffer::Draw();
-						GLBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-						break;
-					case 1:
-						Buffer::Draw();
-						GLBlendFunc(GL_SRC_ALPHA, GL_ONE);
-						break;
-					case 2:
-						Buffer::Draw();
-						GLBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
-						break;
-					case 3:
-						Buffer::Draw();
-						GLBlendFunc(GL_DST_COLOR, GL_ZERO);
-						break;
-					default:
-						return false;
-				}
-
+			case BufferMode:
+				bufferMode = value;
 				break;
 
 			case Gamma:
 			case Gamma2:
-				if (gamma != value)
-				{
-					Buffer::Draw();
-					gamma = value;
-					GLUniform1f(uniGammaLoc, *(FLOAT*)&gamma * forced.gamma);
-				}
-				
+				gamma = value;
+				GLUniform1f(uniGammaLoc, *(FLOAT*)&value * forced.gamma);
 				break;
 
-			/*case Hint:
-				if (value)
-				{
-					GLHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-					GLHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-					GLHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-					GLHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-				}
-				else
-				{
-					GLHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-					GLHint(GL_POINT_SMOOTH_HINT, GL_FASTEST);
-					GLHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
-					GLHint(GL_POLYGON_SMOOTH_HINT, GL_FASTEST);
-				}
+				/*case Hint:
+					if (value)
+					{
+						GLHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+						GLHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+						GLHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+						GLHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+					}
+					else
+					{
+						GLHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+						GLHint(GL_POINT_SMOOTH_HINT, GL_FASTEST);
+						GLHint(GL_LINE_SMOOTH_HINT, GL_FASTEST);
+						GLHint(GL_POLYGON_SMOOTH_HINT, GL_FASTEST);
+					}
 
-				break;*/
+					break;*/
+#pragma endregion
 
-			default:
-				break;
+			default: break;
+			}
 		}
 
-		if (value)
-		{
-			DWORD index = GetKeyIndex(key);
-			if (index >= 0)
-				stateValueArray[index] = value;
+		if (stateStorage)
+			*stateStorage = value;
 
-			if (funcState != NULL)
-				funcState(index, value);
-		}
+		if (functions.State)
+			functions.State(index, value);
 
-		return true;
-	}
-
-	DWORD __stdcall Get(ThrashState key)
-	{
-		DWORD index = GetKeyIndex(key);
-		if (index >= 0)
-			return stateValueArray[index];
-
-		return index;
+		return 1;
 	}
 }

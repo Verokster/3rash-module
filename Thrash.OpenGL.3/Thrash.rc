@@ -53,8 +53,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2017,01,16,104
- PRODUCTVERSION 1,1,0
+ FILEVERSION 2017,11,08,10
+ PRODUCTVERSION 3,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -70,10 +70,10 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "OpenGL v3.0 3rash Module (API v107)"
-            VALUE "FileVersion", "2017, 01, 16, 104"
+            VALUE "FileVersion", "2017, 11, 08, 10"
             VALUE "LegalCopyright", "2000 Electronic Arts, 2017 Verok"
             VALUE "OriginalFilename", "opengl3z.dll"
-            VALUE "ProductVersion", "1, 1, 0"
+            VALUE "ProductVersion", "3.0.0"
 			VALUE "ProductName", "OpenGL v3.0 3rash Module"
         END
     END

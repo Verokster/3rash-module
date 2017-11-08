@@ -8,7 +8,7 @@ namespace GammaRamp
 {
 	VOID __fastcall Check()
 	{
-		if (!appWindowed && !(about.flags & About_Windowed))
+		if (!forced.windowed)
 		{
 			HWND dWnd = GetDesktopWindow();
 			HDC dDc = GetDC(dWnd);
@@ -41,8 +41,10 @@ namespace GammaRamp
 		{
 			factor *= forced.gamma;
 
+			DWORD i = 0;
+
 			WORD table[3][256];
-			for (DWORD i = 0; i < 3; ++i)
+			for (i = 0; i < 3; ++i)
 				for (DWORD j = 0; j < 256; ++j)
 				{
 					DWORD c = (DWORD)((FLOAT)gammaArray[i][j] * factor + 0.5);
@@ -53,9 +55,10 @@ namespace GammaRamp
 			OSVERSIONINFO vinfo;
 			vinfo.dwOSVersionInfoSize = sizeof(vinfo);
 			GetVersionEx(&vinfo);
+
 			if (vinfo.dwMajorVersion == 5 && vinfo.dwPlatformId == VER_PLATFORM_WIN32_NT)
 			{
-				for (DWORD i = 0; i < 3; ++i)
+				for (i = 0; i < 3; ++i)
 				{
 					for (DWORD j = 0; j < 128; ++j)
 						if (table[i][j] > ((j + 128) << 8))
@@ -67,7 +70,7 @@ namespace GammaRamp
 			}
 
 			// enforce constantly increasing
-			for (DWORD i = 0; i < 3; ++i)
+			for (i = 0; i < 3; ++i)
 				for (DWORD j = 1; j < 256; ++j)
 					if (table[i][j] < table[i][j-1])
 						table[i][j] = table[i][j-1];

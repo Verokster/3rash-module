@@ -7,55 +7,80 @@ uniform sampler2D tex02;
 uniform sampler2D tex03;
 uniform sampler2D tex04;
 
+uniform bool texEnabled;
 uniform bool alphaEnabled;
-uniform float alphaFunc;
+uniform uint alphaFunc;
+uniform float alphaValue;
 uniform bool shadeModel;
+uniform bool fogEnabled;
 uniform uint fogMode;
 uniform vec4 fogColor;
+uniform bool specularEnabled;
 uniform float gamma;
 
-in vec4 fColorSmooth;
-flat in vec4 fColorFlat;
+in vec4 fDiffuseSmooth;
+flat in vec4 fDiffuseFlat;
+in vec4 fSpecularSmooth;
+flat in vec4 fSpecularFlat;
 in vec2 fTexCoord;
-flat in uint fTexUnit;
 in float fogFactor;
 out vec4 fragColor;
 
 void main(void)
 {
-	fragColor = shadeModel ? fColorSmooth : fColorFlat;
+	fragColor = shadeModel ? fDiffuseSmooth : fDiffuseFlat;
+	if (specularEnabled)
+		fragColor += shadeModel ? fSpecularSmooth : fSpecularFlat.bgr;
 
-	switch (fTexUnit)
+	if (texEnabled)
+		fragColor *=  texture(tex01, fTexCoord);
+
+	switch (alphaFunc)
 	{
-		case 1u:
-			fragColor = fragColor * texture(tex01, fTexCoord);
+		case 0: // GL_NEVER:
+			discard;
 			break;
-		case 2u:
-			fragColor = fragColor * texture(tex02, fTexCoord);
+		case 1: // GL_LESS:
+			if (fragColor.a >= alphaValue)
+				discard;
 			break;
-		case 3u:
-			fragColor = fragColor * texture(tex03, fTexCoord);
+		case 2: // GL_EQUAL:
+			if (fragColor.a != alphaValue)
+				discard;
 			break;
-		case 4u:
-			fragColor = fragColor * texture(tex04, fTexCoord);
+		case 3: // GL_LEQUAL:
+			if (fragColor.a > alphaValue)
+				discard;
 			break;
-		default:
+		case 4: // GL_GREATER:
+			if (fragColor.a <= alphaValue)
+				discard;
+			break;
+		case 5: // GL_NOTEQUAL:
+			if (fragColor.a == alphaValue)
+				discard;
+			break;
+		case 6: // GL_GEQUAL:
+			if (fragColor.a < alphaValue)
+				discard;
+			break;
+		default: // GL_ALWAYS:
 			break;
 	}
 
-	if (alphaEnabled && fragColor.a < alphaFunc)
-		discard;
-
-	switch (fogMode)
+	if (fogEnabled)
 	{
-		case 2u:
-		case 4u:
-		case 8u:
-			fragColor = vec4(mix(fragColor.xyz, fogColor.rgb, fogFactor), fragColor.a);
-			break;
+		switch (fogMode)
+		{
+			case 2u:
+			case 4u:
+			case 8u:
+				fragColor = vec4(mix(fragColor.xyz, fogColor.rgb, fogFactor), fragColor.a);
+				break;
 
-		default:
-			break;
+			default:
+				break;
+		}
 	}
 
 	fragColor.rgb = pow(fragColor.rgb, vec3(1.0 / gamma));

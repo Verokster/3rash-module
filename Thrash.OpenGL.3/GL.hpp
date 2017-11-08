@@ -1,11 +1,82 @@
-#ifndef _GL_HPP_
-#define _GL_HPP_
+#pragma once
 
 #include <windows.h>
-#include <glm/mat4x4.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <GL/glew.h>
-#include <GL/wglew.h>
+//#include <GL/glew.h>
+//#include <GL/wglew.h>
+#include <GL\gl.h>
+
+#if !defined(_PTRDIFF_T_DEFINED) && !defined(_PTRDIFF_T_) && !defined(__MINGW64__)
+#  ifdef _WIN64
+typedef __int64 ptrdiff_t;
+#  else
+typedef _W64 int ptrdiff_t;
+#  endif
+#  define _PTRDIFF_T_DEFINED
+#  define _PTRDIFF_T_
+#endif
+
+typedef ptrdiff_t GLintptr;
+typedef ptrdiff_t GLsizeiptr;
+typedef char GLchar;
+
+typedef BOOL(WINAPI * PFNWGLCHOOSEPIXELFORMATARBPROC) (HDC hdc, const int* piAttribIList, const FLOAT *pfAttribFList, UINT nMaxFormats, int *piFormats, UINT *nNumFormats);
+
+#define WGL_DRAW_TO_WINDOW_ARB 0x2001
+#define WGL_SUPPORT_OPENGL_ARB 0x2010
+#define WGL_DOUBLE_BUFFER_ARB 0x2011
+#define WGL_PIXEL_TYPE_ARB 0x2013
+#define WGL_TYPE_RGBA_ARB 0x202B
+#define WGL_COLOR_BITS_ARB 0x2014
+#define WGL_DEPTH_BITS_ARB 0x2022
+#define WGL_ACCELERATION_ARB 0x2003
+#define WGL_FULL_ACCELERATION_ARB 0x2027
+
+#define WGL_CONTEXT_MAJOR_VERSION_ARB 0x2091
+#define WGL_CONTEXT_MINOR_VERSION_ARB 0x2092
+#define WGL_CONTEXT_FLAGS_ARB 0x2094
+#define WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB 0x0002
+#define WGL_CONTEXT_PROFILE_MASK_ARB 0x9126
+#define WGL_CONTEXT_CORE_PROFILE_BIT_ARB 0x00000001
+
+#define GL_FRAGMENT_SHADER 0x8B30
+#define GL_VERTEX_SHADER 0x8B31
+#define GL_COMPILE_STATUS 0x8B81
+#define GL_INFO_LOG_LENGTH 0x8B84
+#define GL_INVALID_FRAMEBUFFER_OPERATION 0x0506
+
+#define GL_TEXTURE0 0x84C0
+#define GL_TEXTURE1 0x84C1
+#define GL_TEXTURE2 0x84C2
+#define GL_TEXTURE3 0x84C3
+#define GL_TEXTURE4 0x84C4
+#define GL_TEXTURE5 0x84C5
+#define GL_TEXTURE6 0x84C6
+#define GL_TEXTURE7 0x84C7
+
+#define GL_BGR GL_BGR_EXT
+#define GL_BGRA GL_BGRA_EXT
+#define GL_RGB565 0x8D62
+#define GL_UNSIGNED_SHORT_5_6_5 0x8363
+#define GL_UNSIGNED_SHORT_1_5_5_5_REV 0x8366
+#define GL_UNSIGNED_SHORT_4_4_4_4_REV 0x8365
+#define GL_UNSIGNED_BYTE_4_4_MESA (GL_UNSIGNED_BYTE<<1)
+
+#define GL_CLAMP_TO_EDGE 0x812F
+#define GL_MIRRORED_REPEAT 0x8370
+
+#define GL_TEXTURE_LOD_BIAS 0x8501
+
+#define GL_TEXTURE_BASE_LEVEL 0x813C
+#define GL_TEXTURE_MAX_LEVEL 0x813D
+
+#define GL_ARRAY_BUFFER 0x8892
+#define GL_ELEMENT_ARRAY_BUFFER 0x8893
+#define GL_STREAM_DRAW 0x88E0
+
+#define GL_INCR_WRAP 0x8507
+#define GL_DECR_WRAP 0x8508
+
+#define GL_MULTISAMPLE 0x809D
 
 typedef PROC(__stdcall *WGLGETPROCADDRESS)(LPCSTR name);
 typedef BOOL(__stdcall *WGLMAKECURRENT)(HDC devContext, HGLRC glContext);
@@ -13,14 +84,17 @@ typedef HGLRC(__stdcall *WGLCREATECONTEXT)(HDC devContext);
 typedef BOOL(__stdcall *WGLDELETECONTEXT)(HGLRC glContext);
 typedef BOOL(__stdcall *WGLSWAPBUFFERS)(HDC devContext);
 typedef HGLRC(__stdcall *WGLCREATECONTEXTATTRIBSARB)(HDC hDC, HGLRC hshareContext, const DWORD *attribList);
-typedef BOOL (__stdcall *WGLSWAPINTERVALEXT)(DWORD);
+typedef BOOL(__stdcall *WGLSWAPINTERVALEXT)(DWORD);
 
+typedef void(__stdcall *GLFLUSH)();
+typedef void(__stdcall *GLFINISH)();
 typedef void(__stdcall *GLSCISSOR)(GLint x, GLint y, GLsizei width, GLsizei height);
 typedef void(__stdcall *GLVIEWPORT)(GLint x, GLint y, GLsizei width, GLsizei height);
 typedef void(__stdcall *GLHINT)(GLenum target, GLenum mode);
 typedef void(__stdcall *GLCLEARDEPTH)(GLclampd depth);
 typedef void(__stdcall *GLDEPTHRANGE)(GLclampd, GLclampd);
 typedef void(__stdcall *GLCLEAR)(GLbitfield mask);
+typedef void(__stdcall *GLREADBUFFER)(GLenum mode);
 typedef void(__stdcall *GLDRAWBUFFER)(GLenum mode);
 typedef void(__stdcall *GLREADPIXELS)(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels);
 typedef void(__stdcall *GLENABLE)(GLenum cap);
@@ -29,7 +103,6 @@ typedef void(__stdcall *GLBINDTEXTURE)(GLenum target, GLuint texture);
 typedef void(__stdcall *GLDELETETEXTURES)(GLsizei n, const GLuint *textures);
 typedef void(__stdcall *GLCLEARCOLOR)(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
 typedef void(__stdcall *GLDEPTHFUNC)(GLenum func);
-typedef void(__stdcall *GLALPHAFUNC)(GLenum func, GLclampf ref);
 typedef void(__stdcall *GLBLENDFUNC)(GLenum sfactor, GLenum dfactor);
 typedef void(__stdcall *GLTEXPARAMETERI)(GLenum, GLenum, GLint);
 typedef void(__stdcall *GLTEXIMAGE2D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
@@ -88,15 +161,18 @@ extern WGLMAKECURRENT WGLMakeCurrent;
 extern WGLCREATECONTEXT WGLCreateContext;
 extern WGLDELETECONTEXT WGLDeleteContext;
 extern WGLSWAPBUFFERS WGLSwapBuffers;
-extern WGLCREATECONTEXTATTRIBSARB WGLCreateContextAttribsARB;
-extern WGLSWAPINTERVALEXT WGLSwapIntervalEXT;
+extern WGLCREATECONTEXTATTRIBSARB WGLCreateContextAttribs;
+extern WGLSWAPINTERVALEXT WGLSwapInterval;
 
+extern GLFLUSH GLFlush;
+extern GLFINISH GLFinish;
 extern GLSCISSOR GLScissor;
 extern GLVIEWPORT GLViewport;
 extern GLHINT GLHint;
 extern GLCLEARDEPTH GLClearDepth;
 extern GLDEPTHRANGE GLDepthRange;
 extern GLCLEAR GLClear;
+extern GLREADBUFFER GLReadBuffer;
 extern GLDRAWBUFFER GLDrawBuffer;
 extern GLREADPIXELS GLReadPixels;
 extern GLENABLE GLEnable;
@@ -105,7 +181,6 @@ extern GLBINDTEXTURE GLBindTexture;
 extern GLDELETETEXTURES GLDeleteTextures;
 extern GLCLEARCOLOR GLClearColor;
 extern GLDEPTHFUNC GLDepthFunc;
-extern GLALPHAFUNC GLAlphaFunc;
 extern GLBLENDFUNC GLBlendFunc;
 extern GLTEXPARAMETERI GLTexParameteri;
 extern GLTEXIMAGE2D GLTexImage2D;
@@ -164,6 +239,4 @@ VOID __fastcall CreateContextAttribs(HDC* devContext, HGLRC* glContext);
 
 #ifdef _DEBUG
 VOID __fastcall CheckError(CHAR* file, CHAR* function, DWORD line);
-#endif
-
 #endif

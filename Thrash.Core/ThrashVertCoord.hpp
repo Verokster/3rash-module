@@ -1,5 +1,4 @@
-#ifndef _THRASH_TYPE_VERTEX_COORDINATES_HPP_
-#define _THRASH_TYPE_VERTEX_COORDINATES_HPP_
+#pragma once
 
 struct ThrashVertCoord {
 	FLOAT x;
@@ -7,5 +6,3 @@ struct ThrashVertCoord {
 	FLOAT z;
 	FLOAT rhw;
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef _THRASH_TYPE_RESOLUTION_HPP_
-#define _THRASH_TYPE_RESOLUTION_HPP_
+#pragma once
 
 struct ThrashResolution
 {
@@ -14,5 +13,3 @@ struct ThrashResolution
 	DWORD r8;
 	DWORD r9;
 };
-
-#endif

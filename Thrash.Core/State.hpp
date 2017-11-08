@@ -1,13 +1,15 @@
-#ifndef _THRASH_STATE_HPP_
-#define _THRASH_STATE_HPP_
-
-#include "stdafx.h"
+#pragma once
 
 namespace State
 {
-	DWORD __fastcall GetKeyIndex(DWORD key);
-	DWORD __stdcall Get(ThrashState type);
-	BOOL __stdcall Set(ThrashState type, DWORD value);
-}
+	INT __fastcall GetKeyIndex(DWORD key);
 
-#endif
+	DWORD __fastcall Get(ThrashState key);
+	DWORD __fastcall Get(ThrashState key, DWORD tmu);
+
+	DWORD __fastcall Set(ThrashState key, DWORD value);
+	DWORD __fastcall Set(ThrashState key, DWORD tmu, DWORD value);
+
+	DWORD THRASHAPI Get(DWORD key);
+	DWORD THRASHAPI Set(DWORD key, DWORD value);
+}

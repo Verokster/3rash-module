@@ -1,12 +1,16 @@
-#ifndef _THRASH_TYPE_VERTEX_HPP_
-#define _THRASH_TYPE_VERTEX_HPP_
+#pragma once
 
-struct ThrashVertex
+struct ThrashVertex {};
+
+struct ThrashVertexV1 : ThrashVertex
 {
 	ThrashVertCoord vertCoord;
 	ThrashColor diffuseColor;
 	ThrashColor specularColor;
-	ThrashTexCoord texCoord;
+	ThrashTexCoord texCoord0;
 };
 
-#endif
+struct ThrashVertexV2 : ThrashVertexV1
+{
+	ThrashTexCoord texCoord1;
+};

@@ -10,136 +10,138 @@ CHAR* envPrefix = "OGL";
 ThrashForced forced;
 ThrashViewport viewport;
 
-ThrashTexColorFormats textureFormats = { 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, -1 };
-ThrashTexColorIndexFormats textureIndexFormats = { 0, 0, 0, 1, 1, -1, 0 };
-
 DWORD appWindowed = FALSE;
 DWORD displayIndex = 0;
 ThrashResolution resolutionsList[100];
-DWORD resolutionsListCount = ARRAYSIZE(resolutionsList);
+DWORD resolutionsListCount = sizeof(resolutionsList) / sizeof(ThrashResolution);
 
-BOOL texturesEnabled = FALSE;
-DWORD textureMipMap = 0;
-BOOL textureFilterEnabled = FALSE;
-DWORD textureWrap = 1;
-DWORD stencilFail = GL_KEEP;
-DWORD stencilDepthFail = GL_KEEP;
-DWORD stencilPass = GL_KEEP;
+BOOL extendedVertex;
+BOOL specularEnabled;
+
+BOOL texturesEnabled;
+DWORD textureMipMap;
+BOOL textureFilterEnabled;
+DWORD textureClampS;
+DWORD textureClampT;
+FLOAT textureLodBias;
+
 DWORD depthCmp = GL_LEQUAL;
-
-DWORD cullFaceMode;
+DWORD alphaCmp = GL_GEQUAL;
+FLOAT alphaVal;
 
 BOOL fogEnabled = FALSE;
-DWORD fogMode = GL_LINEAR;
-DWORD fogColor = 0xFFFFFFFF;
+
+BOOL stencilEnabled;
+BOOL depthEnabled;
+
+DWORD stencilFail;
+DWORD stencilDepthFail;
+DWORD stencilPass;
 
 BOOL isInit = FALSE;
 BOOL isWindowLocked = FALSE;
 
 HGLRC hGlRc;
 
-ThrashTexture* lastTexture;
-ThrashTexture* bindedTexture;
+BOOL colorMask;
+
+DWORD blendSrc;
+DWORD blendDest;
+
+DWORD bufferMode;
+
+BOOL isCliped;
+
+BOOL vmChanged;
+DWORD vmResolutionIndex;
+DWORD vmMaxPanding;
+BOOL vmIsDepthBuffer16;
 
 namespace Main
 {
 	DWORD __fastcall Round(FLOAT number)
 	{
 		FLOAT floorVal = floor(number);
-		return floorVal + 0.5 > number ? floorVal : ceil(number);
+		return floorVal + 0.5f > number ? floorVal : ceil(number);
 	}
 
 	VOID __inline LoadForced()
 	{
+		forced.windowed = GetEnvironmentValue(0, envPrefix, "WINDOWED");
 		forced.resolution = GetEnvironmentValue(0, envPrefix, "RESOLUTION");
+		forced.colorDepth = GetEnvironmentValue(32, envPrefix, "COLORDEPTH");
+		if (forced.colorDepth != 16 && forced.colorDepth != 24 && forced.colorDepth != 32)
+			forced.colorDepth = 32;
+		forced.zdepth = GetEnvironmentValue(0, envPrefix, "ZDEPTH");
 		forced.refreshRate = GetEnvironmentValue(0, envPrefix, "REFRESH");
-		forced.exclusiveMode = GetEnvironmentValue(1, envPrefix, "EXCLUSIVE");
-		forced.vSync = GetEnvironmentValue(1, envPrefix, "VSYNC");
+		forced.exclusiveMode = GetEnvironmentValue(0, envPrefix, "EXCLUSIVE");
+		forced.vSync = GetEnvironmentValue(0, envPrefix, "VSYNC");
 		forced.aspect = GetEnvironmentValue(0, envPrefix, "ASPECT");
-		
-		DWORD gammaVal = GetEnvironmentValue(5, envPrefix, "GAMMA");
-		switch (gammaVal)
-		{
-			case 0:
-				forced.gamma = 0.5;
-				break;
-			case 1:
-				forced.gamma = 0.6;
-				break;
-			case 2:
-				forced.gamma = 0.7;
-				break;
-			case 3:
-				forced.gamma = 0.8;
-				break;
-			case 4:
-				forced.gamma = 0.9;
-				break;
-			case 6:
-				forced.gamma = 1.1;
-				break;
-			case 7:
-				forced.gamma = 1.2;
-				break;
-			case 8:
-				forced.gamma = 1.3;
-				break;
-			case 9:
-				forced.gamma = 1.4;
-				break;
-			case 10:
-				forced.gamma = 1.5;
-				break;
-			default:
-				forced.gamma = 1.0;
-				break;
-		}
+		forced.filtering = GetEnvironmentValue(0, envPrefix, "TEXFILTER");
+		forced.add640x480x16 = GetEnvironmentValue(1, envPrefix, "ADD640X480X16");
+		forced.movies16Bit = GetEnvironmentValue(0, envPrefix, "MOVIES16BIT");
+		forced.gamma = GetEnvironmentValue(5, envPrefix, "GAMMA") * 0.1f + 0.5f;
+
+		if (forced.gamma < 0.5f || forced.gamma > 1.5f)
+			forced.gamma = 1.0f;
 	}
-	
-	ThrashAbout* __stdcall About()
+
+	LPTHRASHABOUT THRASHAPI About()
 	{
-		if (!about.signature)
+		if (!about.size)
 		{
-			about.signature = 0x4F50454E;
+			//strcpy(about.signature, "OGL1"); strcpy(about.driverName, "OpenGL 1.4");
+			strcpy(about.signature, "D3D7");  strcpy(about.driverName, "DX7 3rash");
+
+			strcpy(about.deviceName, "D3D Device");
+
 			about.size = sizeof(ThrashAbout);
 			about.version = API_VERSION;
 			about.flags = About_TextureSquare | About_TextureWidthPowerOf2 | About_TextureHeighPpowerOf2;
-			about.textureWidthMin = 1;
+			about.textureWidthMin = 2;
 			about.textureWidthMax = 256;
 			about.textureWidthMultiple = 8;
-			about.textureHeightMin = 1;
+			about.textureHeightMin = 2;
 			about.textureHeightMax = 256;
 			about.textureHeightMultiple = 8;
 			about.clipAlign = 1;
 
-			about.texFormatsCount = 9;
+			about.texFormatsCount = 10;
 			about.texFormats = &textureFormats;
 
-			about.texIndexFormatsCount = 4;
+			about.texIndexFormatsCount = 5;
 			about.texIndexFormats = &textureIndexFormats;
 
 			about.resolutionsCount = resolutionsListCount;
 			about.resolutionsList = resolutionsList;
 
-			strcpy(about.driverName, "OpenGL 1.4");
-			about.subType = 0;
-			about.textureRamSize = 0x1000000;
+			about.subType = DeviceVoodoo3;
+			about.textureRamSize = 0x4000000; // 64 Mb
+			about.textureRamType = 3;
+			about.numStages = 4;
 			about.author = AUTHOR;
+			about.dxVeriosn = 7;
 
 			LoadEnvironmentValues(&about, envPrefix);
 		}
 		return &about;
 	}
 
-	BOOL __stdcall Clip(RECT rect)
+	BOOL THRASHAPI Clip(RECT rect)
 	{
-		if (viewport.width != (*selectedResolution).width)
+		if (!isCliped)
+		{
+			GLEnable(GL_SCISSOR_TEST);
+			isCliped = TRUE;
+		}
+
+		if (viewport.width != selectedResolution->width)
 		{
 			rect.left = viewport.rectangle.x + Round((FLOAT)rect.left * viewport.clipFactor.x);
 			rect.right = viewport.rectangle.x + Round((FLOAT)rect.right * viewport.clipFactor.x);
 		}
 
-		if (viewport.height != (*selectedResolution).height)
+		if (viewport.height != selectedResolution->height)
 		{
 			rect.top = viewport.rectangle.y + Round((FLOAT)rect.top * viewport.clipFactor.y);
 			rect.bottom = viewport.rectangle.y + Round((FLOAT)rect.bottom * viewport.clipFactor.y);
@@ -150,21 +152,21 @@ namespace Main
 		return TRUE;
 	}
 
-	VOID __stdcall Idle() {}
-	
-	BOOL __stdcall Init()
+	VOID THRASHAPI Idle() {}
+
+	BOOL THRASHAPI Init()
 	{
 		if (!isInit)
 		{
 			isInit = TRUE;
 
+			LoadForced();
+
 			if (GetWindowLong(hWnd, GWL_STYLE) & WS_BORDER)
-				appWindowed = TRUE;
+				forced.windowed = appWindowed = TRUE;
 
-			HMODULE hModule;
-
-			char* library = getenv("THRASH_OGL_DRIVER");
-			if (library)
+			CHAR library[256];
+			if (GetEnvironmentVariable("THRASH_OGL_DRIVER", library, sizeof(library)))
 				hModule = LoadLibrary(library);
 			else
 			{
@@ -186,33 +188,33 @@ namespace Main
 
 			Resolution::LoadList();
 
-			if (funcResolution != NULL)
+			if (functions.Event != NULL)
 			{
-				funcResolution(MSG_CHANGE_RESOLUTION, (PROC)Resolution::Change);
-				funcResolution(MSG_RESET_RESOLUTION, (PROC)Resolution::Restore);
+				functions.Event(MSG_CHANGE_RESOLUTION, (PROC)Resolution::Change);
+				functions.Event(MSG_RESET_RESOLUTION, (PROC)Resolution::Restore);
 			}
 
-			LoadForced();
 			GammaRamp::Check();
 		}
 
 		return TRUE;
 	}
 
-	DWORD __stdcall Is()
+	DWORD THRASHAPI Is()
 	{
-		return hModule != NULL ? 80 : 0;
+		return hModule != NULL ? 85 : 0;
 	}
 
-	VOID __stdcall PageFlip()
+	VOID THRASHAPI PageFlip()
 	{
 		WGLSwapBuffers(hDc);
 	}
 
-	BOOL __stdcall Restore()
+	BOOL THRASHAPI Restore()
 	{
+		Window::Release();
 		Context::Release();
-		
+
 		if (hModule)
 		{
 			FreeLibrary(hModule);
@@ -222,26 +224,24 @@ namespace Main
 			WGLDeleteContext = NULL;
 			hModule = NULL;
 		}
-		
+
 		DWORD processId = GetWindowThreadProcessId(hWnd, NULL);
-		if (funcResolution != NULL && GetCurrentThreadId() != processId)
+		if (functions.Event != NULL && functions.GetHWND != NULL && GetCurrentThreadId() != processId)
 		{
 			hWnd = NULL;
-			hWnd = funcGetHWND();
+			hWnd = functions.GetHWND();
 			hRestoreHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
 			SetForegroundWindow(hWnd);
 			PostMessage(hWnd, MSG_RESET_RESOLUTION, NULL, NULL);
 			WaitForSingleObject(hRestoreHandle, 10000);
 		}
 		else
-		{
 			Resolution::Restore(NULL, hWnd, MSG_RESET_RESOLUTION, NULL, NULL, NULL);
-		}
 
 		return TRUE;
 	}
 
-	BOOL __stdcall SelectDisplay(DWORD index)
+	BOOL THRASHAPI SelectDisplay(DWORD index)
 	{
 		if (displayIndex != index)
 		{
@@ -252,23 +252,38 @@ namespace Main
 		return TRUE;
 	}
 
-	BOOL __stdcall SetVideoMode(DWORD resolutionIndex, DWORD maxPanding, BOOL isDepthBuffer16)
+	BOOL THRASHAPI SetVideoMode(DWORD resolutionIndex, DWORD maxPanding, BOOL isDepthBuffer16)
 	{
-		DWORD processId = GetWindowThreadProcessId(hWnd, NULL);
-		if (funcResolution != NULL && GetCurrentThreadId() != processId)
+		if (vmChanged && resolutionIndex == vmResolutionIndex && maxPanding == vmMaxPanding && isDepthBuffer16 == vmIsDepthBuffer16)
+			return TRUE;
+
+		vmChanged = TRUE;
+		vmResolutionIndex = resolutionIndex;
+		vmMaxPanding = maxPanding;
+		vmIsDepthBuffer16 = isDepthBuffer16;
+
+		Window::Release();
+		if (!forced.windowed)
+			Context::Release();
+
+		if (functions.GetHWND)
 		{
-			hWnd = funcGetHWND();
-			hChangeHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
-			SetForegroundWindow(hWnd);
-			PostMessage(hWnd, MSG_CHANGE_RESOLUTION, resolutionIndex, maxPanding);
-			WaitForSingleObject(hChangeHandle, 10000);
+			hWnd = functions.GetHWND();
+			DWORD processId = GetWindowThreadProcessId(hWnd, NULL);
+			if (functions.Event && GetCurrentThreadId() != processId)
+			{
+				hChangeHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
+				SetForegroundWindow(hWnd);
+				PostMessage(hWnd, MSG_CHANGE_RESOLUTION, resolutionIndex, maxPanding);
+				WaitForSingleObject(hChangeHandle, 10000);
+			}
+			else
+				Resolution::Change(NULL, hWnd, MSG_CHANGE_RESOLUTION, resolutionIndex, maxPanding, NULL);
 		}
 		else
 			Resolution::Change(NULL, hWnd, MSG_CHANGE_RESOLUTION, resolutionIndex, maxPanding, NULL);
 
-		hDc = GetDC(hWnd);
-		if (hGlRc == NULL)
-			Context::Create(isDepthBuffer16);
+		Context::Create(isDepthBuffer16);
 
 		Window::Window(2);
 
@@ -277,68 +292,67 @@ namespace Main
 		GLHint(GL_POINT_SMOOTH_HINT, GL_DONT_CARE);
 		GLHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
 		GLHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
-		
+
 		GLViewport(viewport.rectangle.x, viewport.rectangle.y, viewport.rectangle.width, viewport.rectangle.height);
 
 		GLMatrixMode(GL_PROJECTION);
 		GLLoadIdentity();
-		GLOrtho(0.0, (double)(*selectedResolution).width, (double)(*selectedResolution).height, 0.0, 0.0, 1.0);
+		GLOrtho(0.0, (double)selectedResolution->width, (double)selectedResolution->height, 0.0, 0.0, 1.0);
 		GLMatrixMode(GL_MODELVIEW);
 		GLLoadIdentity();
 		GLScalef(1.0, 1.0, -1.0);
-		GLClearDepth(1.0);
-		GLDepthRange(0, 1.0);
+		GLDepthRange(0.0, 1.0);
 
-		GLEnable(GL_SCISSOR_TEST);
+		isCliped = FALSE;
+		GLEnable(GL_COLOR_SUM); // For specular
 
 		Window::Window(1);
-		Window::Unlock(Window::Lock());
+		//Window::Unlock(Window::Lock());
 		Window::Window(0);
 
-		State::Set(Hint, GetEnvironmentValue(0, envPrefix, "HINT"));
-		State::Set(CullFace, GetEnvironmentValue(1, envPrefix, "CULL"));
-		State::Set(TextureFilter, GetEnvironmentValue(1, envPrefix, "FILTER"));
-		State::Set(ShadeModel, GetEnvironmentValue(1, envPrefix, "SHADE"));
-		State::Set(EnableAlphaBlend, GetEnvironmentValue(2, envPrefix, "TRANSPARENCY"));
-		State::Set(AlphaMode, GetEnvironmentValue(16, envPrefix, "ALPHATEST"));
-		State::Set(TextureMipMap, GetEnvironmentValue(1, envPrefix, "MIPMAP"));
-		State::Set(ClearColor, GetEnvironmentValue(0, envPrefix, "BACKGROUNDCOLOUR"));
-		State::Set(ChromaColor, GetEnvironmentValue(0, envPrefix, "CHROMACOLOUR"));
-		State::Set(EnableDither, GetEnvironmentValue(1, envPrefix, "DITHER"));
-		State::Set(EnableFog, 0);
-		State::Set(FogMode, GetEnvironmentValue(0, envPrefix, "FOGMODE"));
-		State::Set(FogDensity, GetEnvironmentValue(0, envPrefix, "FOGDENSITY"));
-		State::Set(FogStart, GetEnvironmentValue(0, envPrefix, "STATE_FOGZNEAR"));
-		State::Set(FogEnd, GetEnvironmentValue(0x3F800000, envPrefix, "FOGZFAR"));
-		State::Set(FogColor, GetEnvironmentValue(0xFFFFFFFF, envPrefix, "FOGCOLOUR"));
-		State::Set(BlendMode, GetEnvironmentValue(0, envPrefix, "ALPHA"));
-		State::Set(TextureWrap, GetEnvironmentValue(0, envPrefix, "TEXTURECLAMP"));
-		State::Set(Gamma, 0x3F800000);
-		State::Set(DepthMode, GetEnvironmentValue(0, envPrefix, "DEPTHBIAS"));
-		State::Set(LodBias, 0);
-		State::Set(MaxPending, GetEnvironmentValue(maxPanding - 2 < 0 ? 0 : maxPanding - 2, envPrefix, "MAXPENDING")); // TODO
-		State::Set(TexturesCombine, 0);
-		State::Set(VertexLayout, 0);
-		State::Set(Unknown_65577, 2);
-		State::Set(BackBufferType, GetEnvironmentValue(1, envPrefix, "BACKBUFFERTYPE"));
-		State::Set(FlatFans, GetEnvironmentValue(1, envPrefix, "FLATFANS"));
-		State::Set(LineWidth, GetEnvironmentValue(1, envPrefix, "LINEWIDTH"));
-		State::Set(EnableStencilBuffer, GetEnvironmentValue(0, envPrefix, "STENCILBUFFER"));
-		State::Set(DisplayMode, GetEnvironmentValue(resolutionIndex, envPrefix, "DISPLAYMODE"));
-		State::Set(LineDouble, GetEnvironmentValue(0, envPrefix, "LINEDOUBLE"));
-		State::Set(BufferMode, 0);
-		State::Set(ClearDepth, 0x3F800000);
-		State::Set(FlipRate, GetEnvironmentValue(1, envPrefix, "FLIPRATE"));
-		State::Set(ShamelessPlug, GetEnvironmentValue(0, envPrefix, "SHAMELESSPLUG"));
-		State::Set(EnableDepthBuffer, GetEnvironmentValue(0, envPrefix, "DEPTHBUFFER"));
-		State::Set(DepthCompare, GetEnvironmentValue(3, envPrefix, "DEPTHCMP"));
+		State::Set(State::Hint, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "HINT"));
+		State::Set(State::CullFace, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "CULL"));
+		State::Set(State::TextureFilter, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "FILTERING"));
+		State::Set(State::ShadeModel, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "SHADE"));
+		State::Set(State::EnableAlphaBlend, 0xFFFF0000, GetEnvironmentValue(2, envPrefix, "TRANSPARENCY"));
+		State::Set(State::AlphaMode, 0xFFFF0000, GetEnvironmentValue(16, envPrefix, "ALPHATEST"));
+		State::Set(State::TextureMipMap, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "MIPMAP"));
+		State::Set(State::ClearColor, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "BACKGROUNDCOLOUR"));
+		State::Set(State::ChromaColor, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "CHROMACOLOUR"));
+		State::Set(State::EnableDither, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "DITHER"));
+		State::Set(State::EnableFog, 0xFFFF0000, FALSE);
+		State::Set(State::FogMode, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "FOGMODE"));
+		State::Set(State::FogDensity, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "FOGDENSITY"));
+		State::Set(State::FogStart, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "STATE_FOGZNEAR"));
+		State::Set(State::FogEnd, 0xFFFF0000, GetEnvironmentValue(0x3F800000, envPrefix, "FOGZFAR"));
+		State::Set(State::FogColor, 0xFFFF0000, GetEnvironmentValue(0xFFFFFFFF, envPrefix, "FOGCOLOUR"));
+		State::Set(State::BlendMode, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "ALPHA"));
+		State::Set(State::TextureClamp, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "TEXTURECLAMP"));
+		State::Set(State::Gamma, 0xFFFF0000, 0x3F800000);
+		State::Set(State::DepthBias, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "DEPTHBIAS"));
+		State::Set(State::TextureLodBias, 0xFFFF0000, 0);
+		State::Set(State::MaxPending, 0xFFFF0000, GetEnvironmentValue(maxPanding - 2 < 0 ? 0 : maxPanding - 2, envPrefix, "MAXPENDING")); // TODO
+		State::Set(State::VertexLayout, 0xFFFF0000, 0);
+		State::Set(State::TexturesCombine, 0xFFFF0000, 0);
+		State::Set(State::TexturesCombine, 0xFFFF0001, 2);
+		State::Set(State::BackBufferType, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "BACKBUFFERTYPE"));
+		State::Set(State::FlatFans, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "FLATFANS"));
+		State::Set(State::LineWidth, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "LINEWIDTH"));
+		State::Set(State::EnableStencilBuffer, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "STENCILBUFFER"));
+		State::Set(State::DisplayMode, 0xFFFF0000, GetEnvironmentValue(resolutionIndex, envPrefix, "DISPLAYMODE"));
+		State::Set(State::LineDouble, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "LINEDOUBLE"));
+		State::Set(State::BufferMode, 0xFFFF0000, 0);
+		State::Set(State::ClearDepth, 0xFFFF0000, 0x3F800000);
+		State::Set(State::FlipRate, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "FLIPRATE"));
+		State::Set(State::ShamelessPlug, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "SHAMELESSPLUG"));
+		State::Set(State::EnableDepthBuffer, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "DEPTHBUFFER"));
+		State::Set(State::DepthCompare, 0xFFFF0000, GetEnvironmentValue(3, envPrefix, "DEPTHCMP"));
 
 		return TRUE;
 	}
 
-	BOOL __stdcall Sync(DWORD a1)
+	BOOL THRASHAPI Sync(DWORD value)
 	{
-		GLFinish();
 		return TRUE;
 	}
 }

@@ -1,5 +1,4 @@
-#ifndef _THRASH_RESOLUTION_HPP_
-#define _THRASH_RESOLUTION_HPP_
+#pragma once
 
 namespace Resolution
 {
@@ -8,5 +7,3 @@ namespace Resolution
 	BOOL __stdcall Change(DWORD unknown, HWND hWnd, UINT msg, DWORD resolutionIndex, DWORD maxPanding, BOOL *result);
 	BOOL __stdcall Restore(DWORD a1, HWND hWnd, UINT msg, DWORD resolutionIndex, DWORD maxPanding, BOOL *result);
 }
-
-#endif

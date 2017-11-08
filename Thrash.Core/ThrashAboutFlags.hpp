@@ -1,5 +1,4 @@
-#ifndef _THRASH_TYPE_ABOUT_FLAGS_HPP_
-#define _THRASH_TYPE_ABOUT_FLAGS_HPP_
+#pragma once
 
 enum ThrashAboutFlags
 {
@@ -12,5 +11,3 @@ enum ThrashAboutFlags
 	About_GlobalClut				= 64,
 	About_Trilinear2Pass			= 128
 };
-
-#endif

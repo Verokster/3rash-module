@@ -1,5 +1,4 @@
-#ifndef _THRASH_TYPE_RECTANGLE_HPP_
-#define _THRASH_TYPE_RECTANGLE_HPP_
+#pragma once
 
 struct ThrashRectangle
 {
@@ -8,5 +7,3 @@ struct ThrashRectangle
 	DWORD width;
 	DWORD height;
 };
-
-#endif

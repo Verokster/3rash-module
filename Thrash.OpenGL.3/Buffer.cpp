@@ -2,7 +2,7 @@
 #include "Global.hpp"
 
 const DWORD VBO_SIZE = 3900;
-ThrashBufferVertex vertexData[VBO_SIZE];
+ThrashVertexV1 vertexData[VBO_SIZE];
 WORD indexData[VBO_SIZE];
 
 ThrashBuffer buffer;
@@ -18,28 +18,25 @@ namespace Buffer
 		GLGenVertexArrays(1, &buffer.name);
 		GLBindVertexArray(buffer.name);
 
-		if (forced.indexedVBO)
-		{
-			GLGenBuffers(1, &buffer.iName);
-			GLBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.iName);
-			GLBufferData(GL_ELEMENT_ARRAY_BUFFER, VBO_SIZE * sizeof(WORD), NULL, GL_STREAM_DRAW);
-		}
+		GLGenBuffers(1, &buffer.iName);
+		GLBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.iName);
+		GLBufferData(GL_ELEMENT_ARRAY_BUFFER, VBO_SIZE * sizeof(WORD), NULL, GL_STREAM_DRAW);
 
 		GLGenBuffers(1, &buffer.vName);
 		GLBindBuffer(GL_ARRAY_BUFFER, buffer.vName);
-		GLBufferData(GL_ARRAY_BUFFER, VBO_SIZE * sizeof(ThrashBufferVertex), NULL, GL_STREAM_DRAW);
+		GLBufferData(GL_ARRAY_BUFFER, VBO_SIZE * sizeof(ThrashVertexV1), NULL, GL_STREAM_DRAW);
 
 		GLEnableVertexAttribArray(attrCoordsLoc);
-		GLVertexAttribPointer(attrCoordsLoc, 4, GL_FLOAT, GL_FALSE, sizeof(ThrashBufferVertex), (GLvoid*)0);
+		GLVertexAttribPointer(attrCoordsLoc, 4, GL_FLOAT, GL_FALSE, sizeof(ThrashVertexV1), (GLvoid*)0);
 
-		GLEnableVertexAttribArray(attrColorLoc);
-		GLVertexAttribPointer(attrColorLoc, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ThrashBufferVertex), (GLvoid*)16);
+		GLEnableVertexAttribArray(attrDiffuseLoc);
+		GLVertexAttribPointer(attrDiffuseLoc, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ThrashVertexV1), (GLvoid*)16);
+
+		GLEnableVertexAttribArray(attrSpecularLoc);
+		GLVertexAttribPointer(attrSpecularLoc, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ThrashVertexV1), (GLvoid*)20);
 
 		GLEnableVertexAttribArray(attrTexCoordsLoc);
-		GLVertexAttribPointer(attrTexCoordsLoc, 2, GL_FLOAT, GL_FALSE, sizeof(ThrashBufferVertex), (GLvoid*)20);
-
-		GLEnableVertexAttribArray(attrTexUnitLoc);
-		GLVertexAttribIPointer(attrTexUnitLoc, 1, GL_UNSIGNED_INT, sizeof(ThrashBufferVertex), (GLvoid*)28);
+		GLVertexAttribPointer(attrTexCoordsLoc, 2, GL_FLOAT, GL_FALSE, sizeof(ThrashVertexV1), (GLvoid*)24);
 
 		buffer.type = GL_NONE;
 	}
@@ -49,11 +46,8 @@ namespace Buffer
 		GLBindVertexArray(NULL);
 		GLDeleteVertexArrays(1, &buffer.name);
 
-		if (forced.indexedVBO)
-		{
-			GLBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
-			GLDeleteBuffers(1, &buffer.iName);
-		}
+		GLBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
+		GLDeleteBuffers(1, &buffer.iName);
 
 		GLBindBuffer(GL_ARRAY_BUFFER, NULL);
 		GLDeleteBuffers(1, &buffer.vName);
@@ -61,9 +55,11 @@ namespace Buffer
 
 	VOID __fastcall Draw()
 	{
-		if (buffer.iSize > 0 && buffer.type != GL_NONE)
+		if (buffer.iSize && buffer.type)
 		{
-			GLBufferSubData(GL_ARRAY_BUFFER, 0, buffer.vSize * sizeof(ThrashBufferVertex), buffer.vData);
+			Texture::CheckWrap();
+
+			GLBufferSubData(GL_ARRAY_BUFFER, 0, buffer.vSize * sizeof(ThrashVertexV1), buffer.vData);
 
 			if (buffer.isIndexed)
 			{
@@ -77,8 +73,6 @@ namespace Buffer
 			buffer.isIndexed = FALSE;
 			buffer.type = GL_NONE;
 		}
-
-		Texture::ResetUsed();
 	}
 
 	BOOL __fastcall Check(DWORD type)
@@ -94,12 +88,9 @@ namespace Buffer
 
 	DWORD __fastcall AddVertex(ThrashVertex* vertex)
 	{
-		ThrashBufferVertex* bVertex = &buffer.vData[buffer.vSize];
-
-		(*bVertex).vertCoord = (*vertex).vertCoord;
-		(*bVertex).color = (*vertex).diffuseColor;
-		(*bVertex).texCoord = (*vertex).texCoord;
-		(*bVertex).texUnit = texturesEnabled ? drawTextureUnit : texturesEnabled;
+		ThrashVertexV1* bVertex = &buffer.vData[buffer.vSize];
+		*bVertex = *(ThrashVertexV1*)vertex;
+		bVertex->vertCoord.z += depthBias;
 
 		if (forced.indexedVBO)
 			buffer.iData[buffer.iSize] = buffer.vSize;

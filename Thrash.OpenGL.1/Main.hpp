@@ -1,9 +1,6 @@
-#ifndef _THRASH_OGL_MAIN_HPP_
-#define _THRASH_OGL_MAIN_HPP_
+#pragma once
 
 namespace Main
 {
 	DWORD __fastcall Round(FLOAT number);
 }
-
-#endif

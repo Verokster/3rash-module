@@ -1,10 +1,7 @@
-#ifndef _THRASH_SPRITE_HPP_
-#define _THRASH_SPRITE_HPP_
+#pragma once
 
 namespace Sprite
 {
-	VOID __stdcall Draw(ThrashVertex* vertex1, ThrashVertex* vertex2);
-	VOID __stdcall DrawMesh(DWORD count, ThrashVertex vertexPtrArray[], DWORD indexes[]);
+	VOID THRASHAPI Draw(ThrashVertex* vertex1, ThrashVertex* vertex2);
+	VOID THRASHAPI DrawMesh(DWORD count, ThrashVertex vertexArray[], DWORD indexes[]);
 }
-
-#endif

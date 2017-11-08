@@ -6,15 +6,18 @@ WGLMAKECURRENT WGLMakeCurrent;
 WGLCREATECONTEXT WGLCreateContext;
 WGLDELETECONTEXT WGLDeleteContext;
 WGLSWAPBUFFERS WGLSwapBuffers;
-WGLCREATECONTEXTATTRIBSARB WGLCreateContextAttribsARB;
-WGLSWAPINTERVALEXT WGLSwapIntervalEXT;
+WGLCREATECONTEXTATTRIBSARB WGLCreateContextAttribs;
+WGLSWAPINTERVALEXT WGLSwapInterval;
 
+GLFLUSH GLFlush;
+GLFINISH GLFinish;
 GLSCISSOR GLScissor;
 GLVIEWPORT GLViewport;
 GLHINT GLHint;
 GLCLEARDEPTH GLClearDepth;
 GLDEPTHRANGE GLDepthRange;
 GLCLEAR GLClear;
+GLREADBUFFER GLReadBuffer;
 GLDRAWBUFFER GLDrawBuffer;
 GLREADPIXELS GLReadPixels;
 GLENABLE GLEnable;
@@ -23,7 +26,6 @@ GLBINDTEXTURE GLBindTexture;
 GLDELETETEXTURES GLDeleteTextures;
 GLCLEARCOLOR GLClearColor;
 GLDEPTHFUNC GLDepthFunc;
-GLALPHAFUNC GLAlphaFunc;
 GLBLENDFUNC GLBlendFunc;
 GLTEXPARAMETERI GLTexParameteri;
 GLTEXIMAGE2D GLTexImage2D;
@@ -79,30 +81,50 @@ GLUNIFORMMATRIX4FV GLUniformMatrix4fv;
 
 HMODULE hModule;
 
-DWORD wglAttributesARB[] = {
-		WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
-		WGL_CONTEXT_MINOR_VERSION_ARB, 0,
-		//WGL_CONTEXT_FLAGS_ARB, 0,
-		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
-		WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-		0
-};
-
-VOID __fastcall LoadGLFunction(LPCSTR name, PROC* func)
+VOID __fastcall LoadGLFunction(CHAR* buffer, const CHAR* name, PROC* func, const CHAR* sufix = NULL)
 {
-	*func = WGLGetProcAddress(name);
+	const CHAR* loadName;
+	if (!sufix)
+		loadName = name;
+	else
+	{
+		strcpy(buffer, name);
+		strcat(buffer, sufix);
+		loadName = buffer;
+	}
+
+	if (WGLGetProcAddress)
+		*func = WGLGetProcAddress(loadName);
+
 	if ((INT)*func >= -1 && (INT)*func <= 3)
-		*func = GetProcAddress(hModule, name);
+		*func = GetProcAddress(hModule, loadName);
+
+	if (!sufix && !*func)
+	{
+		LoadGLFunction(buffer, name, func, "EXT");
+		if (!*func)
+			LoadGLFunction(buffer, name, func, "ARB");
+	}
 }
 
 VOID __fastcall CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 {
-	WGLSwapIntervalEXT = (WGLSWAPINTERVALEXT)WGLGetProcAddress("wglSwapIntervalEXT");
-	WGLCreateContextAttribsARB = (WGLCREATECONTEXTATTRIBSARB)WGLGetProcAddress("wglCreateContextAttribsARB");
-	if (WGLCreateContextAttribsARB != NULL)
+	CHAR buffer[256];
+
+	LoadGLFunction(buffer, "wglCreateContextAttribs", (PROC*)&WGLCreateContextAttribs, "ARB");
+	if (WGLCreateContextAttribs)
 	{
-		HGLRC glHandler = WGLCreateContextAttribsARB(*devContext, NULL, wglAttributesARB);
-		if (glHandler != NULL)
+		DWORD wglAttributes[] = {
+			WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+			WGL_CONTEXT_MINOR_VERSION_ARB, 0,
+			//WGL_CONTEXT_FLAGS_ARB, 0,
+			WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+			WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+			0
+		};
+
+		HGLRC glHandler = WGLCreateContextAttribs(*devContext, NULL, wglAttributes);
+		if (glHandler)
 		{
 			WGLMakeCurrent(*devContext, glHandler);
 			WGLDeleteContext(*glContext);
@@ -112,83 +134,86 @@ VOID __fastcall CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 		{
 			DWORD errorCode = GetLastError();
 			if (errorCode == 0x2095)
-				Main::ShowError("Invalid version", __FILE__, "[OGL]", __LINE__);
+				Main::ShowError("Invalid version", __FILE__, "CreateContextAttribs", __LINE__);
 			else if (errorCode == 0x2096)
-				Main::ShowError("Invalid profile", __FILE__, "[OGL]", __LINE__);
+				Main::ShowError("Invalid profile", __FILE__, "CreateContextAttribs", __LINE__);
 		}
 	}
 	else
 	{
-		Main::ShowError("wglCreateContextAttribsARB error", __FILE__, "[OGL]", __LINE__);
+		Main::ShowError("wglCreateContextAttribsARB error", __FILE__, "CreateContextAttribs", __LINE__);
 	}
 
-	LoadGLFunction("glScissor", (PROC*)&GLScissor);
-	LoadGLFunction("glViewport", (PROC*)&GLViewport);
-	LoadGLFunction("glHint", (PROC*)&GLHint);
-	LoadGLFunction("glClearDepth", (PROC*)&GLClearDepth);
-	LoadGLFunction("glDepthRange", (PROC*)&GLDepthRange);
-	LoadGLFunction("glClear", (PROC*)&GLClear);
-	LoadGLFunction("glDrawBuffer", (PROC*)&GLDrawBuffer);
-	LoadGLFunction("glReadPixels", (PROC*)&GLReadPixels);
-	LoadGLFunction("glEnable", (PROC*)&GLEnable);
-	LoadGLFunction("glDisable", (PROC*)&GLDisable);
-	LoadGLFunction("glBindTexture", (PROC*)&GLBindTexture);
-	LoadGLFunction("glDeleteTextures", (PROC*)&GLDeleteTextures);
-	LoadGLFunction("glClearColor", (PROC*)&GLClearColor);
-	LoadGLFunction("glDepthFunc", (PROC*)&GLDepthFunc);
-	LoadGLFunction("glAlphaFunc", (PROC*)&GLAlphaFunc);
-	LoadGLFunction("glBlendFunc", (PROC*)&GLBlendFunc);
-	LoadGLFunction("glTexParameteri", (PROC*)&GLTexParameteri);
-	LoadGLFunction("glTexImage2D", (PROC*)&GLTexImage2D);
-	LoadGLFunction("glTexSubImage2D", (PROC*)&GLTexSubImage2D);
-	LoadGLFunction("glDepthMask", (PROC*)&GLDepthMask);
-	LoadGLFunction("glStencilFunc", (PROC*)&GLStencilFunc);
-	LoadGLFunction("glStencilOp", (PROC*)&GLStencilOp);
-	LoadGLFunction("glActiveTexture", (PROC*)&GLActiveTexture);
-	LoadGLFunction("glGetIntegerv", (PROC*)&GLGetIntegerv);
+	LoadGLFunction(buffer, "wglSwapInterval", (PROC*)&WGLSwapInterval, "EXT");
+	LoadGLFunction(buffer, "glFlush", (PROC*)&GLFlush);
+	LoadGLFunction(buffer, "glFinish", (PROC*)&GLFinish);
+	LoadGLFunction(buffer, "glScissor", (PROC*)&GLScissor);
+	LoadGLFunction(buffer, "glViewport", (PROC*)&GLViewport);
+	LoadGLFunction(buffer, "glHint", (PROC*)&GLHint);
+	LoadGLFunction(buffer, "glClearDepth", (PROC*)&GLClearDepth);
+	LoadGLFunction(buffer, "glDepthRange", (PROC*)&GLDepthRange);
+	LoadGLFunction(buffer, "glClear", (PROC*)&GLClear);
+	LoadGLFunction(buffer, "glReadBuffer", (PROC*)&GLReadBuffer);
+	LoadGLFunction(buffer, "glDrawBuffer", (PROC*)&GLDrawBuffer);
+	LoadGLFunction(buffer, "glReadPixels", (PROC*)&GLReadPixels);
+	LoadGLFunction(buffer, "glEnable", (PROC*)&GLEnable);
+	LoadGLFunction(buffer, "glDisable", (PROC*)&GLDisable);
+	LoadGLFunction(buffer, "glBindTexture", (PROC*)&GLBindTexture);
+	LoadGLFunction(buffer, "glDeleteTextures", (PROC*)&GLDeleteTextures);
+	LoadGLFunction(buffer, "glClearColor", (PROC*)&GLClearColor);
+	LoadGLFunction(buffer, "glDepthFunc", (PROC*)&GLDepthFunc);
+	LoadGLFunction(buffer, "glBlendFunc", (PROC*)&GLBlendFunc);
+	LoadGLFunction(buffer, "glTexParameteri", (PROC*)&GLTexParameteri);
+	LoadGLFunction(buffer, "glTexImage2D", (PROC*)&GLTexImage2D);
+	LoadGLFunction(buffer, "glTexSubImage2D", (PROC*)&GLTexSubImage2D);
+	LoadGLFunction(buffer, "glDepthMask", (PROC*)&GLDepthMask);
+	LoadGLFunction(buffer, "glStencilFunc", (PROC*)&GLStencilFunc);
+	LoadGLFunction(buffer, "glStencilOp", (PROC*)&GLStencilOp);
+	LoadGLFunction(buffer, "glActiveTexture", (PROC*)&GLActiveTexture);
+	LoadGLFunction(buffer, "glGetIntegerv", (PROC*)&GLGetIntegerv);
 	
-	LoadGLFunction("glGenTextures", (PROC*)&GLGenTextures);
+	LoadGLFunction(buffer, "glGenTextures", (PROC*)&GLGenTextures);
 
 #ifdef _DEBUG
-	LoadGLFunction("glGetError", (PROC*)&GLGetError);
+	LoadGLFunction(buffer, "glGetError", (PROC*)&GLGetError);
 #endif
 
-	LoadGLFunction("glGenBuffers", (PROC*)&GLGenBuffers);
-	LoadGLFunction("glDeleteBuffers", (PROC*)&GLDeleteBuffers);
-	LoadGLFunction("glBindBuffer", (PROC*)&GLBindBuffer);
-	LoadGLFunction("glBufferData", (PROC*)&GLBufferData);
-	LoadGLFunction("glBufferSubData", (PROC*)&GLBufferSubData);
-	LoadGLFunction("glDrawArrays", (PROC*)&GLDrawArrays);
-	LoadGLFunction("glDrawElements", (PROC*)&GLDrawElements);
-	LoadGLFunction("glGenVertexArrays", (PROC*)&GLGenVertexArrays);
-	LoadGLFunction("glBindVertexArray", (PROC*)&GLBindVertexArray);
-	LoadGLFunction("glDeleteVertexArrays", (PROC*)&GLDeleteVertexArrays);
+	LoadGLFunction(buffer, "glGenBuffers", (PROC*)&GLGenBuffers);
+	LoadGLFunction(buffer, "glDeleteBuffers", (PROC*)&GLDeleteBuffers);
+	LoadGLFunction(buffer, "glBindBuffer", (PROC*)&GLBindBuffer);
+	LoadGLFunction(buffer, "glBufferData", (PROC*)&GLBufferData);
+	LoadGLFunction(buffer, "glBufferSubData", (PROC*)&GLBufferSubData);
+	LoadGLFunction(buffer, "glDrawArrays", (PROC*)&GLDrawArrays);
+	LoadGLFunction(buffer, "glDrawElements", (PROC*)&GLDrawElements);
+	LoadGLFunction(buffer, "glGenVertexArrays", (PROC*)&GLGenVertexArrays);
+	LoadGLFunction(buffer, "glBindVertexArray", (PROC*)&GLBindVertexArray);
+	LoadGLFunction(buffer, "glDeleteVertexArrays", (PROC*)&GLDeleteVertexArrays);
 
-	LoadGLFunction("glEnableVertexAttribArray", (PROC*)&GLEnableVertexAttribArray);
-	LoadGLFunction("glDisableVertexAttribArray", (PROC*)&GLDisableVertexAttribArray);
-	LoadGLFunction("glVertexAttribPointer", (PROC*)&GLVertexAttribPointer);
-	LoadGLFunction("glVertexAttribIPointer", (PROC*)&GLVertexAttribIPointer);
+	LoadGLFunction(buffer, "glEnableVertexAttribArray", (PROC*)&GLEnableVertexAttribArray);
+	LoadGLFunction(buffer, "glDisableVertexAttribArray", (PROC*)&GLDisableVertexAttribArray);
+	LoadGLFunction(buffer, "glVertexAttribPointer", (PROC*)&GLVertexAttribPointer);
+	LoadGLFunction(buffer, "glVertexAttribIPointer", (PROC*)&GLVertexAttribIPointer);
 
-	LoadGLFunction("glCreateShader", (PROC*)&GLCreateShader);
-	LoadGLFunction("glCreateProgram", (PROC*)&GLCreateProgram);
-	LoadGLFunction("glShaderSource", (PROC*)&GLShaderSource);
-	LoadGLFunction("glCompileShader", (PROC*)&GLCompileShader);
-	LoadGLFunction("glAttachShader", (PROC*)&GLAttachShader);
-	LoadGLFunction("glLinkProgram", (PROC*)&GLLinkProgram);
-	LoadGLFunction("glUseProgram", (PROC*)&GLUseProgram);
-	LoadGLFunction("glDeleteProgram", (PROC*)&GLDeleteProgram);
-	LoadGLFunction("glGetShaderiv", (PROC*)&GLGetShaderiv);
-	LoadGLFunction("glGetShaderInfoLog", (PROC*)&GLGetShaderInfoLog);
+	LoadGLFunction(buffer, "glCreateShader", (PROC*)&GLCreateShader);
+	LoadGLFunction(buffer, "glCreateProgram", (PROC*)&GLCreateProgram);
+	LoadGLFunction(buffer, "glShaderSource", (PROC*)&GLShaderSource);
+	LoadGLFunction(buffer, "glCompileShader", (PROC*)&GLCompileShader);
+	LoadGLFunction(buffer, "glAttachShader", (PROC*)&GLAttachShader);
+	LoadGLFunction(buffer, "glLinkProgram", (PROC*)&GLLinkProgram);
+	LoadGLFunction(buffer, "glUseProgram", (PROC*)&GLUseProgram);
+	LoadGLFunction(buffer, "glDeleteProgram", (PROC*)&GLDeleteProgram);
+	LoadGLFunction(buffer, "glGetShaderiv", (PROC*)&GLGetShaderiv);
+	LoadGLFunction(buffer, "glGetShaderInfoLog", (PROC*)&GLGetShaderInfoLog);
 
-	LoadGLFunction("glGetAttribLocation", (PROC*)&GLGetAttribLocation);
-	LoadGLFunction("glGetUniformLocation", (PROC*)&GLGetUniformLocation);
+	LoadGLFunction(buffer, "glGetAttribLocation", (PROC*)&GLGetAttribLocation);
+	LoadGLFunction(buffer, "glGetUniformLocation", (PROC*)&GLGetUniformLocation);
 
-	LoadGLFunction("glUniform1i", (PROC*)&GLUniform1i);
-	LoadGLFunction("glUniform1ui", (PROC*)&GLUniform1ui);
-	LoadGLFunction("glUniform1f", (PROC*)&GLUniform1f);
-	LoadGLFunction("glUniform4f", (PROC*)&GLUniform4f);
+	LoadGLFunction(buffer, "glUniform1i", (PROC*)&GLUniform1i);
+	LoadGLFunction(buffer, "glUniform1ui", (PROC*)&GLUniform1ui);
+	LoadGLFunction(buffer, "glUniform1f", (PROC*)&GLUniform1f);
+	LoadGLFunction(buffer, "glUniform4f", (PROC*)&GLUniform4f);
 
-	LoadGLFunction("glUniformMatrix4fv", (PROC*)&GLUniformMatrix4fv);
+	LoadGLFunction(buffer, "glUniformMatrix4fv", (PROC*)&GLUniformMatrix4fv);
 }
 
 #ifdef _DEBUG

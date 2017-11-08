@@ -1,13 +1,12 @@
-#ifndef _THRASH_RECT_HPP_
-#define _THRASH_RECT_HPP_
-
-#include "stdafx.h"
+#pragma once
 
 namespace Rect
 {
-	BOOL __stdcall Read(ThrashRectangle rectangle, VOID* data);
-	BOOL __stdcall Write(ThrashRectangle rectangle, VOID* data);
-	BOOL __stdcall Write(ThrashRectangle rectangle, VOID* data, DWORD bytesPerRow);
-}
+	BOOL __fastcall ReadWindow(ThrashWindow* window);
+	BOOL __fastcall WriteWindow(ThrashWindow* window);
 
-#endif
+	BOOL THRASHAPI Read(ThrashRectangle rectangle, VOID* data);
+	
+	BOOL THRASHAPI Write(ThrashRectangle rectangle, VOID* data);
+	BOOL THRASHAPI Write(ThrashRectangle rectangle, VOID* data, DWORD bytesPerRow);
+}

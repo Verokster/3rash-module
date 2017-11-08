@@ -1,5 +1,4 @@
-#ifndef _THRASH_GLOBAL_HPP_
-#define _THRASH_GLOBAL_HPP_
+#pragma once
 
 #include "GL.hpp"
 #include "Thrash.hpp"
@@ -13,8 +12,11 @@
 #include "Context.hpp"
 #include "Main.hpp"
 #include "Texture.hpp"
+#include "Window.hpp"
 
-const FLOAT FLOAT_255 = 255;
+#define FLOAT_255 255.0f
+#define FLOAT_65536 65536.0f
+const double DEPTH_CORRECTION = 2.0 / FLOAT_65536;
 
 extern HGLRC hGlRc;
 
@@ -24,32 +26,38 @@ extern DWORD resolutionsListCount;
 extern ThrashResolution* selectedResolution;
 
 extern ThrashDesktopMode desktopMode;
-
-//extern ThrashResolution viewportResolution;
 extern ThrashViewport viewport;
-
 extern ThrashForced forced;
+
+extern BOOL extendedVertex;
+extern BOOL specularEnabled;
 
 extern BOOL texturesEnabled;
 extern DWORD textureMipMap;
 extern BOOL textureFilterEnabled;
 extern ThrashTexture* lastTexture;
 extern ThrashTexture* bindedTexture;
+extern FLOAT textureLodBias;
 
-extern DWORD textureWrap;
+extern DWORD textureClampS;
+extern DWORD textureClampT;
 extern DWORD bufferModesArray[];
 
-extern DWORD cullFaceMode;
-
 extern BOOL fogEnabled;
-extern DWORD fogMode;
-extern DWORD fogColor;
-
-extern BOOL isWindowLocked;
 
 extern DWORD stencilFail;
 extern DWORD stencilDepthFail;
 extern DWORD stencilPass;
-extern DWORD depthCmp;
 
-#endif
+extern BOOL isWindowLocked;
+
+extern DWORD depthCmp;
+extern DWORD alphaCmp;
+extern FLOAT alphaVal;
+
+extern BOOL colorMask;
+extern DWORD blendSrc;
+extern DWORD blendDest;
+extern BOOL stencilEnabled;
+extern BOOL depthEnabled;
+extern DWORD bufferMode;

@@ -3,21 +3,24 @@
 
 namespace Point
 {
-	VOID __stdcall Draw(ThrashVertex* vertex)
+	VOID THRASHAPI Draw(ThrashVertex* vertex)
 	{
 		GLBegin(GL_POINTS);
 		{
-			Vertex::Draw(vertex);
+			if (!extendedVertex)
+				Vertex::Draw((ThrashVertexV1*)vertex);
+			else
+				Vertex::Draw((ThrashVertexV2*)vertex);
 		}
 		GLEnd();
 	}
 
-	VOID __stdcall DrawStrip(DWORD count, ThrashVertex vertexArray[])
+	VOID THRASHAPI DrawStrip(DWORD count, ThrashVertex vertexArray[])
 	{
 		Vertex::DrawArray(GL_POINTS, 0, count, vertexArray);
 	}
 
-	VOID __stdcall DrawMesh(DWORD count, ThrashVertex vertexArray[], DWORD indexes[])
+	VOID THRASHAPI DrawMesh(DWORD count, ThrashVertex vertexArray[], DWORD indexes[])
 	{
 		Vertex::DrawIndexedArray(GL_POINTS, 0, count, vertexArray, indexes);
 	}

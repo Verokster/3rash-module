@@ -1,11 +1,8 @@
-/*#ifdef THRASH_EXPORTS
-#define THRASH_API __declspec(dllexport)
-#else
-#define THRASH_API __declspec(dllimport)
-#endif*/
-
 #ifndef _THRASH_HPP_
 #define _THRASH_HPP_
+
+//#define THRASHAPI __declspec(dllexport)  __stdcall
+#define THRASHAPI __stdcall
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,12 +19,17 @@
 #include "ThrashColor.hpp"
 #include "ThrashTexCoord.hpp"
 #include "ThrashVertex.hpp"
+#include "ThrashPrimitive.hpp"
 #include "ThrashColorFormatIndex.hpp"
+#include "ThrashIndexFormatIndex.hpp"
 #include "ThrashTexture.hpp"
 #include "ThrashWindow.hpp"
 #include "ThrashFogMode.hpp"
 #include "ThrashRectangle.hpp"
 #include "ThrashState.hpp"
+#include "ThrashFunctions.hpp"
+
+#include "Color.hpp"
 
 #include "Main.hpp"
 #include "Memory.hpp"
@@ -57,16 +59,11 @@ extern HINSTANCE hDllModule;
 extern ThrashTexColorFormats textureFormats;
 extern ThrashTexColorIndexFormats textureIndexFormats;
 extern ThrashAbout about;
+extern ThrashFunctionsExt functions;
 extern ThrashResolution resolutionsList[];
 
-DWORD stateValueArray[];
-
-extern VOID*(__stdcall *funcMalloc)(size_t);
-extern VOID(__stdcall *funcFree)(VOID*);
-extern DWORD(__stdcall *funcErrorMessageBox)(DWORD, LPCSTR);
-extern HWND(__stdcall *funcGetHWND)();
-extern VOID(__stdcall *funcResolution)(UINT, PROC);
-extern DWORD(__stdcall *funcState)(DWORD, DWORD);
+const DWORD STATES_SIZE = 140;
+extern DWORD stateValueArray[][STATES_SIZE];
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD fdwReason, LPVOID lpReserved);
 

@@ -1,8 +1,4 @@
-#ifndef _THRASH_BUFFER_HPP_
-#define _THRASH_BUFFER_HPP_
-
-#include "GL.hpp"
-#include "Thrash.hpp"
+#pragma once
 
 namespace Buffer
 {
@@ -13,5 +9,3 @@ namespace Buffer
 	DWORD __fastcall AddVertex(ThrashVertex* vertex);
 	VOID __fastcall AddIndex(DWORD index);
 }
-
-#endif

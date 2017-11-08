@@ -1,5 +1,4 @@
-#ifndef _THRASH_TYPE_COLOR_HPP_
-#define _THRASH_TYPE_COLOR_HPP_
+#pragma once
 
 struct ThrashColor {
 	BYTE blue;
@@ -7,5 +6,3 @@ struct ThrashColor {
 	BYTE red;
 	BYTE alpha;
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef _THRASH_GAMMA_RAMP_HPP_
-#define _THRASH_GAMMA_RAMP_HPP_
+#pragma once
 
 namespace GammaRamp
 {
@@ -7,5 +6,3 @@ namespace GammaRamp
 	VOID __fastcall Set(FLOAT factor);
 	VOID __fastcall Restore();
 }
-
-#endif

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Thrash.hpp"
 
+//void main() {}
+
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD fdwReason, LPVOID lpReserved)
 {
 	switch (fdwReason)

@@ -1,15 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="GL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StdAfx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Buffer.cpp">
-      <Filter>Source Files\Thrash\Draw</Filter>
-    </ClCompile>
     <ClCompile Include="Line.cpp">
       <Filter>Source Files\Thrash\Draw</Filter>
     </ClCompile>
@@ -24,6 +15,12 @@
     </ClCompile>
     <ClCompile Include="Tri.cpp">
       <Filter>Source Files\Thrash\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="Vertex.cpp">
+      <Filter>Source Files\Thrash\Draw</Filter>
+    </ClCompile>
+    <ClCompile Include="GammaRamp.cpp">
+      <Filter>Source Files\Thrash</Filter>
     </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files\Thrash</Filter>
@@ -43,11 +40,14 @@
     <ClCompile Include="Window.cpp">
       <Filter>Source Files\Thrash</Filter>
     </ClCompile>
-    <ClCompile Include="DllMain.cpp">
+    <ClCompile Include="GL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Shaders.cpp">
-      <Filter>Source Files\Thrash</Filter>
+    <ClCompile Include="StdAfx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DllMain.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Context.cpp">
       <Filter>Source Files\Thrash</Filter>
@@ -55,6 +55,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GL.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Global.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
@@ -66,32 +69,17 @@
     <ClInclude Include="ThrashViewport.hpp">
       <Filter>Header Files\Types</Filter>
     </ClInclude>
-    <ClInclude Include="ThrashBuffer.hpp">
-      <Filter>Header Files\Types</Filter>
-    </ClInclude>
-    <ClInclude Include="Buffer.hpp">
-      <Filter>Header Files\Thrash\Draw</Filter>
+    <ClInclude Include="GammaRamp.hpp">
+      <Filter>Header Files\Thrash</Filter>
     </ClInclude>
     <ClInclude Include="Resolution.hpp">
       <Filter>Header Files\Thrash</Filter>
     </ClInclude>
+    <ClInclude Include="Vertex.hpp">
+      <Filter>Header Files\Thrash\Draw</Filter>
+    </ClInclude>
     <ClInclude Include="ThrashDesktopMode.hpp">
       <Filter>Header Files\Types</Filter>
-    </ClInclude>
-    <ClInclude Include="ThrashBufferVertex.hpp">
-      <Filter>Header Files\Types</Filter>
-    </ClInclude>
-    <ClInclude Include="ThrashBindedTextureId.hpp">
-      <Filter>Header Files\Types</Filter>
-    </ClInclude>
-    <ClInclude Include="Shaders.hpp">
-      <Filter>Header Files\Thrash</Filter>
-    </ClInclude>
-    <ClInclude Include="Context.hpp">
-      <Filter>Header Files\Thrash</Filter>
-    </ClInclude>
-    <ClInclude Include="Tri.hpp">
-      <Filter>Header Files\Thrash\Draw</Filter>
     </ClInclude>
     <ClInclude Include="Texture.hpp">
       <Filter>Header Files\Thrash</Filter>
@@ -99,46 +87,37 @@
     <ClInclude Include="Main.hpp">
       <Filter>Header Files\Thrash</Filter>
     </ClInclude>
-    <ClInclude Include="Global.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Context.hpp">
+      <Filter>Header Files\Thrash</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.hpp">
+      <Filter>Header Files\Thrash</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\vertex.glsl">
-      <Filter>Resource Files\Shaders Files</Filter>
-    </None>
-    <None Include="Shaders\fragment.glsl">
-      <Filter>Resource Files\Shaders Files</Filter>
-    </None>
-    <None Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{7fe11465-95da-4045-8c32-54b5dcb3a01e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{d8a27344-34c1-4f16-b32d-a327cbcf2700}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{1887e98b-4d2b-4db5-93eb-31deba052b1c}</UniqueIdentifier>
+      <UniqueIdentifier>{52949067-004a-4f89-954e-76cac391770d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Types">
-      <UniqueIdentifier>{b0003c4a-1f28-4cfa-a6c4-09074b7cb51d}</UniqueIdentifier>
+      <UniqueIdentifier>{e9f72442-6fb6-4fd2-8b6a-c2fcfb1b11f4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Thrash">
-      <UniqueIdentifier>{40066343-db5a-40a0-86e4-08f4afbfeedf}</UniqueIdentifier>
+      <UniqueIdentifier>{9820f1e8-6ddb-43e6-a541-5a08ed8d2c49}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Thrash\Draw">
-      <UniqueIdentifier>{bca7dfb2-59e0-46b2-95ac-b407f5d7a8f3}</UniqueIdentifier>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{9894f9f1-3b2e-44c1-b85b-f89a3c64f6a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{b48440de-744c-470c-835a-b1527d1c4325}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Thrash">
-      <UniqueIdentifier>{abc62375-7f62-45c6-8943-32232e8cf8a8}</UniqueIdentifier>
+      <UniqueIdentifier>{21624179-1928-459a-8ec0-8692a4d234c9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Thrash\Draw">
-      <UniqueIdentifier>{9c8e9eac-f7bc-4101-8561-24ba2eba8a46}</UniqueIdentifier>
+      <UniqueIdentifier>{f3e6e76f-99d2-467f-9b1c-6b412941f65c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\Shaders Files">
-      <UniqueIdentifier>{1bbb463a-b123-4e71-ad17-437d7ea11f8b}</UniqueIdentifier>
+    <Filter Include="Header Files\Thrash\Draw">
+      <UniqueIdentifier>{3d0cfd6d-5a68-413c-94be-6546c3f7f3e7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

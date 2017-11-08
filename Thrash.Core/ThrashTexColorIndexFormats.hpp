@@ -1,5 +1,4 @@
-#ifndef _THRASH_TYPE_TEXTURE_COLOR_INDEX_FORMATS_HPP_
-#define _THRASH_TYPE_TEXTURE_COLOR_INDEX_FORMATS_HPP_
+#pragma once
 
 struct ThrashTexColorIndexFormats
 {
@@ -15,5 +14,3 @@ struct ThrashTexColorIndexFormats
 	BOOL uncnown_9;
 	DWORD end;
 };
-
-#endif
