@@ -8,11 +8,11 @@ namespace Vertex
 		DWORD diffuse = Color::Swap(*((DWORD*)&vertex->diffuseColor));
 		GLColor4ubv((GLubyte*)&diffuse);
 
-		/*if (specularEnabled && GLSecondaryColor3ubv && *((DWORD*)&vertex->specularColor))
+		if (specularEnabled && GLSecondaryColor3ubv && *((DWORD*)&vertex->specularColor))
 		{
 			DWORD specular = Color::Swap(*((DWORD*)&vertex->specularColor));
 			GLSecondaryColor3ubv((GLubyte*)&specular);
-		}*/
+		}
 
 		GLfloat w = (GLfloat)(1.0 / vertex->vertCoord.rhw);
 		if (fogEnabled && GLFogCoordf)
@@ -39,11 +39,11 @@ namespace Vertex
 		DWORD color = Color::Swap(*((DWORD*)&vertex->diffuseColor));
 		GLColor4ubv((GLubyte*)&color);
 
-		/*if (specularEnabled && GLSecondaryColor3ubv && *((DWORD*)&vertex->specularColor))
+		if (specularEnabled && GLSecondaryColor3ubv && *((DWORD*)&vertex->specularColor))
 		{
 			DWORD specular = Color::Swap(*((DWORD*)&vertex->specularColor));
 			GLSecondaryColor3ubv((GLubyte*)&specular);
-		}*/
+		}
 
 		GLfloat w = (GLfloat)(1.0 / vertex->vertCoord.rhw);
 		if (fogEnabled && GLFogCoordf)

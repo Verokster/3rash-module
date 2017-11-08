@@ -207,8 +207,6 @@ namespace Rect
 				GLTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 				ThrashVertexV1 vertex1;
-				*(DWORD*)(&vertex1.diffuseColor) = 0;
-				*(DWORD*)(&vertex1.specularColor) = 0;
 				vertex1.vertCoord.z = 0.0;
 				vertex1.vertCoord.rhw = 1.0;
 				vertex1.texCoord0.u = 0.0;

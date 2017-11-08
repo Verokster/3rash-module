@@ -57,7 +57,6 @@ namespace Window
 
 				ThrashVertexV1 vertex1;
 				*(DWORD*)(&vertex1.diffuseColor) = 0xFFFFFFFF;
-				*(DWORD*)(&vertex1.specularColor) = 0;
 				vertex1.vertCoord.z = 0.0;
 				vertex1.vertCoord.rhw = 1.0;
 				vertex1.texCoord0.u = 0.0;
@@ -158,7 +157,7 @@ namespace Window
 				windowObject->bytesPerRow = windowObject->width * bytesPerPixel;
 
 				DWORD size = windowObject->height * windowObject->bytesPerRow;
-				VOID* data = Memory::Allocate(windowObject->height * windowObject->bytesPerRow);
+				VOID* data = Memory::Allocate(size);
 				if (data)
 				{
 					memset(data, NULL, size);
@@ -225,7 +224,8 @@ namespace Window
 		if (colorMask)
 		{
 			bufferBit |= GL_COLOR_BUFFER_BIT;
-			Release();
+			if (windowObject)
+				memset(windowObject->data, NULL, windowObject->height * windowObject->bytesPerRow);
 		}
 
 		GLClear(bufferBit);

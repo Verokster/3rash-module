@@ -28,8 +28,8 @@ out vec4 fragColor;
 void main(void)
 {
 	fragColor = shadeModel ? fDiffuseSmooth : fDiffuseFlat;
-	//if (specularEnabled)
-		//fragColor += fSpecular;
+	if (specularEnabled)
+		fragColor += fSpecular;
 
 	if (texEnabled)
 		fragColor *=  texture(tex01, fTexCoord);
