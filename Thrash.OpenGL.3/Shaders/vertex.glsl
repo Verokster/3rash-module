@@ -18,8 +18,7 @@ in vec2 vTexCoord;
 
 out vec4 fDiffuseSmooth;
 flat out vec4 fDiffuseFlat;
-out vec4 fSpecularSmooth;
-flat out vec4 fSpecularFlat;
+out vec4 fSpecular;
 out vec2 fTexCoord;
 out float fogFactor;
 
@@ -33,7 +32,7 @@ void main()
 		gl_Position = mvp * vec4(vCoord.xy * w, (1.0 - 1.0 / vCoord.z) * w, w);
 
 	fDiffuseFlat = fDiffuseSmooth = vDiffuse.bgra;
-	fSpecularFlat = fSpecularSmooth = vSpecular.bgra;
+	fSpecular = vSpecular.bgra;
 	fTexCoord = vTexCoord;
 
 	if (fogEnabled)
