@@ -152,7 +152,7 @@ namespace Main
 			about.textureHeightMin = 2;
 			about.textureHeightMax = 256;
 			about.textureHeightMultiple = 8;
-			about.clipAlign = 1;
+			about.clipAlign = 0;
 
 			about.texFormatsCount = 10;
 			about.texFormats = &textureFormats;
@@ -177,27 +177,41 @@ namespace Main
 
 	BOOL THRASHAPI Clip(RECT rect)
 	{
-		Buffer::Draw();
-
-		if (!isCliped)
+		if (rect.left < 0 || rect.top < 0 ||
+			rect.right >= selectedResolution->width || rect.bottom >= selectedResolution->height)
 		{
-			GLEnable(GL_SCISSOR_TEST);
-			isCliped = TRUE;
-		}
+			if (isCliped)
+			{
+				Buffer::Draw();
 
-		if (viewport.width != selectedResolution->width)
+				GLDisable(GL_SCISSOR_TEST);
+				isCliped = FALSE;
+			}
+		}
+		else
 		{
-			rect.left = viewport.rectangle.x + Round((FLOAT)rect.left * viewport.clipFactor.x);
-			rect.right = viewport.rectangle.x + Round((FLOAT)rect.right * viewport.clipFactor.x);
-		}
+			Buffer::Draw();
 
-		if (viewport.height != selectedResolution->height)
-		{
-			rect.top = viewport.rectangle.y + Round((FLOAT)rect.top * viewport.clipFactor.y);
-			rect.bottom = viewport.rectangle.y + Round((FLOAT)rect.bottom * viewport.clipFactor.y);
-		}
+			if (!isCliped)
+			{
+				GLEnable(GL_SCISSOR_TEST);
+				isCliped = TRUE;
+			}
 
-		GLScissor(rect.left, viewport.height - rect.bottom, rect.right - rect.left, rect.bottom - rect.top);
+			if (viewport.width != selectedResolution->width)
+			{
+				rect.left = viewport.rectangle.x + Round((FLOAT)rect.left * viewport.clipFactor.x);
+				rect.right = viewport.rectangle.x + Round((FLOAT)rect.right * viewport.clipFactor.x);
+			}
+
+			if (viewport.height != selectedResolution->height)
+			{
+				rect.top = viewport.rectangle.y + Round((FLOAT)rect.top * viewport.clipFactor.y);
+				rect.bottom = viewport.rectangle.y + Round((FLOAT)rect.bottom * viewport.clipFactor.y);
+			}
+
+			GLScissor(rect.left, viewport.height - rect.bottom, rect.right - rect.left, rect.bottom - rect.top);
+		}
 
 		return TRUE;
 	}

@@ -153,25 +153,37 @@ namespace Main
 
 	BOOL THRASHAPI Clip(RECT rect)
 	{
-		if (!isCliped)
+		if (rect.left < 0 || rect.top < 0 ||
+			rect.right >= selectedResolution->width || rect.bottom >= selectedResolution->height)
 		{
-			GLEnable(GL_SCISSOR_TEST);
-			isCliped = TRUE;
+			if (isCliped)
+			{
+				GLDisable(GL_SCISSOR_TEST);
+				isCliped = FALSE;
+			}
 		}
-
-		if (viewport.width != selectedResolution->width)
+		else
 		{
-			rect.left = viewport.rectangle.x + Round((FLOAT)rect.left * viewport.clipFactor.x);
-			rect.right = viewport.rectangle.x + Round((FLOAT)rect.right * viewport.clipFactor.x);
-		}
+			if (!isCliped)
+			{
+				GLEnable(GL_SCISSOR_TEST);
+				isCliped = TRUE;
+			}
 
-		if (viewport.height != selectedResolution->height)
-		{
-			rect.top = viewport.rectangle.y + Round((FLOAT)rect.top * viewport.clipFactor.y);
-			rect.bottom = viewport.rectangle.y + Round((FLOAT)rect.bottom * viewport.clipFactor.y);
-		}
+			if (viewport.width != selectedResolution->width)
+			{
+				rect.left = viewport.rectangle.x + Round((FLOAT)rect.left * viewport.clipFactor.x);
+				rect.right = viewport.rectangle.x + Round((FLOAT)rect.right * viewport.clipFactor.x);
+			}
 
-		GLScissor(rect.left, viewport.height - rect.bottom, rect.right - rect.left, rect.bottom - rect.top);
+			if (viewport.height != selectedResolution->height)
+			{
+				rect.top = viewport.rectangle.y + Round((FLOAT)rect.top * viewport.clipFactor.y);
+				rect.bottom = viewport.rectangle.y + Round((FLOAT)rect.bottom * viewport.clipFactor.y);
+			}
+
+			GLScissor(rect.left, viewport.height - rect.bottom, rect.right - rect.left, rect.bottom - rect.top);
+		}
 
 		return TRUE;
 	}

@@ -177,12 +177,7 @@ namespace Rect
 	BOOL THRASHAPI Write(ThrashRectangle rectangle, VOID* data)
 	{
 		DWORD bytesPerPixel = !forced.movies16Bit ? selectedResolution->colorDepth >> 3 : 2;
-		return Write(rectangle, data, rectangle.width * bytesPerPixel);
-	}
-
-	BOOL THRASHAPI Write(ThrashRectangle rectangle, VOID* data, DWORD bytesPerRow)
-	{
-		DWORD bytesPerPixel = bytesPerRow / rectangle.width;
+		DWORD bytesPerRow = bytesPerPixel * rectangle.width;
 
 		ThrashColorFormatIndex format;
 		switch (bytesPerPixel)

@@ -27,7 +27,5 @@
 namespace Rect
 {
 	BOOL THRASHAPI Read(ThrashRectangle rectangle, VOID* data);
-	
 	BOOL THRASHAPI Write(ThrashRectangle rectangle, VOID* data);
-	BOOL THRASHAPI Write(ThrashRectangle rectangle, VOID* data, DWORD bytesPerRow);
 }

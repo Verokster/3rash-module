@@ -17,7 +17,6 @@ EXPORTS
 	_THRASH_unlockwindow@4		= ?Unlock@Window@@YGHPAUThrashWindow@@@Z
 	_THRASH_readrect@20			= ?Read@Rect@@YGHUThrashRectangle@@PAX@Z
 	_THRASH_writerect@20		= ?Write@Rect@@YGHUThrashRectangle@@PAX@Z
-	_THRASH_writerect@24		= ?Write@Rect@@YGHUThrashRectangle@@PAXK@Z
 	_THRASH_getstate@4			= ?Get@State@@YGKK@Z
 	_THRASH_setstate@8			= ?Set@State@@YGKKK@Z
 	_THRASH_talloc@20			= ?Allocate@Texture@@YGPAUThrashTexture@@KKW4ThrashColorFormatIndex@@W4ThrashIndexFormatIndex@@K@Z
