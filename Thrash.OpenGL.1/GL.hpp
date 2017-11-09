@@ -31,12 +31,10 @@
 
 typedef BOOL(WINAPI * PFNWGLCHOOSEPIXELFORMATARBPROC) (HDC hdc, const int* piAttribIList, const FLOAT *pfAttribFList, UINT nMaxFormats, int *piFormats, UINT *nNumFormats);
 
-#define GL_VER_1_0 0x0100
 #define GL_VER_1_1 0x0110
 #define GL_VER_1_2 0x0120
 #define GL_VER_1_3 0x0130
 #define GL_VER_1_4 0x0140
-
 
 #define WGL_DRAW_TO_WINDOW_ARB 0x2001
 #define WGL_SUPPORT_OPENGL_ARB 0x2010

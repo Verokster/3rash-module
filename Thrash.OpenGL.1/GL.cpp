@@ -207,42 +207,47 @@ VOID CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 	LoadGLFunction(buffer, "glColorTable", (PROC*)&GLColorTable, "EXT");
 	LoadGLFunction(buffer, "glPolygonOffset", (PROC*)&GLPolygonOffset);
 
-	glVersion = 0;
-	WORD shiftVal = 8;
-	const CHAR* strVer = (const CHAR*)GLGetString(GL_VERSION);
-	WORD j = 0;
-	while (TRUE)
+	if (GLGetString)
 	{
-		if (strVer[j] <= '9' && strVer[j] >= '0')
+		glVersion = 0;
+		WORD shiftVal = 8;
+		const CHAR* strVer = (const CHAR*)GLGetString(GL_VERSION);
+		WORD j = 0;
+		while (TRUE)
 		{
-			glVersion += (strVer[j] - '0') << shiftVal;
-			shiftVal -= 4;
+			if (strVer[j] <= '9' && strVer[j] >= '0')
+			{
+				glVersion += (strVer[j] - '0') << shiftVal;
+				shiftVal -= 4;
+			}
+			else if (strVer[j] != '.')
+				break;
+
+			++j;
 		}
-		else if (strVer[j] != '.')
-			break;
 
-		++j;
+		const GLubyte* extensions = GLGetString(GL_EXTENSIONS);
+
+		if (glVersion < GL_VER_1_2)
+			glCapsBGR = strstr((const CHAR*)extensions, "GL_EXT_bgra") != NULL;
+		else
+			glCapsBGR = TRUE;
+
+		if (glVersion < GL_VER_1_2)
+			glCapsBGRA = strstr((const CHAR*)extensions, "GL_EXT_bgra") != NULL || strstr((const CHAR*)extensions, "GL_EXT_texture_format_BGRA8888") != NULL || strstr((const CHAR*)extensions, "GL_APPLE_texture_format_BGRA8888") != NULL;
+		else
+			glCapsBGRA = TRUE;
+
+		if (glVersion < GL_VER_1_2)
+			glCapsClampToEdge = strstr((const CHAR*)extensions, "GL_EXT_texture_edge_clamp") != NULL || strstr((const CHAR*)extensions, "GL_SGIS_texture_edge_clamp") != NULL;
+		else
+			glCapsClampToEdge = TRUE;
+
+		if (glVersion < GL_VER_1_4)
+			glCapsMirroredRepeat = strstr((const CHAR*)extensions, "GL_ARB_texture_mirrored_repeat") != NULL || strstr((const CHAR*)extensions, "GL_IBM_texture_mirrored_repeat") != NULL;
+		else
+			glCapsMirroredRepeat = TRUE;
 	}
-
-	const GLubyte* extensions = GLGetString(GL_EXTENSIONS);
-
-	if (glVersion < GL_VER_1_2)
-		glCapsBGR = strstr((const CHAR*)extensions, "GL_EXT_bgra") != NULL;
 	else
-		glCapsBGR = TRUE;
-
-	if (glVersion < GL_VER_1_2)
-		glCapsBGRA = strstr((const CHAR*)extensions, "GL_EXT_bgra") != NULL || strstr((const CHAR*)extensions, "GL_EXT_texture_format_BGRA8888") != NULL || strstr((const CHAR*)extensions, "GL_APPLE_texture_format_BGRA8888") != NULL;
-	else
-		glCapsBGRA = TRUE;
-
-	if (glVersion < GL_VER_1_2)
-		glCapsClampToEdge = strstr((const CHAR*)extensions, "GL_EXT_texture_edge_clamp") != NULL || strstr((const CHAR*)extensions, "GL_SGIS_texture_edge_clamp") != NULL;
-	else
-		glCapsClampToEdge = TRUE;
-
-	if (glVersion < GL_VER_1_4)
-		glCapsMirroredRepeat = strstr((const CHAR*)extensions, "GL_ARB_texture_mirrored_repeat") != NULL || strstr((const CHAR*)extensions, "GL_IBM_texture_mirrored_repeat") != NULL;
-	else
-		glCapsMirroredRepeat = TRUE;
+		glVersion = GL_VER_1_1;
 }

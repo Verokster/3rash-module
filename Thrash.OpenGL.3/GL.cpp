@@ -33,6 +33,7 @@ WGLSWAPBUFFERS WGLSwapBuffers;
 WGLCREATECONTEXTATTRIBSARB WGLCreateContextAttribs;
 WGLSWAPINTERVALEXT WGLSwapInterval;
 
+GLGETSTRING GLGetString;
 GLFLUSH GLFlush;
 GLFINISH GLFinish;
 GLSCISSOR GLScissor;
@@ -107,6 +108,8 @@ GLUNIFORMMATRIX4FV GLUniformMatrix4fv;
 
 HMODULE hModule;
 
+WORD glVersion;
+
 VOID __fastcall LoadGLFunction(CHAR* buffer, const CHAR* name, PROC* func, const CHAR* sufix = NULL)
 {
 	const CHAR* loadName;
@@ -165,12 +168,9 @@ VOID __fastcall CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 				Main::ShowError("Invalid profile", __FILE__, "CreateContextAttribs", __LINE__);
 		}
 	}
-	else
-	{
-		Main::ShowError("wglCreateContextAttribsARB error", __FILE__, "CreateContextAttribs", __LINE__);
-	}
 
 	LoadGLFunction(buffer, "wglSwapInterval", (PROC*)&WGLSwapInterval, "EXT");
+	LoadGLFunction(buffer, "glGetString", (PROC*)&GLGetString);
 	LoadGLFunction(buffer, "glFlush", (PROC*)&GLFlush);
 	LoadGLFunction(buffer, "glFinish", (PROC*)&GLFinish);
 	LoadGLFunction(buffer, "glScissor", (PROC*)&GLScissor);
@@ -242,6 +242,31 @@ VOID __fastcall CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 	LoadGLFunction(buffer, "glUniform4f", (PROC*)&GLUniform4f);
 
 	LoadGLFunction(buffer, "glUniformMatrix4fv", (PROC*)&GLUniformMatrix4fv);
+
+	if (GLGetString)
+	{
+		glVersion = 0;
+		WORD shiftVal = 8;
+		const CHAR* strVer = (const CHAR*)GLGetString(GL_VERSION);
+		WORD j = 0;
+		while (TRUE)
+		{
+			if (strVer[j] <= '9' && strVer[j] >= '0')
+			{
+				glVersion += (strVer[j] - '0') << shiftVal;
+				shiftVal -= 4;
+			}
+			else if (strVer[j] != '.')
+				break;
+
+			++j;
+		}
+	}
+	else
+		glVersion = GL_VER_1_1;
+
+	if (glVersion < GL_VER_3_0)
+		Main::ShowError("OpenGL 3.0 is required", __FILE__, "CreateContextAttribs", __LINE__);
 }
 
 #ifdef _DEBUG

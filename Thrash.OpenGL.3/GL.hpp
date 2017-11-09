@@ -45,6 +45,9 @@ typedef char GLchar;
 
 typedef BOOL(WINAPI * PFNWGLCHOOSEPIXELFORMATARBPROC) (HDC hdc, const int* piAttribIList, const FLOAT *pfAttribFList, UINT nMaxFormats, int *piFormats, UINT *nNumFormats);
 
+#define GL_VER_1_1 0x0110
+#define GL_VER_3_0 0x0300
+
 #define WGL_DRAW_TO_WINDOW_ARB 0x2001
 #define WGL_SUPPORT_OPENGL_ARB 0x2010
 #define WGL_DOUBLE_BUFFER_ARB 0x2011
@@ -113,6 +116,7 @@ typedef BOOL(__stdcall *WGLSWAPBUFFERS)(HDC devContext);
 typedef HGLRC(__stdcall *WGLCREATECONTEXTATTRIBSARB)(HDC hDC, HGLRC hshareContext, const DWORD *attribList);
 typedef BOOL(__stdcall *WGLSWAPINTERVALEXT)(DWORD);
 
+typedef const GLubyte* (__stdcall *GLGETSTRING)(GLenum name);
 typedef void(__stdcall *GLFLUSH)();
 typedef void(__stdcall *GLFINISH)();
 typedef void(__stdcall *GLSCISSOR)(GLint x, GLint y, GLsizei width, GLsizei height);
@@ -193,6 +197,7 @@ extern WGLSWAPBUFFERS WGLSwapBuffers;
 extern WGLCREATECONTEXTATTRIBSARB WGLCreateContextAttribs;
 extern WGLSWAPINTERVALEXT WGLSwapInterval;
 
+extern GLGETSTRING GLGetString;
 extern GLFLUSH GLFlush;
 extern GLFINISH GLFinish;
 extern GLSCISSOR GLScissor;
@@ -265,6 +270,8 @@ extern GLUNIFORM4F GLUniform4f;
 extern GLUNIFORMMATRIX4FV GLUniformMatrix4fv;
 
 extern HMODULE hModule;
+
+extern WORD glVersion;
 
 VOID __fastcall CreateContextAttribs(HDC* devContext, HGLRC* glContext);
 
