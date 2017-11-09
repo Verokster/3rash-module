@@ -11,7 +11,6 @@ struct ThrashForced
 	BOOL vSync;
 	BOOL aspect;
 	FLOAT gamma;
-	BOOL indexedVBO;
 	DWORD filtering;
 	BOOL add640x480x16;
 	BOOL movies16Bit;

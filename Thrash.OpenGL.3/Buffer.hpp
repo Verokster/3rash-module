@@ -5,7 +5,7 @@ namespace Buffer
 	VOID __fastcall Create();
 	VOID __fastcall Release();
 	VOID __fastcall Draw();
-	BOOL __fastcall Check(DWORD type);
-	DWORD __fastcall AddVertex(ThrashVertex* vertex);
-	VOID __fastcall AddIndex(DWORD index);
+	VOID __fastcall AddPoint(ThrashVertex* vertex);
+	VOID __fastcall AddLine(ThrashVertex* vertex1, ThrashVertex* vertex2);
+	VOID __fastcall AddTri(ThrashVertex* vertex1, ThrashVertex* vertex2, ThrashVertex* vertex3);
 }

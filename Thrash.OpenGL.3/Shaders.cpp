@@ -78,12 +78,6 @@ namespace Shaders
 		uniSpecularEnabledLoc = GLGetUniformLocation(shProgram, "specularEnabled");
 		uniGammaLoc = GLGetUniformLocation(shProgram, "gamma");
 
-		GLuint id = 0;
-		GLUniform1i(GLGetUniformLocation(shProgram, "tex01"), id++);
-		GLUniform1i(GLGetUniformLocation(shProgram, "tex02"), id++);
-		GLUniform1i(GLGetUniformLocation(shProgram, "tex03"), id++);
-		GLUniform1i(GLGetUniformLocation(shProgram, "tex04"), id++);
-
 		attrCoordsLoc = GLGetAttribLocation(shProgram, "vCoord");
 		attrDiffuseLoc = GLGetAttribLocation(shProgram, "vDiffuse");
 		attrSpecularLoc = GLGetAttribLocation(shProgram, "vSpecular");

@@ -5,31 +5,26 @@ namespace Line
 {
 	VOID THRASHAPI Draw(ThrashVertex* vertex1, ThrashVertex* vertex2)
 	{
-		Buffer::Check(GL_LINES);
-		Buffer::AddVertex(vertex1);
-		Buffer::AddVertex(vertex2);
+		Buffer::AddLine(vertex1, vertex2);
 	}
 
 	VOID THRASHAPI DrawStrip(DWORD count, ThrashVertex vertexArray[])
 	{
 		if (count > 0)
 		{
-			Buffer::Check(GL_LINES);
-
 			ThrashVertexV1* vArray = (ThrashVertexV1*)vertexArray;
 
-			Buffer::AddVertex(vArray++);
-			ThrashVertex* vertex = vArray++;
-			DWORD index = Buffer::AddVertex(vertex);
+			ThrashVertex* vertex1 = vArray++;
+			ThrashVertex* vertex2 = vArray++;
 
-			while(--count)
+			Buffer::AddLine(vertex1, vertex2);
+
+			while (--count)
 			{
-				if (Buffer::Check(GL_LINES))
-					Buffer::AddVertex(vertex);
-				else
-					Buffer::AddIndex(index);
+				vertex1 = vertex2;
+				vertex2 = vArray++;
 
-				index = Buffer::AddVertex(vArray++);
+				Buffer::AddLine(vertex1, vertex2);
 			}
 		}
 	}
@@ -38,22 +33,19 @@ namespace Line
 	{
 		if (count > 0)
 		{
-			Buffer::Check(GL_LINES);
-
 			ThrashVertexV1* vArray = (ThrashVertexV1*)vertexArray;
 
-			Buffer::AddVertex(&vArray[*indexes++]);
-			ThrashVertex* vertex = &vArray[*indexes++];
-			DWORD index = Buffer::AddVertex(vertex);
+			ThrashVertex* vertex1 = &vArray[*indexes++];
+			ThrashVertex* vertex2 = &vArray[*indexes++];
+
+			Buffer::AddLine(vertex1, vertex2);
 
 			while (--count)
 			{
-				if (Buffer::Check(GL_LINES))
-					Buffer::AddVertex(vertex);
-				else
-					Buffer::AddIndex(index);
+				vertex1 = vertex2;
+				vertex2 = &vArray[*indexes++];
 
-				index = Buffer::AddVertex(&vArray[*indexes++]);
+				Buffer::AddLine(vertex1, vertex2);
 			}
 		}
 	}
@@ -62,22 +54,19 @@ namespace Line
 	{
 		if (count > 0)
 		{
-			Buffer::Check(GL_LINES);
-
 			ThrashVertexV1* vArray = (ThrashVertexV1*)vertexArray;
 
-			Buffer::AddVertex(&vArray[*indexes++]);
-			ThrashVertex* vertex = &vArray[*indexes++];
-			DWORD index = Buffer::AddVertex(vertex);
+			ThrashVertex* vertex1 = &vArray[*indexes++];
+			ThrashVertex* vertex2 = &vArray[*indexes++];
 
-			while(--count)
+			Buffer::AddLine(vertex1, vertex2);
+
+			while (--count)
 			{
-				if (Buffer::Check(GL_LINES))
-					Buffer::AddVertex(vertex);
-				else
-					Buffer::AddIndex(index);
+				vertex1 = vertex2;
+				vertex2 = &vArray[*indexes++];
 
-				index = Buffer::AddVertex(&vArray[*indexes++]);
+				Buffer::AddLine(vertex1, vertex2);
 			}
 		}
 	}
@@ -90,9 +79,10 @@ namespace Line
 
 			do
 			{
-				Buffer::Check(GL_LINES);
-				Buffer::AddVertex(vArray++);
-				Buffer::AddVertex(vArray++);
+				ThrashVertex* vertex1 = vArray++;
+				ThrashVertex* vertex2 = vArray++;
+
+				Buffer::AddLine(vertex1, vertex2);
 			} while (--count);
 		}
 	}
@@ -105,9 +95,10 @@ namespace Line
 
 			do
 			{
-				Buffer::Check(GL_LINES);
-				Buffer::AddVertex(&vArray[*indexes++]);
-				Buffer::AddVertex(&vArray[*indexes++]);
+				ThrashVertex* vertex1 = vArray++;
+				ThrashVertex* vertex2 = vArray++;
+
+				Buffer::AddLine(vertex1, vertex2);
 			} while (--count);
 		}
 	}
@@ -120,9 +111,10 @@ namespace Line
 
 			do
 			{
-				Buffer::Check(GL_LINES);
-				Buffer::AddVertex(&vArray[*indexes++]);
-				Buffer::AddVertex(&vArray[*indexes++]);
+				ThrashVertex* vertex1 = &vArray[*indexes++];
+				ThrashVertex* vertex2 = &vArray[*indexes++];
+
+				Buffer::AddLine(vertex1, vertex2);
 			} while (--count);
 		}
 	}

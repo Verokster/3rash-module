@@ -102,7 +102,6 @@ namespace Main
 		forced.vSync = GetEnvironmentValue(0, envPrefix, "VSYNC");
 		forced.aspect = GetEnvironmentValue(0, envPrefix, "ASPECT");
 		forced.filtering = GetEnvironmentValue(0, envPrefix, "TEXFILTER");
-		forced.indexedVBO = GetEnvironmentValue(0, envPrefix, "INDEXED_VBO");
 		forced.add640x480x16 = GetEnvironmentValue(1, envPrefix, "ADD640X480X16");
 		forced.movies16Bit = GetEnvironmentValue(0, envPrefix, "MOVIES16BIT");
 		forced.gamma = GetEnvironmentValue(5, envPrefix, "GAMMA") * 0.1f + 0.5f;
@@ -115,8 +114,8 @@ namespace Main
 	{
 		if (!about.size)
 		{
-			strcpy(about.signature, "OGL3"); strcpy(about.driverName, "OpenGL 3.0");
-			//strcpy(about.signature, "D3D7");  strcpy(about.driverName, "DX7 3rash");
+			//strcpy(about.signature, "OGL3"); strcpy(about.driverName, "OpenGL 3.0");
+			strcpy(about.signature, "D3D7");  strcpy(about.driverName, "DX7 3rash");
 
 			strcpy(about.deviceName, "D3D Device");
 

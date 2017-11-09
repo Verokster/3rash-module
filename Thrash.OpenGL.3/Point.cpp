@@ -5,8 +5,7 @@ namespace Point
 {
 	VOID THRASHAPI Draw(ThrashVertex* vertex)
 	{
-		Buffer::Check(GL_POINTS);
-		Buffer::AddVertex(vertex);
+		Buffer::AddPoint(vertex);
 	}
 
 	VOID THRASHAPI DrawStrip(DWORD count, ThrashVertex vertexArray[])
@@ -17,8 +16,7 @@ namespace Point
 
 			do
 			{
-				Buffer::Check(GL_POINTS);
-				Buffer::AddVertex(vArray++);
+				Buffer::AddPoint(vArray++);
 			} while (--count);
 		}
 	}
@@ -31,8 +29,7 @@ namespace Point
 
 			do
 			{
-				Buffer::Check(GL_POINTS);
-				Buffer::AddVertex(&vArray[*indexes++]);
+				Buffer::AddPoint(&vArray[*indexes++]);
 			} while (--count);
 		}
 	}
@@ -45,8 +42,7 @@ namespace Point
 
 			do
 			{
-				Buffer::Check(GL_POINTS);
-				Buffer::AddVertex(&vArray[*indexes++]);
+				Buffer::AddPoint(&vArray[*indexes++]);
 			} while (--count);
 		}
 	}

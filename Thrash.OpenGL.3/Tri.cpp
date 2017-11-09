@@ -25,37 +25,21 @@ namespace Tri
 
 	VOID THRASHAPI Draw(ThrashVertex* vertex1, ThrashVertex* vertex2, ThrashVertex* vertex3)
 	{
-		if (CheckCullFace(vertex1, vertex2, vertex3))
-		{
-			Buffer::Check(GL_TRIANGLES);
-
-			Buffer::AddVertex(vertex1);
-			Buffer::AddVertex(vertex2);
-			Buffer::AddVertex(vertex3);
-		}
+		Buffer::AddTri(vertex1, vertex2, vertex3);
 	}
 
 	VOID THRASHAPI DrawStrip(DWORD count, ThrashVertex vertexArray[])
 	{
 		if (count > 0)
 		{
-			Buffer::Check(GL_TRIANGLES);
-
 			ThrashVertexV1* vArray = (ThrashVertexV1*)vertexArray;
-			DWORD index1, index2;
-			
+
 			ThrashVertex* vertex1 = vArray++;
 			ThrashVertex* vertex2 = vArray++;
 			ThrashVertex* vertex3 = vArray++;
 
-			BOOL check = Tri::CheckCullFace(vertex1, vertex2, vertex3);
-			if (check)
-			{
-						 Buffer::AddVertex(vertex1);
-				index1 = Buffer::AddVertex(vertex2);
-				index2 = Buffer::AddVertex(vertex3);
-			}
-			
+			Buffer::AddTri(vertex1, vertex2, vertex3);
+
 			BOOL cw = FALSE;
 			while (--count)
 			{
@@ -63,48 +47,11 @@ namespace Tri
 				vertex2 = vertex3;
 				vertex3 = vArray++;
 
-				BOOL newCheck;
 				if (cw)
-				{
-					newCheck = Tri::CheckCullFace(vertex1, vertex2, vertex3);
-					if (newCheck)
-					{
-						if (!check || Buffer::Check(GL_TRIANGLES))
-						{
-							Buffer::AddVertex(vertex1);
-							index1 = Buffer::AddVertex(vertex2);
-						}
-						else
-						{
-							Buffer::AddIndex(index1);
-							Buffer::AddIndex(index2);
-							index1 = index2;
-						}
-						index2 = Buffer::AddVertex(vertex3);
-					}
-				}
+					Buffer::AddTri(vertex1, vertex2, vertex3);
 				else
-				{
-					newCheck = Tri::CheckCullFace(vertex2, vertex1, vertex3);
-					if (newCheck)
-					{
-						if (!check || Buffer::Check(GL_TRIANGLES))
-						{
-							index1 = Buffer::AddVertex(vertex2);
-							Buffer::AddVertex(vertex1);
-						}
-						else
-						{
-							Buffer::AddIndex(index2);
-							Buffer::AddIndex(index1);
-						
-							index1 = index2;
-						}
-						index2 = Buffer::AddVertex(vertex3);
-					}
-				}
+					Buffer::AddTri(vertex2, vertex1, vertex3);
 
-				check = newCheck;
 				cw = !cw;
 			}
 		}
@@ -114,22 +61,13 @@ namespace Tri
 	{
 		if (count > 0)
 		{
-			Buffer::Check(GL_TRIANGLES);
-
 			ThrashVertexV1* vArray = (ThrashVertexV1*)vertexArray;
-			DWORD index1, index2;
 
 			ThrashVertex* vertex1 = &vArray[*indexes++];
 			ThrashVertex* vertex2 = &vArray[*indexes++];
 			ThrashVertex* vertex3 = &vArray[*indexes++];
 
-			BOOL check = Tri::CheckCullFace(vertex1, vertex2, vertex3);
-			if (check)
-			{
-				Buffer::AddVertex(vertex1);
-				index1 = Buffer::AddVertex(vertex2);
-				index2 = Buffer::AddVertex(vertex3);
-			}
+			Buffer::AddTri(vertex1, vertex2, vertex3);
 
 			BOOL cw = FALSE;
 			while (--count)
@@ -138,48 +76,11 @@ namespace Tri
 				vertex2 = vertex3;
 				vertex3 = &vArray[*indexes++];
 
-				BOOL newCheck;
 				if (cw)
-				{
-					newCheck = Tri::CheckCullFace(vertex1, vertex2, vertex3);
-					if (newCheck)
-					{
-						if (!check || Buffer::Check(GL_TRIANGLES))
-						{
-							Buffer::AddVertex(vertex1);
-							index1 = Buffer::AddVertex(vertex2);
-						}
-						else
-						{
-							Buffer::AddIndex(index1);
-							Buffer::AddIndex(index2);
-							index1 = index2;
-						}
-						index2 = Buffer::AddVertex(vertex3);
-					}
-				}
+					Buffer::AddTri(vertex1, vertex2, vertex3);
 				else
-				{
-					newCheck = Tri::CheckCullFace(vertex2, vertex1, vertex3);
-					if (newCheck)
-					{
-						if (!check || Buffer::Check(GL_TRIANGLES))
-						{
-							index1 = Buffer::AddVertex(vertex2);
-							Buffer::AddVertex(vertex1);
-						}
-						else
-						{
-							Buffer::AddIndex(index2);
-							Buffer::AddIndex(index1);
+					Buffer::AddTri(vertex2, vertex1, vertex3);
 
-							index1 = index2;
-						}
-						index2 = Buffer::AddVertex(vertex3);
-					}
-				}
-
-				check = newCheck;
 				cw = !cw;
 			}
 		}
@@ -189,23 +90,14 @@ namespace Tri
 	{
 		if (count > 0)
 		{
-			Buffer::Check(GL_TRIANGLES);
-
 			ThrashVertexV1* vArray = (ThrashVertexV1*)vertexArray;
-			DWORD index1, index2;
-			
+
 			ThrashVertex* vertex1 = &vArray[*indexes++];
 			ThrashVertex* vertex2 = &vArray[*indexes++];
 			ThrashVertex* vertex3 = &vArray[*indexes++];
 
-			BOOL check = Tri::CheckCullFace(vertex1, vertex2, vertex3);
-			if (check)
-			{
-						 Buffer::AddVertex(vertex1);
-				index1 = Buffer::AddVertex(vertex2);
-				index2 = Buffer::AddVertex(vertex3);
-			}
-			
+			Buffer::AddTri(vertex1, vertex2, vertex3);
+
 			BOOL cw = FALSE;
 			while (--count)
 			{
@@ -213,48 +105,11 @@ namespace Tri
 				vertex2 = vertex3;
 				vertex3 = &vArray[*indexes++];
 
-				BOOL newCheck;
 				if (cw)
-				{
-					newCheck = Tri::CheckCullFace(vertex1, vertex2, vertex3);
-					if (newCheck)
-					{
-						if (!check || Buffer::Check(GL_TRIANGLES))
-						{
-							Buffer::AddVertex(vertex1);
-							index1 = Buffer::AddVertex(vertex2);
-						}
-						else
-						{
-							Buffer::AddIndex(index1);
-							Buffer::AddIndex(index2);
-							index1 = index2;
-						}
-						index2 = Buffer::AddVertex(vertex3);
-					}
-				}
+					Buffer::AddTri(vertex1, vertex2, vertex3);
 				else
-				{
-					newCheck = Tri::CheckCullFace(vertex2, vertex1, vertex3);
-					if (newCheck)
-					{
-						if (!check || Buffer::Check(GL_TRIANGLES))
-						{
-							index1 = Buffer::AddVertex(vertex2);
-							Buffer::AddVertex(vertex1);
-						}
-						else
-						{
-							Buffer::AddIndex(index2);
-							Buffer::AddIndex(index1);
-						
-							index1 = index2;
-						}
-						index2 = Buffer::AddVertex(vertex3);
-					}
-				}
+					Buffer::AddTri(vertex2, vertex1, vertex3);
 
-				check = newCheck;
 				cw = !cw;
 			}
 		}
@@ -264,45 +119,20 @@ namespace Tri
 	{
 		if (count > 0)
 		{
-			Buffer::Check(GL_TRIANGLES);
-
 			ThrashVertexV1* vArray = (ThrashVertexV1*)vertexArray;
-			DWORD index1, index3;
 
 			ThrashVertex* vertex1 = vArray++;
 			ThrashVertex* vertex2 = vArray++;
 			ThrashVertex* vertex3 = vArray++;
 
-			BOOL check = Tri::CheckCullFace(vertex1, vertex2, vertex3);
-			if (check)
-			{
-				index1 = Buffer::AddVertex(vertex1);
-						 Buffer::AddVertex(vertex2);
-				index3 = Buffer::AddVertex(vertex3);
-			}
+			Buffer::AddTri(vertex1, vertex2, vertex3);
 
 			while (--count)
 			{
 				vertex2 = vertex3;
 				vertex3 = vArray++;
 
-				BOOL newCheck = Tri::CheckCullFace(vertex1, vertex2, vertex3);
-				if (newCheck)
-				{
-					if (!check || Buffer::Check(GL_TRIANGLES))
-					{
-						index1 = Buffer::AddVertex(vertex1);
-						Buffer::AddVertex(vertex2);
-					}
-					else
-					{
-						Buffer::AddIndex(index1);
-						Buffer::AddIndex(index3);
-					}
-					index3 = Buffer::AddVertex(vertex3);
-				}
-
-				check = newCheck;
+				Buffer::AddTri(vertex1, vertex2, vertex3);
 			}
 		}
 	}
@@ -311,45 +141,20 @@ namespace Tri
 	{
 		if (count > 0)
 		{
-			Buffer::Check(GL_TRIANGLES);
-
 			ThrashVertexV1* vArray = (ThrashVertexV1*)vertexArray;
-			DWORD index1, index2;
 
 			ThrashVertex* vertex1 = &vArray[*indexes++];
 			ThrashVertex* vertex2 = &vArray[*indexes++];
 			ThrashVertex* vertex3 = &vArray[*indexes++];
 
-			BOOL check = Tri::CheckCullFace(vertex1, vertex2, vertex3);
-			if (check)
-			{
-				index1 = Buffer::AddVertex(vertex1);
-				Buffer::AddVertex(vertex2);
-				index2 = Buffer::AddVertex(vertex3);
-			}
+			Buffer::AddTri(vertex1, vertex2, vertex3);
 
 			while (--count)
 			{
 				vertex2 = vertex3;
 				vertex3 = &vArray[*indexes++];
 
-				BOOL newCheck = Tri::CheckCullFace(vertex1, vertex2, vertex3);
-				if (newCheck)
-				{
-					if (!check || Buffer::Check(GL_TRIANGLES))
-					{
-						index1 = Buffer::AddVertex(vertex1);
-						Buffer::AddVertex(vertex2);
-					}
-					else
-					{
-						Buffer::AddIndex(index1);
-						Buffer::AddIndex(index2);
-					}
-					index2 = Buffer::AddVertex(vertex3);
-				}
-
-				check = newCheck;
+				Buffer::AddTri(vertex1, vertex2, vertex3);
 			}
 		}
 	}
@@ -358,45 +163,20 @@ namespace Tri
 	{
 		if (count > 0)
 		{
-			Buffer::Check(GL_TRIANGLES);
-
 			ThrashVertexV1* vArray = (ThrashVertexV1*)vertexArray;
-			DWORD index1, index2;
 
 			ThrashVertex* vertex1 = &vArray[*indexes++];
 			ThrashVertex* vertex2 = &vArray[*indexes++];
 			ThrashVertex* vertex3 = &vArray[*indexes++];
 
-			BOOL check = Tri::CheckCullFace(vertex1, vertex2, vertex3);
-			if (check)
-			{
-				index1 = Buffer::AddVertex(vertex1);
-						 Buffer::AddVertex(vertex2);
-				index2 = Buffer::AddVertex(vertex3);
-			}
+			Buffer::AddTri(vertex1, vertex2, vertex3);
 
 			while (--count)
 			{
 				vertex2 = vertex3;
 				vertex3 = &vArray[*indexes++];
 
-				BOOL newCheck = Tri::CheckCullFace(vertex1, vertex2, vertex3);
-				if (newCheck)
-				{
-					if (!check || Buffer::Check(GL_TRIANGLES))
-					{
-						index1 = Buffer::AddVertex(vertex1);
-						Buffer::AddVertex(vertex2);
-					}
-					else
-					{
-						Buffer::AddIndex(index1);
-						Buffer::AddIndex(index2);
-					}
-					index2 = Buffer::AddVertex(vertex3);
-				}
-
-				check = newCheck;
+				Buffer::AddTri(vertex1, vertex2, vertex3);
 			}
 		}
 	}
@@ -405,8 +185,6 @@ namespace Tri
 	{
 		if (count > 0)
 		{
-			Buffer::Check(GL_TRIANGLES);
-
 			ThrashVertexV1* vArray = (ThrashVertexV1*)vertexArray;
 
 			do
@@ -415,14 +193,7 @@ namespace Tri
 				ThrashVertex* vertex2 = vArray++;
 				ThrashVertex* vertex3 = vArray++;
 
-				if (CheckCullFace(vertex1, vertex2, vertex3))
-				{
-					Buffer::Check(GL_TRIANGLES);
-
-					Buffer::AddVertex(vertex1);
-					Buffer::AddVertex(vertex2);
-					Buffer::AddVertex(vertex3);
-				}
+				Buffer::AddTri(vertex1, vertex2, vertex3);
 			} while (--count);
 		}
 	}
@@ -431,8 +202,6 @@ namespace Tri
 	{
 		if (count > 0)
 		{
-			Buffer::Check(GL_TRIANGLES);
-
 			ThrashVertexV1* vArray = (ThrashVertexV1*)vertexArray;
 
 			do
@@ -441,14 +210,7 @@ namespace Tri
 				ThrashVertex* vertex2 = &vArray[*indexes++];
 				ThrashVertex* vertex3 = &vArray[*indexes++];
 
-				if (CheckCullFace(vertex1, vertex2, vertex3))
-				{
-					Buffer::Check(GL_TRIANGLES);
-
-					Buffer::AddVertex(vertex1);
-					Buffer::AddVertex(vertex2);
-					Buffer::AddVertex(vertex3);
-				}
+				Buffer::AddTri(vertex1, vertex2, vertex3);
 			} while (--count);
 		}
 	}
@@ -457,8 +219,6 @@ namespace Tri
 	{
 		if (count > 0)
 		{
-			Buffer::Check(GL_TRIANGLES);
-
 			ThrashVertexV1* vArray = (ThrashVertexV1*)vertexArray;
 
 			do
@@ -467,14 +227,7 @@ namespace Tri
 				ThrashVertex* vertex2 = &vArray[*indexes++];
 				ThrashVertex* vertex3 = &vArray[*indexes++];
 
-				if (CheckCullFace(vertex1, vertex2, vertex3))
-				{
-					Buffer::Check(GL_TRIANGLES);
-
-					Buffer::AddVertex(vertex1);
-					Buffer::AddVertex(vertex2);
-					Buffer::AddVertex(vertex3);
-				}
+				Buffer::AddTri(vertex1, vertex2, vertex3);
 			} while (--count);
 		}
 	}
