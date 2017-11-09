@@ -782,7 +782,8 @@ namespace State
 				break;
 
 			case WindowHandle:
-				hWnd = (HWND)value;
+				//hWnd = (HWND)value;
+				value = 1;
 				break;
 
 			case CurrentWindow:

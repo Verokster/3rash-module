@@ -68,6 +68,9 @@ typedef BOOL(WINAPI * PFNWGLCHOOSEPIXELFORMATARBPROC) (HDC hdc, const int* piAtt
 #define GL_INFO_LOG_LENGTH 0x8B84
 #define GL_INVALID_FRAMEBUFFER_OPERATION 0x0506
 
+#define GL_MAP_WRITE_BIT 0x0002
+#define GL_MAP_UNSYNCHRONIZED_BIT 0x0020
+
 #define GL_TEXTURE0 0x84C0
 #define GL_TEXTURE1 0x84C1
 #define GL_TEXTURE2 0x84C2
@@ -145,7 +148,9 @@ typedef GLenum(__stdcall *GLGETERROR)();
 typedef void(__stdcall *GLGENBUFFERS)(GLsizei n, GLuint* buffers);
 typedef void(__stdcall *GLDELETEBUFFERS)(GLsizei n, const GLuint* buffers);
 typedef void(__stdcall *GLBINDBUFFER)(GLenum target, GLuint buffer);
-typedef void(__stdcall *GLBUFFERSUBDATA)(GLenum	target, GLintptr offset, GLsizeiptr size, const GLvoid* data);
+typedef void*(__stdcall *GLMAPBUFFERRANGE)(GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access);
+typedef GLboolean(__stdcall *GLUNMAPBUFFER)(GLenum target);
+typedef void(__stdcall *GLFLUSHMAPPEDBUFFERRANGE)(GLenum target, GLintptr offset, GLsizeiptr length);
 typedef void(__stdcall *GLBUFFERDATA)(GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage);
 typedef void(__stdcall *GLDRAWARRAYS)(GLenum mode, GLint first, GLsizei count);
 typedef void(__stdcall *GLDRAWELEMENTS)(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices);
@@ -224,7 +229,9 @@ extern GLGENBUFFERS GLGenBuffers;
 extern GLDELETEBUFFERS GLDeleteBuffers;
 extern GLBINDBUFFER GLBindBuffer;
 extern GLBUFFERDATA GLBufferData;
-extern GLBUFFERSUBDATA GLBufferSubData;
+extern GLMAPBUFFERRANGE GLMapBufferRange;
+extern GLUNMAPBUFFER GLUnmapBuffer;
+extern GLFLUSHMAPPEDBUFFERRANGE GLFlushMappedBufferRange;
 extern GLDRAWARRAYS GLDrawArrays;
 extern GLDRAWELEMENTS GLDrawElements;
 extern GLGENVERTEXARRAYS GLGenVertexArrays;

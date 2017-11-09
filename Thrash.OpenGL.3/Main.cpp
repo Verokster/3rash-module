@@ -255,7 +255,6 @@ namespace Main
 
 	VOID THRASHAPI PageFlip()
 	{
-		//Buffer::Draw();
 		WGLSwapBuffers(hDc);
 	}
 
@@ -405,7 +404,6 @@ namespace Main
 
 	BOOL THRASHAPI Sync(DWORD value)
 	{
-		//Buffer::Draw();
 		return TRUE;
 	}
 }

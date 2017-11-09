@@ -26,22 +26,16 @@
 #include "Global.hpp"
 
 #define VBO_SIZE 3900
+#define STREAM_BUFFER_CAPACITY 4194304
 ThrashVertexV1 vertexData[VBO_SIZE];
 
 ThrashBuffer buffer;
 
 namespace Buffer
 {
-	VOID __fastcall Create()
+	VOID __fastcall Reset()
 	{
-		buffer.data = vertexData;
-
-		GLGenVertexArrays(1, &buffer.name);
-		GLBindVertexArray(buffer.name);
-
-		GLGenBuffers(1, &buffer.vName);
-		GLBindBuffer(GL_ARRAY_BUFFER, buffer.vName);
-		GLBufferData(GL_ARRAY_BUFFER, VBO_SIZE * sizeof(ThrashVertexV1), NULL, GL_STREAM_DRAW);
+		GLBufferData(GL_ARRAY_BUFFER, STREAM_BUFFER_CAPACITY, NULL, GL_STREAM_DRAW);
 
 		GLEnableVertexAttribArray(attrCoordsLoc);
 		GLVertexAttribPointer(attrCoordsLoc, 4, GL_FLOAT, GL_FALSE, sizeof(ThrashVertexV1), (GLvoid*)0);
@@ -54,6 +48,21 @@ namespace Buffer
 
 		GLEnableVertexAttribArray(attrTexCoordsLoc);
 		GLVertexAttribPointer(attrTexCoordsLoc, 2, GL_FLOAT, GL_FALSE, sizeof(ThrashVertexV1), (GLvoid*)24);
+
+		buffer.offset = 0;
+	}
+
+	VOID __fastcall Create()
+	{
+		buffer.data = vertexData;
+
+		GLGenVertexArrays(1, &buffer.name);
+		GLBindVertexArray(buffer.name);
+
+		GLGenBuffers(1, &buffer.vName);
+		GLBindBuffer(GL_ARRAY_BUFFER, buffer.vName);
+		
+		Reset();
 
 		buffer.type = GL_NONE;
 	}
@@ -69,28 +78,34 @@ namespace Buffer
 
 	VOID __fastcall Draw()
 	{
-		if (buffer.size && buffer.type)
+		if (buffer.type && buffer.size)
 		{
 			Texture::CheckWrap();
 
-			GLBufferSubData(GL_ARRAY_BUFFER, 0, buffer.size * sizeof(ThrashVertexV1), buffer.data);
+			DWORD streamDataSize = buffer.size * sizeof(ThrashVertexV1);
+			if (buffer.offset + streamDataSize > STREAM_BUFFER_CAPACITY)
+				Reset();
 
-			GLDrawArrays(buffer.type, 0, buffer.size);
+			VOID* data = GLMapBufferRange(GL_ARRAY_BUFFER, buffer.offset, streamDataSize, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+			if (data)
+				memcpy(data, buffer.data, streamDataSize);
+			GLUnmapBuffer(GL_ARRAY_BUFFER);
+
+			GLDrawArrays(buffer.type, buffer.offset / sizeof(ThrashVertexV1), buffer.size);
+			buffer.offset += streamDataSize;
 
 			buffer.size = 0;
 			buffer.type = GL_NONE;
 		}
 	}
 
-	BOOL __fastcall Check(DWORD type)
+	VOID __fastcall Check(DWORD type)
 	{
 		if (type != buffer.type || buffer.size == VBO_SIZE)
 		{
 			Draw();
 			buffer.type = type;
-			return TRUE;
 		}
-		else return FALSE;
 	}
 
 	VOID __fastcall AddVertex(ThrashVertex* vertex)

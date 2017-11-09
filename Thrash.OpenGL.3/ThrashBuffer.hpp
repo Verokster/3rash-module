@@ -29,6 +29,7 @@ struct ThrashBuffer
 	GLuint name;
 	GLuint vName;
 	DWORD type;
+	DWORD offset;
 	DWORD size;
 	ThrashVertexV1* data;
 };

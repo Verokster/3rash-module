@@ -45,6 +45,7 @@ namespace State
 		FogColor = 15,
 		LineWidth = 16,
 		FlatFans = 17,
+
 		Functions = 19,
 		EnableFog = 20,
 		FogMode = 21,
@@ -60,16 +61,20 @@ namespace State
 		ThrashApiVersion = 31,
 		MallocFunction = 32,
 		FreeFunction = 33,
+
 		AlphaMode = 36,
+
 		StateFunction = 39,
 		DepthCompare = 40,
 		TexturesCombine = 41,
 		VertexLayout = 42,
 		BackBufferType = 43,
 		TextureColorPalette = 44,
+
 		Gamma = 46,
 		EnableStencilBuffer = 47,
 		StencilFunc = 48,
+
 		StencilFail = 52,
 		StencilDepthFail = 53,
 		StencilPass = 54,
@@ -80,10 +85,12 @@ namespace State
 		BufferMode = 59,
 		FlipRate = 60,
 		ShamelessPlug = 61,
+
 		AlphaCompare = 64,
 		TextureClampS = 65,
 		TextureClampT = 66,
 		ClearDepth = 67,
+
 		Texture1Filter = 73,
 		Texture0Filter = 74,
 
@@ -97,19 +104,18 @@ namespace State
 		MaxPending = 109,
 		LibHandle = 110,
 		TextureUnits = 111,
+
 		Hint = 304,
 		LineDouble = 305,
 
 		// ============================
 		DeviceType = 400,
-		// ============================
-		// Unknown_ = 
 		Unknown_401 = 401,
-		Unknown_403 = 403, // structure (size = 188)
+		Unknown_403 = 403, // DeviceDescr structure (size = 188)
 		BlendSourceFactor = 404,
 		BlendDestinationFactor = 405,
-
-		Unknown_407 = 407,  // something for texture object
+		TexturesCombine2 = 406,
+		Unknown_407 = 407,  // something for texture object, seems like TMU
 		Unknown_408 = 408, // bool flag to indicate GetDeviceCaps or GetClientRect
 		Antialiasing = 409, // glEnable(GL_MULTISAMPLE) && glSampleCoverage();
 		TextureFactor = 410,
