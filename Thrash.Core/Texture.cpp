@@ -52,7 +52,7 @@ namespace Texture
 			} while (total);
 		}
 		else
-			Main::ShowError("Out of memory.", __FILE__, "Convert_BGR_4_To_BGR_24", __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGR_4_To_RGB_24", __LINE__);
 
 		return ptr;
 	}
@@ -77,7 +77,7 @@ namespace Texture
 			} while (total);
 		}
 		else
-			Main::ShowError("Out of memory.", __FILE__, "Convert_BGRA_4_To_BGRA_32", __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGRA_4_To_RGBA_32", __LINE__);
 
 		return ptr;
 	}
@@ -103,7 +103,7 @@ namespace Texture
 			} while (total);
 		}
 		else
-			Main::ShowError("Out of memory.", __FILE__, "Convert_BGR_8_To_BGR_24", __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGR_8_To_RGB_24", __LINE__);
 
 		return ptr;
 	}
@@ -124,7 +124,7 @@ namespace Texture
 			} while (total);
 		}
 		else
-			Main::ShowError("Out of memory.", __FILE__, "Convert_BGRA_8_To_BGRA_32", __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGRA_8_To_RGBA_32", __LINE__);
 
 		return ptr;
 	}
@@ -221,7 +221,7 @@ namespace Texture
 			} while (total);
 		}
 		else
-			Main::ShowError("Out of memory.", __FILE__, "dConvert_BGRA_32_To_RGBA_32", __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGRA_32_To_RGBA_32", __LINE__);
 
 		return ptr;
 	}
@@ -243,7 +243,7 @@ namespace Texture
 			} while (total);
 		}
 		else
-			Main::ShowError("Out of memory.", __FILE__, "Convert_BGRA4_To_RGBA_32", __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGRA_16_To_RGBA_32", __LINE__);
 
 		return ptr;
 	}

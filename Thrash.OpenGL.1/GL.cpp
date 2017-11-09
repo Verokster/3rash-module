@@ -89,7 +89,10 @@ GLPOLYGONOFFSET GLPolygonOffset;
 HMODULE hModule;
 
 WORD glVersion;
+BOOL glCapsBGR;
 BOOL glCapsBGRA;
+BOOL glCapsClampToEdge;
+BOOL glCapsMirroredRepeat;
 
 VOID __fastcall LoadGLFunction(CHAR* buffer, const CHAR* name, PROC* func, const CHAR* sufix = NULL)
 {
@@ -127,7 +130,9 @@ VOID CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 		DWORD wglAttributes[] = {
 			WGL_CONTEXT_MAJOR_VERSION_ARB, 1,
 			WGL_CONTEXT_MINOR_VERSION_ARB, 4,
-			WGL_CONTEXT_FLAGS_ARB, 0,
+			//WGL_CONTEXT_FLAGS_ARB, 0,
+			WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+			WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
 			0
 		};
 
@@ -219,11 +224,25 @@ VOID CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 		++j;
 	}
 
+	const GLubyte* extensions = GLGetString(GL_EXTENSIONS);
+
 	if (glVersion < GL_VER_1_2)
-	{
-		const GLubyte* extensions = GLGetString(GL_EXTENSIONS);
-		glCapsBGRA = strstr((const CHAR*)extensions, "GL_EXT_bgra") != NULL;
-	}
+		glCapsBGR = strstr((const CHAR*)extensions, "GL_EXT_bgra") != NULL;
+	else
+		glCapsBGR = TRUE;
+
+	if (glVersion < GL_VER_1_2)
+		glCapsBGRA = strstr((const CHAR*)extensions, "GL_EXT_bgra") != NULL || strstr((const CHAR*)extensions, "GL_EXT_texture_format_BGRA8888") != NULL || strstr((const CHAR*)extensions, "GL_APPLE_texture_format_BGRA8888") != NULL;
 	else
 		glCapsBGRA = TRUE;
+
+	if (glVersion < GL_VER_1_2)
+		glCapsClampToEdge = strstr((const CHAR*)extensions, "GL_EXT_texture_edge_clamp") != NULL || strstr((const CHAR*)extensions, "GL_SGIS_texture_edge_clamp") != NULL;
+	else
+		glCapsClampToEdge = TRUE;
+
+	if (glVersion < GL_VER_1_4)
+		glCapsMirroredRepeat = strstr((const CHAR*)extensions, "GL_ARB_texture_mirrored_repeat") != NULL || strstr((const CHAR*)extensions, "GL_IBM_texture_mirrored_repeat") != NULL;
+	else
+		glCapsMirroredRepeat = TRUE;
 }

@@ -313,7 +313,7 @@ namespace Texture
 				break;
 
 			case BGR_24:
-				if (!glCapsBGRA)
+				if (!glCapsBGR)
 				{
 					texture->format = GL_RGB;
 					texture->internalFormat = GL_RGB8;

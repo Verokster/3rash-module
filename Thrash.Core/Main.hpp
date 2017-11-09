@@ -26,7 +26,7 @@
 
 namespace Main
 {
-	VOID __fastcall ShowError(CHAR* message, CHAR* file, CHAR* function, DWORD line);
+	VOID __fastcall ShowError(const CHAR* message, const CHAR* file, const CHAR* function, DWORD line);
 	DWORD __fastcall GetEnvironmentValue(DWORD def, const CHAR* prefix, const CHAR* name);
 	VOID __fastcall LoadEnvironmentValues(ThrashAbout* about, const CHAR* prefix);
 	// --------------- EXPORT --------------

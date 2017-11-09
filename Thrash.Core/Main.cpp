@@ -27,7 +27,7 @@
 
 namespace Main
 {
-	VOID __fastcall ShowError(CHAR* message, CHAR* file, CHAR* function, DWORD line)
+	VOID __fastcall ShowError(const CHAR* message, const CHAR* file, const CHAR* function, DWORD line)
 	{
 		if (functions.ErrorMessageBox)
 		{

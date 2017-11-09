@@ -126,7 +126,7 @@ namespace State
 				break;
 
 			case TexturesCombine:
-				if (glVersion < GL_VER_1_2)
+				if (glVersion < GL_VER_1_3)
 					GLTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 				else
 				{
@@ -336,7 +336,10 @@ namespace State
 				switch (value)
 				{
 				case 0:
-					textureClampS = textureClampT = GL_CLAMP_TO_EDGE;
+					if (glCapsClampToEdge)
+						textureClampS = textureClampT = GL_CLAMP_TO_EDGE;
+					else
+						textureClampS = textureClampT = GL_CLAMP;
 					break;
 
 				case 1:
@@ -344,7 +347,10 @@ namespace State
 					break;
 
 				case 2:
-					textureClampS = textureClampT = GL_MIRRORED_REPEAT;
+					if (glCapsMirroredRepeat)
+						textureClampS = textureClampT = GL_MIRRORED_REPEAT;
+					else
+						return NULL;
 					break;
 
 				default:
@@ -357,7 +363,10 @@ namespace State
 				switch (value)
 				{
 				case 0:
-					textureClampS = GL_CLAMP_TO_EDGE;
+					if (glCapsClampToEdge)
+						textureClampS = GL_CLAMP_TO_EDGE;
+					else
+						textureClampS = GL_CLAMP;
 					break;
 
 				case 1:
@@ -365,7 +374,10 @@ namespace State
 					break;
 
 				case 2:
-					textureClampS = GL_MIRRORED_REPEAT;
+					if (glCapsMirroredRepeat)
+						textureClampS = GL_MIRRORED_REPEAT;
+					else
+						return NULL;
 					break;
 
 				default:
@@ -378,7 +390,10 @@ namespace State
 				switch (value)
 				{
 				case 0:
-					textureClampT = GL_CLAMP_TO_EDGE;
+					if (glCapsClampToEdge)
+						textureClampT = GL_CLAMP_TO_EDGE;
+					else
+						textureClampT = GL_CLAMP;
 					break;
 
 				case 1:
@@ -386,7 +401,10 @@ namespace State
 					break;
 
 				case 2:
-					textureClampT = GL_MIRRORED_REPEAT;
+					if (glCapsMirroredRepeat)
+						textureClampT = GL_MIRRORED_REPEAT;
+					else
+						return NULL;
 					break;
 
 				default:
