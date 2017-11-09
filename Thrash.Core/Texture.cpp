@@ -1,27 +1,32 @@
+/*
+	MIT License
+
+	Copyright (c) 2017 Oleksiy Ryabchun
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
 #include "stdafx.h"
 #include "Thrash.hpp"
 
 namespace Texture
 {
-	/*DWORD colorPalate16[] = {
-		0xFF000000,		// 0 — black
-		0xFF800000,		// 1 — maroon
-		0xFF008000,		// 2 — green
-		0xFF808000,		// 3 — olive
-		0xFF000080,		// 4 — navy
-		0xFF800080,		// 5 — purple
-		0xFF008080,		// 6 — teal
-		0xFFC0C0C0,		// 7 — silver
-		0xFF808080,		// 8 — gray
-		0xFFFF0000,		// 9 — red
-		0xFF00FF00,		// 10 — lime
-		0xFFFFFF00,		// 11 — yellow
-		0xFF0000FF,		// 12 — blue
-		0xFFFF00FF,		// 13 — fuchsia
-		0xFF00FFFF,		// 14 — aqua
-		0xFFFFFFFF		// 15 — white
-	};*/
-
 	VOID* __fastcall Convert_BGR_4_To_RGB_24(ThrashTexture* texture, VOID* memory, BYTE pallete[])
 	{
 		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
