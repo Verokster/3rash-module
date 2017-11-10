@@ -44,17 +44,34 @@ namespace Main
 		CHAR* val = NULL;
 
 		sprintf(dest, "%s_%s", prefix, name);
-		if (GetEnvironmentVariable(dest, destVal, sizeof(destVal)))
-			val = destVal;
-
-		if (!val)
+		if (GetPrivateProfileString("THRASH", dest, NULL, destVal, sizeof(destVal), iniFile))
+		{
+			SetEnvironmentVariable(dest, destVal);
+			return atoi(destVal);
+		}
+		else
 		{
 			sprintf(dest, "THRASH_%s", name);
-			if (GetEnvironmentVariable(dest, destVal, sizeof(destVal)))
-				val = destVal;
+			if (GetPrivateProfileString("THRASH", dest, NULL, destVal, sizeof(destVal), iniFile))
+			{
+				SetEnvironmentVariable(dest, destVal);
+				return atoi(destVal);
+			}
+			else
+			{
+				sprintf(dest, "%s_%s", prefix, name);
+				if (GetEnvironmentVariable(dest, destVal, sizeof(destVal)))
+					return atoi(destVal);
+				else
+				{
+					sprintf(dest, "THRASH_%s", name);
+					if (GetEnvironmentVariable(dest, destVal, sizeof(destVal)))
+						return atoi(destVal);
+				}
+			}
 		}
 
-		return val ? atoi(val) : def;
+		return def;
 	}
 
 	VOID __fastcall LoadEnvironmentValues(ThrashAbout* about, const CHAR* prefix)

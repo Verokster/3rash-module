@@ -115,6 +115,13 @@ namespace Main
 
 	VOID __inline LoadForced()
 	{
+		TCHAR path[MAX_PATH];
+		GetModuleFileName(hDllModule, path, MAX_PATH);
+		TCHAR* dot = strrchr(path, '.');
+		*dot = NULL;
+		strcpy(iniFile, path);
+		strcat(iniFile, ".ini");
+
 		forced.windowed = GetEnvironmentValue(0, envPrefix, "WINDOWED");
 		forced.resolution = GetEnvironmentValue(0, envPrefix, "RESOLUTION");
 		forced.colorDepth = GetEnvironmentValue(32, envPrefix, "COLORDEPTH");

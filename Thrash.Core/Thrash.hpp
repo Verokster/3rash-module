@@ -78,6 +78,7 @@ extern HWND hWnd;
 extern HANDLE hChangeHandle;
 extern HANDLE hRestoreHandle;
 extern HINSTANCE hDllModule;
+extern TCHAR iniFile[];
 
 extern ThrashTexColorFormats textureFormats;
 extern ThrashTexColorIndexFormats textureIndexFormats;
