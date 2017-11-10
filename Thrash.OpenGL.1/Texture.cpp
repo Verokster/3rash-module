@@ -413,7 +413,7 @@ namespace Texture
 
 	LPTHRASHTEXTURE THRASHAPI Update(ThrashTexture* texture, VOID* memory, BYTE* pallete)
 	{
-		if (texture == NULL || memory == NULL || texture->colorFormatIndex == 0)
+		if (!texture || !memory || texture->colorFormatIndex == COLOR_NONE)
 			return NULL;
 
 		switch (texture->colorFormatIndex)
@@ -569,7 +569,7 @@ namespace Texture
 			if (lastTexture == texture)
 			{
 				lastTexture = texture->previousTexture;
-				GLDeleteTextures(1, (GLuint*)texture);
+				GLDeleteTextures(1, (GLuint*)&texture->id);
 				Memory::Free(texture);
 				return TRUE;
 			}
@@ -581,7 +581,7 @@ namespace Texture
 					if (currTexture->previousTexture == texture)
 					{
 						currTexture->previousTexture = texture->previousTexture;
-						GLDeleteTextures(1, (GLuint*)texture);
+						GLDeleteTextures(1, (GLuint*)&texture->id);
 						Memory::Free(texture);
 						return TRUE;
 					}
@@ -598,41 +598,19 @@ namespace Texture
 	{
 		if (lastTexture)
 		{
-			DWORD count = 0;
+			State::Set(State::SetTexture, NULL);
+
 			ThrashTexture* texture = lastTexture;
 			do
 			{
-				texture = texture->previousTexture;
-				++count;
+				ThrashTexture* prev = texture->previousTexture;
+				GLDeleteTextures(1, (GLuint*)&texture->id);
+				Memory::Free(texture);
+				texture = prev;
 			} while (texture);
 
-			if (count)
-			{
-				VOID* idList = Memory::Allocate(count * sizeof(DWORD));
-				if (idList)
-				{
-					texture = lastTexture;
-					DWORD index = count;
-					DWORD* id = (DWORD*)idList;
-					do
-					{
-						*id = texture->id;
-						ThrashTexture* temp = texture->previousTexture;
-						Memory::Free(texture);
-						lastTexture = texture = temp;
-						++id;
-					} while (--index);
-
-					GLDeleteTextures(count, (GLuint*)idList);
-					Memory::Free(idList);
-				}
-				else
-					Main::ShowError("Out of memory.", __FILE__, "Reset", __LINE__);
-			}
+			lastTexture = NULL;
 		}
-
-		State::Set(State::SetTexture, NULL);
-		lastTexture = NULL;
 
 		return TRUE;
 	}

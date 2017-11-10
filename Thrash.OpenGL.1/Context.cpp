@@ -190,8 +190,13 @@ namespace Context
 		WGLMakeCurrent(hDc, hGlRc);
 		CreateContextAttribs(&hDc, &hGlRc);
 
-		if (WGLSwapInterval)
-			WGLSwapInterval(!forced.windowed && forced.exclusiveMode && forced.vSync);
+		if (forced.vSync)
+		{
+			if (WGLSwapInterval)
+				WGLSwapInterval(1);
+			else
+				forced.vSync = FALSE;
+		}
 	}
 
 	VOID __fastcall Release()

@@ -117,15 +117,9 @@ namespace Texture
 	VOID __fastcall Bind(ThrashTexture* texture)
 	{
 		if (!texture || !lastTexture)
-		{
-			if (bindedTexture)
-				Buffer::Draw();
 			bindedTexture = NULL;
-		}
-
 		else if (bindedTexture != texture)
 		{
-			Buffer::Draw();
 			bindedTexture = texture;
 			GLBindTexture(GL_TEXTURE_2D, texture->id);
 		}
@@ -184,7 +178,6 @@ namespace Texture
 					texture->size = 3;
 					texture->stride = 0;
 					texture->reconvert = TRUE;
-
 					break;
 
 				case INDEXED_BGRA:
@@ -194,7 +187,6 @@ namespace Texture
 					texture->size = 4;
 					texture->stride = 0;
 					texture->reconvert = TRUE;
-
 					break;
 
 				default:
@@ -213,7 +205,6 @@ namespace Texture
 					texture->size = 3;
 					texture->stride = 0;
 					texture->reconvert = TRUE;
-
 					break;
 
 				case INDEXED_BGRA:
@@ -223,7 +214,6 @@ namespace Texture
 					texture->size = 4;
 					texture->stride = 0;
 					texture->reconvert = TRUE;
-
 					break;
 
 				default:
@@ -238,7 +228,6 @@ namespace Texture
 				texture->type = GL_UNSIGNED_SHORT_1_5_5_5_REV;
 				texture->size = 2;
 				texture->stride = 0;
-
 				break;
 
 			case RGB565_16:
@@ -247,7 +236,6 @@ namespace Texture
 				texture->type = GL_UNSIGNED_SHORT_5_6_5;
 				texture->size = 2;
 				texture->stride = 0;
-
 				break;
 
 			case BGR_24:
@@ -256,7 +244,6 @@ namespace Texture
 				texture->type = GL_UNSIGNED_BYTE;
 				texture->size = 3;
 				texture->stride = 0;
-
 				break;
 
 			case BGRA_32:
@@ -265,7 +252,6 @@ namespace Texture
 				texture->type = GL_UNSIGNED_BYTE;
 				texture->size = 4;
 				texture->stride = 0;
-
 				break;
 
 			case BGRA4_16:
@@ -274,7 +260,6 @@ namespace Texture
 				texture->type = GL_UNSIGNED_SHORT_4_4_4_4_REV;
 				texture->size = 2;
 				texture->stride = 0;
-
 				break;
 
 				/*case L4_A4_8:
@@ -290,6 +275,7 @@ namespace Texture
 				Main::ShowError("Bad pixel format", __FILE__, "Allocate", texture->colorFormatIndex);
 			}
 
+			Buffer::Draw();
 			Texture::Bind(texture);
 
 			GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
@@ -315,7 +301,7 @@ namespace Texture
 
 	LPTHRASHTEXTURE THRASHAPI Update(ThrashTexture* texture, VOID* memory, BYTE* pallete)
 	{
-		if (texture == NULL || memory == NULL || texture->colorFormatIndex == 0)
+		if (!texture || !memory || texture->colorFormatIndex == COLOR_NONE)
 			return NULL;
 
 		switch (texture->colorFormatIndex)
@@ -324,13 +310,11 @@ namespace Texture
 			switch (texture->indexFormatIndex)
 			{
 			case 3:
-				if (texture->reconvert)
-					memory = Convert_BGR_4_To_RGB_24(texture, memory, pallete);
+				memory = Convert_BGR_4_To_RGB_24(texture, memory, pallete);
 				break;
 
 			case 4:
-				if (texture->reconvert)
-					memory = Convert_BGRA_4_To_RGBA_32(texture, memory, pallete);
+				memory = Convert_BGRA_4_To_RGBA_32(texture, memory, pallete);
 				break;
 
 			default: break;
@@ -342,13 +326,11 @@ namespace Texture
 			switch (texture->indexFormatIndex)
 			{
 			case 3:
-				if (texture->reconvert)
-					memory = Convert_BGR_8_To_RGB_24(texture, memory, pallete);
+				memory = Convert_BGR_8_To_RGB_24(texture, memory, pallete);
 				break;
 
 			case 4:
-				if (texture->reconvert)
-					memory = Convert_BGRA_8_To_RGBA_32(texture, memory, pallete);
+				memory = Convert_BGRA_8_To_RGBA_32(texture, memory, pallete);
 				break;
 
 			default: break;
@@ -359,6 +341,7 @@ namespace Texture
 		default:
 			break;
 		}
+
 
 		Buffer::Draw();
 		Texture::Bind(texture);
@@ -400,7 +383,7 @@ namespace Texture
 			if (lastTexture == texture)
 			{
 				lastTexture = texture->previousTexture;
-				GLDeleteTextures(1, (GLuint*)texture);
+				GLDeleteTextures(1, (GLuint*)&texture->id);
 				Memory::Free(texture);
 				return TRUE;
 			}
@@ -412,7 +395,7 @@ namespace Texture
 					if (currTexture->previousTexture == texture)
 					{
 						currTexture->previousTexture = texture->previousTexture;
-						GLDeleteTextures(1, (GLuint*)texture);
+						GLDeleteTextures(1, (GLuint*)&texture->id);
 						Memory::Free(texture);
 						return TRUE;
 					}
@@ -429,41 +412,19 @@ namespace Texture
 	{
 		if (lastTexture)
 		{
-			DWORD count = 0;
+			State::Set(State::SetTexture, NULL);
+
 			ThrashTexture* texture = lastTexture;
 			do
 			{
-				texture = texture->previousTexture;
-				++count;
+				ThrashTexture* prev = texture->previousTexture;
+				GLDeleteTextures(1, (GLuint*)&texture->id);
+				Memory::Free(texture);
+				texture = prev;
 			} while (texture);
 
-			if (count)
-			{
-				VOID* idList = Memory::Allocate(count * sizeof(DWORD));
-				if (idList)
-				{
-					texture = lastTexture;
-					DWORD index = count;
-					DWORD* id = (DWORD*)idList;
-					do
-					{
-						*id = texture->id;
-						ThrashTexture* temp = texture->previousTexture;
-						Memory::Free(texture);
-						lastTexture = texture = temp;
-						++id;
-					} while (--index);
-
-					GLDeleteTextures(count, (GLuint*)idList);
-					Memory::Free(idList);
-				}
-				else
-					Main::ShowError("Out of memory.", __FILE__, "Reset", __LINE__);
-			}
+			lastTexture = NULL;
 		}
-
-		State::Set(State::SetTexture, NULL);
-		lastTexture = NULL;
 
 		return TRUE;
 	}

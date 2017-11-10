@@ -30,7 +30,7 @@ namespace Quad
 	VOID THRASHAPI Draw(ThrashVertex* vertex1, ThrashVertex* vertex2, ThrashVertex* vertex3, ThrashVertex* vertex4)
 	{
 		Buffer::AddTri(vertex1, vertex2, vertex3);
-		Buffer::AddTri(vertex1, vertex3, vertex4);
+		Buffer::AddTri(vertex3, vertex4, vertex1);
 	}
 
 	VOID THRASHAPI DrawMesh(DWORD count, ThrashVertex vertexArray[], DWORD indexes[])
@@ -47,7 +47,7 @@ namespace Quad
 				ThrashVertex* vertex4 = &vArray[*indexes++];
 
 				Buffer::AddTri(vertex1, vertex2, vertex3);
-				Buffer::AddTri(vertex1, vertex3, vertex4);
+				Buffer::AddTri(vertex3, vertex4, vertex1);
 			} while (--count);
 		}
 	}

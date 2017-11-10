@@ -27,26 +27,6 @@
 
 namespace Tri
 {
-	BOOL __fastcall CheckCullFace(ThrashVertex* vertex1, ThrashVertex* vertex2, ThrashVertex* vertex3)
-	{
-		if (cullFace)
-		{
-			ThrashVertexV1* v1 = (ThrashVertexV1*)vertex1;
-			ThrashVertexV1* v2 = (ThrashVertexV1*)vertex2;
-			ThrashVertexV1* v3 = (ThrashVertexV1*)vertex3;
-
-			FLOAT check = (v3->vertCoord.y - v1->vertCoord.y) * (v2->vertCoord.x - v1->vertCoord.x)
-				- (v2->vertCoord.y - v1->vertCoord.y) * (v3->vertCoord.x - v1->vertCoord.x);
-
-			if (cullFace == 1)
-				return check > 0.0; // GL_CW
-			else
-				return check < 0.0; // GL_CCW
-		}
-
-		return TRUE;
-	}
-
 	VOID THRASHAPI Draw(ThrashVertex* vertex1, ThrashVertex* vertex2, ThrashVertex* vertex3)
 	{
 		Buffer::AddTri(vertex1, vertex2, vertex3);

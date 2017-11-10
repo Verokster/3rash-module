@@ -99,7 +99,7 @@ namespace Main
 		forced.zdepth = GetEnvironmentValue(0, envPrefix, "ZDEPTH");
 		forced.refreshRate = GetEnvironmentValue(0, envPrefix, "REFRESH");
 		forced.exclusiveMode = GetEnvironmentValue(0, envPrefix, "EXCLUSIVE");
-		forced.vSync = GetEnvironmentValue(0, envPrefix, "VSYNC");
+		forced.vSync = GetEnvironmentValue(1, envPrefix, "VSYNC");
 		forced.aspect = GetEnvironmentValue(0, envPrefix, "ASPECT");
 		forced.filtering = GetEnvironmentValue(0, envPrefix, "TEXFILTER");
 		forced.add640x480x16 = GetEnvironmentValue(1, envPrefix, "ADD640X480X16");
@@ -244,6 +244,9 @@ namespace Main
 	VOID THRASHAPI PageFlip()
 	{
 		WGLSwapBuffers(hDc);
+
+		if (forced.vSync)
+			GLFinish();
 	}
 
 	BOOL THRASHAPI Restore()
@@ -348,7 +351,7 @@ namespace Main
 
 		State::Set(State::Hint, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "HINT"));
 		State::Set(State::CullFace, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "CULL"));
-		State::Set(State::TextureFilter, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "FILTERING"));
+		State::Set(State::TextureFilter, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "FILTER"));
 		State::Set(State::ShadeModel, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "SHADE"));
 		State::Set(State::EnableAlphaBlend, 0xFFFF0000, GetEnvironmentValue(2, envPrefix, "TRANSPARENCY"));
 		State::Set(State::AlphaMode, 0xFFFF0000, GetEnvironmentValue(16, envPrefix, "ALPHATEST"));
