@@ -46,6 +46,7 @@ DWORD textureClampS;
 DWORD textureClampT;
 FLOAT textureLodBias;
 
+DWORD stencilFunc;
 DWORD stencilFail = GL_KEEP;
 DWORD stencilDepthFail = GL_KEEP;
 DWORD stencilPass = GL_KEEP;

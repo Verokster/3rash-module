@@ -86,6 +86,7 @@ extern DWORD bufferMode;
 
 extern BOOL isWindowLocked;
 
+extern DWORD stencilFunc;
 extern DWORD stencilFail;
 extern DWORD stencilDepthFail;
 extern DWORD stencilPass;

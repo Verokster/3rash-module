@@ -70,6 +70,13 @@ namespace State
 		}
 	}
 
+	VOID __fastcall InternalSet(ThrashState key, DWORD tmu, DWORD value)
+	{
+		INT index = GetKeyIndex(key);
+		if (index >= 0)
+			stateValueArray[tmu][index] = value;
+	}
+
 	DWORD __fastcall Set(ThrashState key, DWORD tmu, DWORD value)
 	{
 		BOOL force = tmu & 0xFFFF0000;
@@ -107,7 +114,8 @@ namespace State
 				case PT_TRIANGLEFAN:
 					Tri::DrawFan(indexedList->indicesCount - 2, indexedList->vertexArray, indexedList->indices);
 					break;
-				default: break;
+				default:
+					return NULL;
 				}
 			}
 			else
@@ -133,7 +141,8 @@ namespace State
 				case PT_TRIANGLEFAN:
 					Tri::DrawFan(list->vertexCount - 2, list->vertexArray);
 					break;
-				default: break;
+				default:
+					return NULL;
 				}
 			}
 		}
@@ -148,6 +157,9 @@ namespace State
 					{
 						if (*stateStorage != value)
 							Buffer::Draw();
+						else
+							return 1;
+
 						found = TRUE;
 						break;
 					}
@@ -197,7 +209,7 @@ namespace State
 					break;
 
 				default:
-					break;
+					return NULL;
 				}
 
 				break;
@@ -218,7 +230,7 @@ namespace State
 					break;
 
 				default:
-					break;
+					return NULL;
 				}
 
 				break;
@@ -239,7 +251,7 @@ namespace State
 					break;
 
 				default:
-					break;
+					return NULL;
 				}
 
 				break;
@@ -252,25 +264,20 @@ namespace State
 				switch (value)
 				{
 				case 0:
-					GLDisable(GL_DEPTH_TEST);
 					depthEnabled = FALSE;
+					GLDisable(GL_DEPTH_TEST);
 					break;
 
 				case 1:
+					depthEnabled = TRUE;
 					GLEnable(GL_DEPTH_TEST);
 					GLDepthFunc(depthCmp);
-					depthEnabled = TRUE;
 					break;
 
 				default:
 					return NULL;
 				}
 
-				break;
-
-			case DepthBias:
-			case DepthBias2:
-				depthBias = (FLOAT)*(INT*)&value * DEPTH_CORRECTION;
 				break;
 
 			case DepthCompare:
@@ -315,6 +322,11 @@ namespace State
 				GLDepthFunc(depthCmp);
 				break;
 
+			case DepthBias:
+			case DepthBias2:
+				depthBias = (FLOAT)*(INT*)&value * DEPTH_CORRECTION;
+				break;
+
 			case EnableDepthWrite:
 			case EnableDepthWrite2:
 				GLDepthMask(value);
@@ -335,14 +347,13 @@ namespace State
 				case 2:
 				case 3:
 					GLUniform1ui(uniAlphaFuncLoc, 4);
-					GLUniform1f(uniAlphaValLoc, 0.0f);
 
 					GLEnable(GL_BLEND);
-					GLBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					GLBlendFunc(blendSrc, blendDest);
 					break;
 
 				default:
-					break;
+					return NULL;
 				}
 
 				break;
@@ -362,16 +373,24 @@ namespace State
 				case 0:
 					blendSrc = GL_SRC_ALPHA;
 					blendDest = GL_ONE_MINUS_SRC_ALPHA;
+					InternalSet(BlendSourceFactor, tmu, 2);
+					InternalSet(BlendDestinationFactor, tmu, 3);
 					break;
 				case 1:
 					blendSrc = GL_SRC_ALPHA;
 					blendDest = GL_ONE;
+					InternalSet(BlendSourceFactor, tmu, 2);
+					InternalSet(BlendDestinationFactor, tmu, 0);
 					break;
 				case 2:
 					blendSrc = GL_ZERO;
 					blendDest = GL_ONE_MINUS_SRC_ALPHA;
+					InternalSet(BlendSourceFactor, tmu, 1);
+					InternalSet(BlendDestinationFactor, tmu, 3);
 					break;
 				case 3:
+					InternalSet(BlendSourceFactor, tmu, 7);
+					InternalSet(BlendDestinationFactor, tmu, 1);
 					blendSrc = GL_DST_COLOR;
 					blendDest = GL_ZERO;
 					break;
@@ -420,6 +439,9 @@ namespace State
 				}
 
 				GLBlendFunc(blendSrc, blendDest);
+				InternalSet(BlendMode, tmu, 4);
+				InternalSet(BlendMode2, tmu, 4);
+
 				break;
 
 			case BlendDestinationFactor:
@@ -460,6 +482,9 @@ namespace State
 				}
 
 				GLBlendFunc(blendSrc, blendDest);
+				InternalSet(BlendMode, tmu, 4);
+				InternalSet(BlendMode2, tmu, 4);
+
 				break;
 
 #pragma endregion
@@ -532,7 +557,11 @@ namespace State
 #pragma region Stencil buffer
 			case EnableStencilBuffer:
 				if (value)
+				{
 					GLEnable(GL_STENCIL_TEST);
+					GLStencilFunc(stencilFunc, 2, 0xFF);
+					GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
+				}
 				else
 					GLDisable(GL_STENCIL_TEST);
 
@@ -543,39 +572,42 @@ namespace State
 				switch (value)
 				{
 				case 0:
-					GLStencilFunc(GL_NEVER, 2, 0xFF);
+					stencilFunc = GL_NEVER;
 					break;
 
 				case 1:
-					GLStencilFunc(GL_LESS, 2, 0xFF);
+					stencilFunc = GL_LESS;
 					break;
 
 				case 2:
-					GLStencilFunc(GL_EQUAL, 2, 0xFF);
+					stencilFunc = GL_EQUAL;
 					break;
 
 				case 3:
-					GLStencilFunc(GL_LEQUAL, 2, 0xFF);
+					stencilFunc = GL_LEQUAL;
 					break;
 
 				case 4:
-					GLStencilFunc(GL_GREATER, 2, 0xFF);
+					stencilFunc = GL_GREATER;
 					break;
 
 				case 5:
-					GLStencilFunc(GL_NOTEQUAL, 2, 0xFF);
+					stencilFunc = GL_NOTEQUAL;
 					break;
 
 				case 6:
-					GLStencilFunc(GL_GEQUAL, 2, 0xFF);
+					stencilFunc = GL_GEQUAL;
 					break;
 
 				case 7:
-					GLStencilFunc(GL_ALWAYS, 2, 0xFF);
+					stencilFunc = GL_ALWAYS;
 					break;
 
-				default: break;
+				default:
+					return NULL;
 				}
+
+				GLStencilFunc(stencilFunc, 2, 0xFF);
 
 				break;
 
@@ -614,7 +646,8 @@ namespace State
 					stencilFail = GL_DECR_WRAP;
 					break;
 
-				default: break;
+				default:
+					return NULL;
 				}
 
 				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
@@ -655,7 +688,8 @@ namespace State
 					stencilDepthFail = GL_DECR_WRAP;
 					break;
 
-				default: break;
+				default:
+					return NULL;
 				}
 
 				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
@@ -696,7 +730,8 @@ namespace State
 					stencilPass = GL_DECR_WRAP;
 					break;
 
-				default: break;
+				default:
+					return NULL;
 				}
 
 				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
@@ -788,6 +823,7 @@ namespace State
 			case CurrentWindow:
 				if (!value && !force)
 					return NULL;
+				break;
 
 			case ThrashApiVersion:
 				API_VERSION = value;
@@ -800,7 +836,7 @@ namespace State
 			case Gamma:
 			case Gamma2:
 				gamma = value;
-				GLUniform1f(uniGammaLoc, *(FLOAT*)&value * forced.gamma);
+				GLUniform1f(uniGammaLoc, *(FLOAT*)&gamma * forced.gamma);
 				break;
 
 				/*case Hint:

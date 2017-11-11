@@ -68,6 +68,7 @@ extern DWORD bufferModesArray[];
 
 extern BOOL fogEnabled;
 
+extern DWORD stencilFunc;
 extern DWORD stencilFail;
 extern DWORD stencilDepthFail;
 extern DWORD stencilPass;

@@ -57,6 +57,7 @@ BOOL fogEnabled = FALSE;
 BOOL stencilEnabled;
 BOOL depthEnabled;
 
+DWORD stencilFunc;
 DWORD stencilFail;
 DWORD stencilDepthFail;
 DWORD stencilPass;

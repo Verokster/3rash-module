@@ -27,8 +27,17 @@
 
 namespace State
 {
+	VOID __fastcall InternalSet(ThrashState key, DWORD tmu, DWORD value)
+	{
+		INT index = GetKeyIndex(key);
+		if (index >= 0)
+			stateValueArray[tmu][index] = value;
+	}
+
 	DWORD __fastcall Set(ThrashState key, DWORD tmu, DWORD value)
 	{
+		DWORD res = 1;
+
 		BOOL force = tmu & 0xFFFF0000;
 		tmu &= 0x0000FFFF;
 
@@ -63,7 +72,8 @@ namespace State
 				case PT_TRIANGLEFAN:
 					Vertex::DrawIndexedArray(GL_TRIANGLE_FAN, 0, indexedList->indicesCount, indexedList->vertexArray, indexedList->indices);
 					break;
-				default: break;
+				default:
+					return NULL;
 				}
 			}
 			else
@@ -89,13 +99,14 @@ namespace State
 				case PT_TRIANGLEFAN:
 					Vertex::DrawArray(GL_TRIANGLE_FAN, 0, list->vertexCount, list->vertexArray);
 					break;
-				default: break;
+				default:
+					return NULL;
 				}
 			}
 		}
 		else
 		{
-			if (stateStorage && !force && *stateStorage == value)
+			if (!force && stateStorage && *stateStorage == value)
 				return 1;
 
 			switch (key)
@@ -324,7 +335,8 @@ namespace State
 								GLTexEnvi(GL_TEXTURE_ENV, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
 								break;*/
 
-					default: return NULL;
+					default:
+						return NULL;
 					}
 				}
 
@@ -354,7 +366,7 @@ namespace State
 					break;
 
 				default:
-					break;
+					return NULL;
 				}
 
 				break;
@@ -381,7 +393,7 @@ namespace State
 					break;
 
 				default:
-					break;
+					return NULL;
 				}
 
 				break;
@@ -408,7 +420,7 @@ namespace State
 					break;
 
 				default:
-					break;
+					return NULL;
 				}
 
 				break;
@@ -441,29 +453,19 @@ namespace State
 				switch (value)
 				{
 				case 0:
-					GLDisable(GL_DEPTH_TEST);
 					depthEnabled = FALSE;
+					GLDisable(GL_DEPTH_TEST);
 					break;
 
 				case 1:
+					depthEnabled = TRUE;
 					GLEnable(GL_DEPTH_TEST);
 					GLDepthFunc(depthCmp);
-					depthEnabled = TRUE;
 					break;
 
 				default:
 					return NULL;
 				}
-
-			case DepthBias:
-			case DepthBias2:
-				if (value)
-				{
-					GLEnable(GL_POLYGON_OFFSET_FILL);
-					GLPolygonOffset(0.0, (FLOAT)*(INT*)&value);
-				}
-				else
-					GLDisable(GL_POLYGON_OFFSET_FILL);
 
 				break;
 
@@ -505,7 +507,20 @@ namespace State
 				default:
 					return NULL;
 				}
+
 				GLDepthFunc(depthCmp);
+				break;
+
+			case DepthBias:
+			case DepthBias2:
+				if (value)
+				{
+					GLEnable(GL_POLYGON_OFFSET_FILL);
+					GLPolygonOffset(0.0, (FLOAT)*(INT*)&value);
+				}
+				else
+					GLDisable(GL_POLYGON_OFFSET_FILL);
+
 				break;
 
 			case EnableDepthWrite:
@@ -527,26 +542,23 @@ namespace State
 				case 2:
 				case 3:
 					GLEnable(GL_ALPHA_TEST);
-					GLEnable(GL_BLEND);
+					GLAlphaFunc(alphaCmp, alphaVal);
 
-					GLAlphaFunc(GL_GREATER, GL_ZERO);
-					GLBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					GLEnable(GL_BLEND);
+					GLBlendFunc(blendSrc, blendDest);
 					break;
 
 				default:
-					break;
+					return NULL;
 				}
 
 				break;
 
 			case AlphaMode:
 				if (value)
-				{
 					alphaVal = (FLOAT)value / FLOAT_255;
-					GLAlphaFunc(alphaCmp, alphaVal);
-				}
 				else
-					alphaVal = GL_ZERO;
+					alphaVal = value;
 
 				break;
 
@@ -599,16 +611,24 @@ namespace State
 				case 0:
 					blendSrc = GL_SRC_ALPHA;
 					blendDest = GL_ONE_MINUS_SRC_ALPHA;
+					InternalSet(BlendSourceFactor, tmu, 2);
+					InternalSet(BlendDestinationFactor, tmu, 3);
 					break;
 				case 1:
 					blendSrc = GL_SRC_ALPHA;
 					blendDest = GL_ONE;
+					InternalSet(BlendSourceFactor, tmu, 2);
+					InternalSet(BlendDestinationFactor, tmu, 0);
 					break;
 				case 2:
 					blendSrc = GL_ZERO;
 					blendDest = GL_ONE_MINUS_SRC_ALPHA;
+					InternalSet(BlendSourceFactor, tmu, 1);
+					InternalSet(BlendDestinationFactor, tmu, 3);
 					break;
 				case 3:
+					InternalSet(BlendSourceFactor, tmu, 7);
+					InternalSet(BlendDestinationFactor, tmu, 1);
 					blendSrc = GL_DST_COLOR;
 					blendDest = GL_ZERO;
 					break;
@@ -657,6 +677,9 @@ namespace State
 				}
 
 				GLBlendFunc(blendSrc, blendDest);
+				InternalSet(BlendMode, tmu, 4);
+				InternalSet(BlendMode2, tmu, 4);
+
 				break;
 
 			case BlendDestinationFactor:
@@ -697,6 +720,9 @@ namespace State
 				}
 
 				GLBlendFunc(blendSrc, blendDest);
+				InternalSet(BlendMode, tmu, 4);
+				InternalSet(BlendMode2, tmu, 4);
+
 				break;
 
 #pragma endregion
@@ -709,29 +735,30 @@ namespace State
 				case Disabled:
 					fogEnabled = FALSE;
 					GLDisable(GL_FOG);
-
 					break;
+
 				case Enabled:
 					fogEnabled = TRUE;
 					GLEnable(GL_FOG);
 					GLFogi(GL_FOG_COORD_SRC, GL_FOG_COORD);
-
 					break;
+
 				case Linear:
 					GLFogi(GL_FOG_MODE, GL_LINEAR);
-
 					break;
+
 				case Exp:
 					GLFogi(GL_FOG_MODE, GL_EXP);
-
 					break;
+
 				case Exp2:
 					GLFogi(GL_FOG_MODE, GL_EXP2);
-
 					break;
+
 				default:
 					return NULL;
 				}
+
 				break;
 
 			case FogColor:
@@ -742,9 +769,9 @@ namespace State
 				color[0] = (UINT8)(value >> 16) / FLOAT_255;
 				color[3] = (UINT8)(value >> 24) / FLOAT_255;
 				GLFogfv(GL_FOG_COLOR, color);
-			}
 
-			break;
+				break;
+			}
 
 			case FogStart:
 				GLFogf(GL_FOG_START, value & 0xFFFF0000 ? *(GLfloat*)&value * FLOAT_65536 : (GLfloat)value);
@@ -800,7 +827,11 @@ namespace State
 #pragma region Stencil buffer
 			case EnableStencilBuffer:
 				if (value)
+				{
 					GLEnable(GL_STENCIL_TEST);
+					GLStencilFunc(stencilFunc, 2, 0xFF);
+					GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
+				}
 				else
 					GLDisable(GL_STENCIL_TEST);
 
@@ -811,39 +842,42 @@ namespace State
 				switch (value)
 				{
 				case 0:
-					GLStencilFunc(GL_NEVER, 2, 0xFF);
+					stencilFunc = GL_NEVER;
 					break;
 
 				case 1:
-					GLStencilFunc(GL_LESS, 2, 0xFF);
+					stencilFunc = GL_LESS;
 					break;
 
 				case 2:
-					GLStencilFunc(GL_EQUAL, 2, 0xFF);
+					stencilFunc = GL_EQUAL;
 					break;
 
 				case 3:
-					GLStencilFunc(GL_LEQUAL, 2, 0xFF);
+					stencilFunc = GL_LEQUAL;
 					break;
 
 				case 4:
-					GLStencilFunc(GL_GREATER, 2, 0xFF);
+					stencilFunc = GL_GREATER;
 					break;
 
 				case 5:
-					GLStencilFunc(GL_NOTEQUAL, 2, 0xFF);
+					stencilFunc = GL_NOTEQUAL;
 					break;
 
 				case 6:
-					GLStencilFunc(GL_GEQUAL, 2, 0xFF);
+					stencilFunc = GL_GEQUAL;
 					break;
 
 				case 7:
-					GLStencilFunc(GL_ALWAYS, 2, 0xFF);
+					stencilFunc = GL_ALWAYS;
 					break;
 
-				default: break;
+				default:
+					return NULL;
 				}
+
+				GLStencilFunc(stencilFunc, 2, 0xFF);
 
 				break;
 
@@ -882,7 +916,8 @@ namespace State
 					stencilFail = GL_DECR_WRAP;
 					break;
 
-				default: break;
+				default:
+					return NULL;
 				}
 
 				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
@@ -923,7 +958,8 @@ namespace State
 					stencilDepthFail = GL_DECR_WRAP;
 					break;
 
-				default: break;
+				default:
+					return NULL;
 				}
 
 				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
@@ -964,7 +1000,8 @@ namespace State
 					stencilPass = GL_DECR_WRAP;
 					break;
 
-				default: break;
+				default:
+					return NULL;
 				}
 
 				GLStencilOp(stencilFail, stencilDepthFail, stencilPass);
@@ -973,29 +1010,27 @@ namespace State
 #pragma endregion
 #pragma region Others
 			case CullFace:
-				if (value >= 0 && value <= 2)
+				switch (value)
 				{
-					switch (value)
-					{
-					case 1:
-						GLEnable(GL_CULL_FACE);
-						GLFrontFace(GL_CW);
-						break;
-
-					case 2:
-						GLEnable(GL_CULL_FACE);
-						GLFrontFace(GL_CCW);
-						break;
-
-					default:
-						GLDisable(GL_CULL_FACE);
-						break;
-					}
-
+				case 0:
+					GLDisable(GL_CULL_FACE);
 					break;
-				}
-				else
+
+				case 1:
+					GLEnable(GL_CULL_FACE);
+					GLFrontFace(GL_CW);
+					break;
+
+				case 2:
+					GLEnable(GL_CULL_FACE);
+					GLFrontFace(GL_CCW);
+					break;
+
+				default:
 					return NULL;
+				}
+
+				break;
 
 			case ClearColor:
 				GLClearColor(
@@ -1073,6 +1108,7 @@ namespace State
 			case CurrentWindow:
 				if (!value && !force)
 					return NULL;
+				break;
 
 			case ThrashApiVersion:
 				API_VERSION = value;
@@ -1119,6 +1155,6 @@ namespace State
 		if (functions.State)
 			functions.State(index, value);
 
-		return 1;
+		return res;
 	}
 }

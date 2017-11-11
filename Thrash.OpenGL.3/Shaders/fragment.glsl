@@ -36,30 +36,30 @@ void main(void)
 
 	switch (alphaFunc)
 	{
-		case 0: // GL_NEVER:
+		case 0u: // GL_NEVER:
 			discard;
 			break;
-		case 1: // GL_LESS:
+		case 1u: // GL_LESS:
 			if (fragColor.a >= alphaValue)
 				discard;
 			break;
-		case 2: // GL_EQUAL:
+		case 2u: // GL_EQUAL:
 			if (fragColor.a != alphaValue)
 				discard;
 			break;
-		case 3: // GL_LEQUAL:
+		case 3u: // GL_LEQUAL:
 			if (fragColor.a > alphaValue)
 				discard;
 			break;
-		case 4: // GL_GREATER:
+		case 4u: // GL_GREATER:
 			if (fragColor.a <= alphaValue)
 				discard;
 			break;
-		case 5: // GL_NOTEQUAL:
+		case 5u: // GL_NOTEQUAL:
 			if (fragColor.a == alphaValue)
 				discard;
 			break;
-		case 6: // GL_GEQUAL:
+		case 6u: // GL_GEQUAL:
 			if (fragColor.a < alphaValue)
 				discard;
 			break;
