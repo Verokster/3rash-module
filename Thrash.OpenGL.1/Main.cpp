@@ -47,7 +47,6 @@ DWORD textureMipMap;
 BOOL textureFilterEnabled;
 DWORD textureClampS;
 DWORD textureClampT;
-FLOAT textureLodBias;
 
 DWORD depthCmp = GL_LEQUAL;
 DWORD alphaCmp = GL_GEQUAL;
@@ -73,8 +72,7 @@ DWORD blendSrc;
 DWORD blendDest;
 
 DWORD bufferMode;
-
-BOOL isCliped;
+RECT clipRect;
 
 BOOL vmChanged;
 DWORD vmResolutionIndex;
@@ -99,20 +97,35 @@ namespace Main
 		strcat(iniFile, ".ini");
 
 		forced.windowed = GetEnvironmentValue(0, envPrefix, "WINDOWED");
+
 		forced.resolution = GetEnvironmentValue(0, envPrefix, "RESOLUTION");
+		if (forced.resolution && forced.resolution > 28)
+			forced.resolution = 0;
+
 		forced.colorDepth = GetEnvironmentValue(32, envPrefix, "COLORDEPTH");
 		if (forced.colorDepth != 16 && forced.colorDepth != 24 && forced.colorDepth != 32)
 			forced.colorDepth = 32;
+
 		forced.zdepth = GetEnvironmentValue(0, envPrefix, "ZDEPTH");
+		if (forced.zdepth && forced.zdepth != 16 && forced.zdepth != 24 && forced.zdepth != 32)
+			forced.zdepth = 0;
+
 		forced.refreshRate = GetEnvironmentValue(0, envPrefix, "REFRESH");
+		if (forced.refreshRate && forced.refreshRate > 9)
+			forced.refreshRate = 0;
+
 		forced.exclusiveMode = GetEnvironmentValue(0, envPrefix, "EXCLUSIVE");
 		forced.vSync = GetEnvironmentValue(1, envPrefix, "VSYNC");
+
 		forced.aspect = GetEnvironmentValue(0, envPrefix, "ASPECT");
 		forced.filtering = GetEnvironmentValue(0, envPrefix, "TEXFILTER");
+		if (forced.filtering && forced.filtering > 2)
+			forced.filtering = 0;
+
 		forced.add640x480x16 = GetEnvironmentValue(1, envPrefix, "ADD640X480X16");
 		forced.movies16Bit = GetEnvironmentValue(0, envPrefix, "MOVIES16BIT");
-		forced.gamma = GetEnvironmentValue(5, envPrefix, "GAMMA") * 0.1f + 0.5f;
 
+		forced.gamma = GetEnvironmentValue(5, envPrefix, "GAMMA") * 0.1f + 0.5f;
 		if (forced.gamma < 0.5f || forced.gamma > 1.5f)
 			forced.gamma = 1.0f;
 	}
@@ -160,22 +173,9 @@ namespace Main
 
 	BOOL THRASHAPI Clip(RECT rect)
 	{
-		if (rect.left < 0 || rect.top < 0 ||
-			rect.right >= selectedResolution->width || rect.bottom >= selectedResolution->height)
+		if (rect.left != clipRect.left || rect.top != clipRect.top || rect.right != clipRect.right || rect.bottom != clipRect.bottom)
 		{
-			if (isCliped)
-			{
-				GLDisable(GL_SCISSOR_TEST);
-				isCliped = FALSE;
-			}
-		}
-		else
-		{
-			if (!isCliped)
-			{
-				GLEnable(GL_SCISSOR_TEST);
-				isCliped = TRUE;
-			}
+			clipRect = rect;
 
 			if (viewport.width != selectedResolution->width)
 			{
@@ -349,7 +349,17 @@ namespace Main
 		GLScalef(1.0, 1.0, -1.0);
 		GLDepthRange(0.0, 1.0);
 
-		isCliped = FALSE;
+		GLEnable(GL_SCISSOR_TEST);
+		memset(&clipRect, NULL, sizeof(RECT));
+		if (forced.resolution)
+		{
+			GLClearColor(0.0, 0.0, 0.0, 1.0);
+			GLClear(GL_COLOR_BUFFER_BIT);
+
+			RECT rect = { 0, 0, selectedResolution->width, selectedResolution->height };
+			Clip(rect);
+		}
+
 		GLEnable(GL_COLOR_SUM); // For specular
 
 		Window::Window(1);

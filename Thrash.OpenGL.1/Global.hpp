@@ -61,7 +61,6 @@ extern DWORD textureMipMap;
 extern BOOL textureFilterEnabled;
 extern ThrashTexture* lastTexture;
 extern ThrashTexture* bindedTexture;
-extern FLOAT textureLodBias;
 
 extern DWORD textureClampS;
 extern DWORD textureClampT;

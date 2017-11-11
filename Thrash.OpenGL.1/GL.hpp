@@ -84,6 +84,7 @@ typedef BOOL(WINAPI * PFNWGLCHOOSEPIXELFORMATARBPROC) (HDC hdc, const int* piAtt
 #define GL_CLAMP_TO_EDGE 0x812F
 #define GL_MIRRORED_REPEAT 0x8370
 
+#define GL_TEXTURE_FILTER_CONTROL 0x8500
 #define GL_TEXTURE_LOD_BIAS 0x8501
 
 #define GL_COLOR_SUM 0x8458
@@ -153,8 +154,9 @@ typedef void(__stdcall *GLFOGCOORDF)(GLfloat coord);
 typedef void(__stdcall *GLDEPTHFUNC)(GLenum func);
 typedef void(__stdcall *GLALPHAFUNC)(GLenum func, GLclampf ref);
 typedef void(__stdcall *GLBLENDFUNC)(GLenum sfactor, GLenum dfactor);
-typedef void(__stdcall *GLTEXPARAMETERI)(GLenum, GLenum, GLint);
+typedef void(__stdcall *GLTEXPARAMETERI)(GLenum target, GLenum pname, GLint param);
 typedef void(__stdcall *GLTEXENVI)(GLenum target, GLenum pname, GLint param);
+typedef void(__stdcall *GLTEXENVF)(GLenum target, GLenum pname, GLfloat param);
 typedef void(__stdcall *GLTEXIMAGE2D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void(__stdcall *GLTEXSUBIMAGE2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
 typedef void(__stdcall *GLDEPTHMASK)(GLboolean flag);
@@ -216,6 +218,7 @@ extern GLALPHAFUNC GLAlphaFunc;
 extern GLBLENDFUNC GLBlendFunc;
 extern GLTEXPARAMETERI GLTexParameteri;
 extern GLTEXENVI GLTexEnvi;
+extern GLTEXENVF GLTexEnvf;
 extern GLTEXIMAGE2D GLTexImage2D;
 extern GLTEXSUBIMAGE2D GLTexSubImage2D;
 extern GLDEPTHMASK GLDepthMask;
@@ -236,5 +239,6 @@ extern BOOL glCapsBGR;
 extern BOOL glCapsBGRA;
 extern BOOL glCapsClampToEdge;
 extern BOOL glCapsMirroredRepeat;
+extern BOOL glCapsAnisotropic;
 
 VOID CreateContextAttribs(HDC* devContext, HGLRC* glContext);

@@ -60,8 +60,6 @@ namespace Texture
 			GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, textureClampS);
 			GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, textureClampT);
 
-			GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_LOD_BIAS, textureLodBias);
-
 			switch (forced.filtering)
 			{
 			case 1:
@@ -83,31 +81,47 @@ namespace Texture
 				{
 					GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-					if (textureMipMap == 1)
+					switch (textureMipMap)
+					{
+					case 0:
+						GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+						break;
+
+					case 1:
 						GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bindedTexture->level != 0
 							? GL_LINEAR_MIPMAP_NEAREST
 							: GL_LINEAR);
-					else if (textureMipMap == 2)
+						break;
+
+					default:
 						GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bindedTexture->level != 0
 							? GL_LINEAR_MIPMAP_LINEAR
 							: GL_LINEAR);
-					else
-						GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+						break;
+					}
 				}
 				else
 				{
 					GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-					if (textureMipMap == 1)
+					switch (textureMipMap)
+					{
+					case 0:
+						GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+						break;
+
+					case 1:
 						GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bindedTexture->level != 0
 							? GL_NEAREST_MIPMAP_NEAREST
 							: GL_NEAREST);
-					else if (textureMipMap == 2)
+						break;
+
+					default:
 						GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bindedTexture->level != 0
 							? GL_NEAREST_MIPMAP_LINEAR
 							: GL_NEAREST);
-					else
-						GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+						break;
+					}
 				}
 				break;
 			}

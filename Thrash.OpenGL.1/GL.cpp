@@ -73,6 +73,7 @@ GLALPHAFUNC GLAlphaFunc;
 GLBLENDFUNC GLBlendFunc;
 GLTEXPARAMETERI GLTexParameteri;
 GLTEXENVI GLTexEnvi;
+GLTEXENVF GLTexEnvf;
 GLTEXIMAGE2D GLTexImage2D;
 GLTEXSUBIMAGE2D GLTexSubImage2D;
 GLDEPTHMASK GLDepthMask;
@@ -93,6 +94,7 @@ BOOL glCapsBGR;
 BOOL glCapsBGRA;
 BOOL glCapsClampToEdge;
 BOOL glCapsMirroredRepeat;
+BOOL glCapsAnisotropic;
 
 VOID __fastcall LoadGLFunction(CHAR* buffer, const CHAR* name, PROC* func, const CHAR* sufix = NULL)
 {
@@ -194,6 +196,7 @@ VOID CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 	LoadGLFunction(buffer, "glBlendFunc", (PROC*)&GLBlendFunc);
 	LoadGLFunction(buffer, "glTexParameteri", (PROC*)&GLTexParameteri);
 	LoadGLFunction(buffer, "glTexEnvi", (PROC*)&GLTexEnvi);
+	LoadGLFunction(buffer, "glTexEnvf", (PROC*)&GLTexEnvf);
 	LoadGLFunction(buffer, "glTexImage2D", (PROC*)&GLTexImage2D);
 	LoadGLFunction(buffer, "glTexSubImage2D", (PROC*)&GLTexSubImage2D);
 	LoadGLFunction(buffer, "glDepthMask", (PROC*)&GLDepthMask);
@@ -247,6 +250,8 @@ VOID CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 			glCapsMirroredRepeat = strstr((const CHAR*)extensions, "GL_ARB_texture_mirrored_repeat") != NULL || strstr((const CHAR*)extensions, "GL_IBM_texture_mirrored_repeat") != NULL;
 		else
 			glCapsMirroredRepeat = TRUE;
+
+		glCapsAnisotropic = strstr((const CHAR*)extensions, "GL_EXT_texture_filter_anisotropic") != NULL;
 	}
 	else
 		glVersion = GL_VER_1_1;

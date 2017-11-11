@@ -53,6 +53,7 @@ GLCLEARCOLOR GLClearColor;
 GLDEPTHFUNC GLDepthFunc;
 GLBLENDFUNC GLBlendFunc;
 GLTEXPARAMETERI GLTexParameteri;
+GLTEXPARAMETERF GLTexParameterf;
 GLTEXIMAGE2D GLTexImage2D;
 GLTEXSUBIMAGE2D GLTexSubImage2D;
 GLDEPTHMASK GLDepthMask;
@@ -190,6 +191,7 @@ VOID __fastcall CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 	LoadGLFunction(buffer, "glDepthFunc", (PROC*)&GLDepthFunc);
 	LoadGLFunction(buffer, "glBlendFunc", (PROC*)&GLBlendFunc);
 	LoadGLFunction(buffer, "glTexParameteri", (PROC*)&GLTexParameteri);
+	LoadGLFunction(buffer, "glTexParameterf", (PROC*)&GLTexParameterf);
 	LoadGLFunction(buffer, "glTexImage2D", (PROC*)&GLTexImage2D);
 	LoadGLFunction(buffer, "glTexSubImage2D", (PROC*)&GLTexSubImage2D);
 	LoadGLFunction(buffer, "glDepthMask", (PROC*)&GLDepthMask);

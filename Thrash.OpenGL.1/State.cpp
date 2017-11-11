@@ -122,7 +122,7 @@ namespace State
 				break;
 
 			case TextureLodBias:
-				textureLodBias = *(FLOAT*)&value;
+				GLTexEnvf(GL_TEXTURE_FILTER_CONTROL, GL_TEXTURE_LOD_BIAS, *(GLfloat*)&value);
 				break;
 
 			case TexturesCombine:
@@ -431,7 +431,7 @@ namespace State
 					break;
 
 				default:
-					return false;
+					return NULL;
 				}
 				break;
 
@@ -452,7 +452,7 @@ namespace State
 					break;
 
 				default:
-					return false;
+					return NULL;
 				}
 
 			case DepthBias:
@@ -502,7 +502,8 @@ namespace State
 					depthCmp = GL_ALWAYS;
 					break;
 
-				default: break;
+				default:
+					return NULL;
 				}
 				GLDepthFunc(depthCmp);
 				break;
@@ -584,7 +585,8 @@ namespace State
 					alphaCmp = GL_ALWAYS;
 					break;
 
-				default: return FALSE;
+				default:
+					return NULL;
 				}
 
 				GLAlphaFunc(alphaCmp, alphaVal);
@@ -611,7 +613,7 @@ namespace State
 					blendDest = GL_ZERO;
 					break;
 				default:
-					return false;
+					return NULL;
 				}
 
 				GLBlendFunc(blendSrc, blendDest);
@@ -651,7 +653,7 @@ namespace State
 					blendSrc = GL_ONE_MINUS_DST_COLOR;
 					break;
 				default:
-					return false;
+					return NULL;
 				}
 
 				GLBlendFunc(blendSrc, blendDest);
@@ -691,7 +693,7 @@ namespace State
 					blendDest = GL_ONE_MINUS_DST_COLOR;
 					break;
 				default:
-					return false;
+					return NULL;
 				}
 
 				GLBlendFunc(blendSrc, blendDest);
@@ -728,7 +730,7 @@ namespace State
 
 					break;
 				default:
-					return false;
+					return NULL;
 				}
 				break;
 
@@ -992,7 +994,8 @@ namespace State
 
 					break;
 				}
-				else return false;
+				else
+					return NULL;
 
 			case ClearColor:
 				GLClearColor(
@@ -1037,11 +1040,8 @@ namespace State
 					specularEnabled = TRUE;
 					break;
 
-				case 3:
-					return false;
-
 				default:
-					break;
+					return NULL;
 				}
 				break;
 
