@@ -119,8 +119,8 @@ namespace Line
 
 			do
 			{
-				ThrashVertex* vertex1 = vArray++;
-				ThrashVertex* vertex2 = vArray++;
+				ThrashVertex* vertex1 = &vArray[*indexes++];
+				ThrashVertex* vertex2 = &vArray[*indexes++];
 
 				Buffer::AddLine(vertex1, vertex2);
 			} while (--count);
