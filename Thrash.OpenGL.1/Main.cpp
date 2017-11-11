@@ -349,16 +349,16 @@ namespace Main
 		GLScalef(1.0, 1.0, -1.0);
 		GLDepthRange(0.0, 1.0);
 
-		GLEnable(GL_SCISSOR_TEST);
-		memset(&clipRect, NULL, sizeof(RECT));
 		if (forced.resolution)
 		{
 			GLClearColor(0.0, 0.0, 0.0, 1.0);
 			GLClear(GL_COLOR_BUFFER_BIT);
-
-			RECT rect = { 0, 0, selectedResolution->width, selectedResolution->height };
-			Clip(rect);
 		}
+
+		GLEnable(GL_SCISSOR_TEST);
+		memset(&clipRect, NULL, sizeof(RECT));
+		RECT rect = { 0, 0, selectedResolution->width, selectedResolution->height };
+		Clip(rect);
 
 		GLEnable(GL_COLOR_SUM); // For specular
 
