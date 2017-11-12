@@ -72,7 +72,7 @@ DWORD fogStart;
 DWORD fogEnd;
 DWORD fogDensity;
 
-DWORD gamma = 1.0;
+FLOAT gamma = 1.0;
 DWORD bufferMode;
 RECT clipRect;
 
@@ -111,7 +111,7 @@ namespace Main
 	DWORD __fastcall Round(FLOAT number)
 	{
 		FLOAT floorVal = floor(number);
-		return floorVal + 0.5f > number ? floorVal : ceil(number);
+		return DWORD(floorVal + 0.5f > number ? floorVal : ceil(number));
 	}
 
 	VOID __inline LoadForced()
@@ -365,8 +365,8 @@ namespace Main
 
 		GLViewport(viewport.rectangle.x, viewport.rectangle.y, viewport.rectangle.width, viewport.rectangle.height);
 
-		FLOAT right = selectedResolution->width;
-		FLOAT bottom = selectedResolution->height;
+		FLOAT right = (FLOAT)selectedResolution->width;
+		FLOAT bottom = (FLOAT)selectedResolution->height;
 		FLOAT zFar = FLOAT(1.0f + DEPTH_CORRECTION);
 
 		FLOAT mvpMatrix[4][4] = {

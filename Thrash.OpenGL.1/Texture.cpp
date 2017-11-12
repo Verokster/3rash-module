@@ -39,15 +39,15 @@ ThrashTexColorIndexFormats textureIndexFormats = {
 
 ThrashTexColorFormats textureFormats = {
 	0,
-	1, // Indexed_4
-	1, // Indexed_8
+	0, // Indexed_4
+	0, // Indexed_8
 	1, // BGR5_A1_16
 	1, // RGB565_16
 	1, // BGR_24
 	1, // BGRA_32
 	1, // BGRA4_16
 	0, // L4_A4_8
-	1, // A_8
+	0, // A_8
 	0xFFFFFFFF // END
 };
 

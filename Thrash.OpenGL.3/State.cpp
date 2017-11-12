@@ -329,7 +329,7 @@ namespace State
 
 			case EnableDepthWrite:
 			case EnableDepthWrite2:
-				GLDepthMask(value);
+				GLDepthMask((BOOL)value);
 				break;
 
 #pragma endregion
@@ -508,11 +508,11 @@ namespace State
 				break;
 
 			case FogStart:
-				GLUniform1f(uniFogStartLoc, value);
+				GLUniform1f(uniFogStartLoc, (FLOAT)value);
 				break;
 
 			case FogEnd:
-				GLUniform1f(uniFogEndLoc, value);
+				GLUniform1f(uniFogEndLoc, (FLOAT)value);
 				break;
 
 			case FogDensity:
@@ -749,7 +749,7 @@ namespace State
 
 			case ClearColor:
 			{
-				FLOAT tempFloat = 1.0 / (*(FLOAT*)&gamma * forced.gamma);
+				FLOAT tempFloat = 1.0f / (gamma * forced.gamma);
 				GLClearColor(
 					GLclampf(pow((UINT8)(value >> 16) / FLOAT_255, tempFloat)),
 					GLclampf(pow((UINT8)(value >> 8) / FLOAT_255, tempFloat)),
@@ -835,8 +835,8 @@ namespace State
 
 			case Gamma:
 			case Gamma2:
-				gamma = value;
-				GLUniform1f(uniGammaLoc, *(FLOAT*)&gamma * forced.gamma);
+				gamma = *(FLOAT*)&value;
+				GLUniform1f(uniGammaLoc, gamma * forced.gamma);
 				break;
 
 				/*case Hint:

@@ -139,10 +139,10 @@ namespace Rect
 			{
 				DWORD* read = (DWORD*)memory;
 				DWORD* write = (DWORD*)data;
-				for (int y = 0; y < rectangle.height; ++y)
+				for (DWORD y = 0; y < rectangle.height; ++y)
 				{
 					DWORD step = Main::Round((FLOAT)y * viewport.clipFactor.y) * width;
-					for (int x = 0; x < rectangle.width; ++x)
+					for (DWORD x = 0; x < rectangle.width; ++x)
 					{
 						DWORD pos = step + Main::Round((FLOAT)x * viewport.clipFactor.x);
 						*write++ = read[pos];
@@ -153,10 +153,10 @@ namespace Rect
 			{
 				WORD* read = (WORD*)memory;
 				WORD* write = (WORD*)data;
-				for (int y = 0; y < rectangle.height; ++y)
+				for (DWORD y = 0; y < rectangle.height; ++y)
 				{
 					DWORD step = Main::Round((FLOAT)y * viewport.clipFactor.y) * width;
-					for (int x = 0; x < rectangle.width; ++x)
+					for (DWORD x = 0; x < rectangle.width; ++x)
 					{
 						DWORD pos = step + Main::Round((FLOAT)x * viewport.clipFactor.x);
 						*write++ = read[pos];
@@ -269,17 +269,17 @@ namespace Rect
 
 						Texture::Update(texture, memory, NULL);
 
-						vertex1.vertCoord.x = (rectangle.x + x);
-						vertex1.vertCoord.y = (rectangle.y + y);
+						vertex1.vertCoord.x = (FLOAT)(rectangle.x + x);
+						vertex1.vertCoord.y = (FLOAT)(rectangle.y + y);
 
-						vertex2.vertCoord.x = (rectangle.x + x + about.textureWidthMax);
-						vertex2.vertCoord.y = (rectangle.y + y);
+						vertex2.vertCoord.x = (FLOAT)(rectangle.x + x + about.textureWidthMax);
+						vertex2.vertCoord.y = (FLOAT)(rectangle.y + y);
 
-						vertex3.vertCoord.x = (rectangle.x + x + about.textureWidthMax);
-						vertex3.vertCoord.y = (rectangle.y + y + about.textureHeightMax);
+						vertex3.vertCoord.x = (FLOAT)(rectangle.x + x + about.textureWidthMax);
+						vertex3.vertCoord.y = (FLOAT)(rectangle.y + y + about.textureHeightMax);
 
-						vertex4.vertCoord.x = (rectangle.x + x);
-						vertex4.vertCoord.y = (rectangle.y + y + about.textureHeightMax);
+						vertex4.vertCoord.x = (FLOAT)(rectangle.x + x);
+						vertex4.vertCoord.y = (FLOAT)(rectangle.y + y + about.textureHeightMax);
 
 						Quad::Draw(&vertex1, &vertex2, &vertex3, &vertex4);
 					}

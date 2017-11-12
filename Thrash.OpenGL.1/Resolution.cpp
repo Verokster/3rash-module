@@ -227,13 +227,13 @@ namespace Resolution
 					if (viewport.viewFactor.x > viewport.viewFactor.y)
 					{
 						viewport.rectangle.width = Main::Round((FLOAT)selectedResolution->width * viewport.viewFactor.y);
-						viewport.rectangle.x = Main::Round((viewport.width - viewport.rectangle.width) >> 1);
+						viewport.rectangle.x = (viewport.width - viewport.rectangle.width) >> 1;
 						viewport.clipFactor.x = (FLOAT)viewport.rectangle.width / (FLOAT)selectedResolution->width;
 					}
 					else
 					{
 						viewport.rectangle.height = Main::Round((FLOAT)selectedResolution->height * viewport.viewFactor.x);
-						viewport.rectangle.y = Main::Round((viewport.height - viewport.rectangle.height) >> 1);
+						viewport.rectangle.y = (viewport.height - viewport.rectangle.height) >> 1;
 						viewport.clipFactor.y = (FLOAT)viewport.rectangle.height / (FLOAT)selectedResolution->height;
 					}
 				}
@@ -257,8 +257,8 @@ namespace Resolution
 				SetWindowLong(newHWnd, GWL_STYLE, dwStyle);
 				SetWindowLong(newHWnd, GWL_EXSTYLE, WS_EX_APPWINDOW | WS_EX_DLGMODALFRAME);
 
-				rect.left = Main::Round((devMode.dmPelsWidth - viewport.width) >> 1);
-				rect.top = Main::Round((devMode.dmPelsHeight - viewport.height) >> 1);
+				rect.left = (devMode.dmPelsWidth - viewport.width) >> 1;
+				rect.top = (devMode.dmPelsHeight - viewport.height) >> 1;
 				rect.right = viewport.width + rect.left;
 				rect.bottom = viewport.height + rect.top;
 			}

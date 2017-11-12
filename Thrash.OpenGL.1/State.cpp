@@ -558,7 +558,7 @@ namespace State
 				if (value)
 					alphaVal = (FLOAT)value / FLOAT_255;
 				else
-					alphaVal = value;
+					alphaVal = 0.0f;
 
 				break;
 
@@ -1046,7 +1046,7 @@ namespace State
 				break;
 
 			case LineWidth:
-				GLLineWidth(value);
+				GLLineWidth((FLOAT)value);
 				break;
 
 			case EnableDither:

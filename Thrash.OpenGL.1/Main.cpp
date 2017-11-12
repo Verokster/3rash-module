@@ -85,7 +85,7 @@ namespace Main
 	DWORD __fastcall Round(FLOAT number)
 	{
 		FLOAT floorVal = floor(number);
-		return floorVal + 0.5f > number ? floorVal : ceil(number);
+		return DWORD(floorVal + 0.5f > number ? floorVal : ceil(number));
 	}
 
 	VOID __inline LoadForced()

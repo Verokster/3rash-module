@@ -147,13 +147,13 @@ namespace Context
 			PFD_SUPPORT_OPENGL | // Format Must Support OpenGL
 			PFD_DOUBLEBUFFER, // Must Support Double Buffering
 			PFD_TYPE_RGBA, // Request An RGBA Format
-			forced.colorDepth, // Select Our Color Depth
+			LOBYTE(forced.colorDepth), // Select Our Color Depth
 			0, 0, 0, 0, 0, 0, // Color Bits Ignored
 			0, // No Alpha Buffer
 			0, // Shift Bit Ignored
 			0, // No Accumulation Buffer
 			0, 0, 0, 0, // Accumulation Bits Ignored
-			(!forced.zdepth ? (isDepthBuffer16 ? 16 : 24) : forced.zdepth), // Z-Buffer (Depth Buffer) 
+			(!forced.zdepth ? (isDepthBuffer16 ? 16 : 24) : LOBYTE(forced.zdepth)), // Z-Buffer (Depth Buffer) 
 			(!forced.zdepth ? (isDepthBuffer16 ? 0 : 8) : (forced.zdepth == 24 ? 8 : 0)), // Stencil Buffer
 			0, // No Auxiliary Buffer
 			PFD_MAIN_PLANE, // Main Drawing Layer

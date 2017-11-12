@@ -123,17 +123,17 @@ namespace Window
 
 						Texture::Update(texture, memory, NULL);
 
-						vertex1.vertCoord.x = x;
-						vertex1.vertCoord.y = y;
+						vertex1.vertCoord.x = (FLOAT)x;
+						vertex1.vertCoord.y = (FLOAT)y;
 
-						vertex2.vertCoord.x = x + about.textureWidthMax;
-						vertex2.vertCoord.y = y;
+						vertex2.vertCoord.x = (FLOAT)(x + about.textureWidthMax);
+						vertex2.vertCoord.y = (FLOAT)y;
 
-						vertex3.vertCoord.x = x + about.textureWidthMax;
-						vertex3.vertCoord.y = y + about.textureHeightMax;
+						vertex3.vertCoord.x = (FLOAT)(x + about.textureWidthMax);
+						vertex3.vertCoord.y = (FLOAT)(y + about.textureHeightMax);
 
-						vertex4.vertCoord.x = x;
-						vertex4.vertCoord.y = y + about.textureHeightMax;
+						vertex4.vertCoord.x = (FLOAT)x;
+						vertex4.vertCoord.y = (FLOAT)(y + about.textureHeightMax);
 
 						Quad::Draw(&vertex1, &vertex2, &vertex3, &vertex4);
 					}

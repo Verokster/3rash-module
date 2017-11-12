@@ -51,8 +51,8 @@ namespace GammaRamp
 				{
 					// WARNING: suspicious gamma tables, using linear ramp for restoration
 
-					for (DWORD i = 0; i < 3; ++i)
-						for (DWORD j = 0; j < 255; ++j)
+					for (WORD i = 0; i < 3; ++i)
+						for (WORD j = 0; j < 255; ++j)
 							gammaArray[i][j] = j << 8;
 				}
 			}
@@ -84,7 +84,7 @@ namespace GammaRamp
 			{
 				for (i = 0; i < 3; ++i)
 				{
-					for (DWORD j = 0; j < 128; ++j)
+					for (WORD j = 0; j < 128; ++j)
 						if (table[i][j] > ((j + 128) << 8))
 							table[i][j] = (j + 128) << 8;
 
@@ -95,7 +95,7 @@ namespace GammaRamp
 
 			// enforce constantly increasing
 			for (i = 0; i < 3; ++i)
-				for (DWORD j = 1; j < 256; ++j)
+				for (WORD j = 1; j < 256; ++j)
 					if (table[i][j] < table[i][j-1])
 						table[i][j] = table[i][j-1];
 

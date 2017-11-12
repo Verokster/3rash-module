@@ -43,8 +43,9 @@
 #include "Texture.hpp"
 #include "Window.hpp"
 
-const FLOAT FLOAT_255 = 255;
-const double DEPTH_CORRECTION = 0.000030517578;
+#define FLOAT_255 255.0f
+#define FLOAT_65536 65536.0f
+#define DEPTH_CORRECTION 2.0f / FLOAT_65536
 
 extern HGLRC hGlRc;
 
@@ -81,7 +82,7 @@ extern DWORD fogStart;
 extern DWORD fogEnd;
 extern DWORD fogDensity;
 
-extern DWORD gamma;
+extern FLOAT gamma;
 extern DWORD bufferMode;
 
 extern BOOL isWindowLocked;
