@@ -169,6 +169,7 @@ typedef void(__stdcall *GLMULTITEXCOORD2F)(GLenum target, GLfloat s, GLfloat t);
 typedef void(__stdcall *GLMULTITEXCOORD4F)(GLenum target, GLfloat s, GLfloat t, GLfloat r, GLfloat q);
 typedef void(__stdcall *GLCOLORTABLE)(GLenum target, GLenum internalFormat, GLsizei width, GLenum format, GLenum type, const GLvoid *data);
 typedef void(__stdcall *GLPOLYGONOFFSET)(GLfloat factor, GLfloat units);
+typedef void(__stdcall *GLGETINTEGERV)(GLenum pname, GLint* data);
 
 extern WGLGETPROCADDRESS WGLGetProcAddress;
 extern WGLMAKECURRENT WGLMakeCurrent;
@@ -231,10 +232,12 @@ extern GLMULTITEXCOORD2F GLMultiTexCoord2f;
 extern GLMULTITEXCOORD4F GLMultiTexCoord4f;
 extern GLCOLORTABLE GLColorTable;
 extern GLPOLYGONOFFSET GLPolygonOffset;
+extern GLGETINTEGERV GLGetIntegerv;
 
 extern HMODULE hModule;
 
 extern WORD glVersion;
+extern INT glCapsAuxCount;
 extern BOOL glCapsBGR;
 extern BOOL glCapsBGRA;
 extern BOOL glCapsClampToEdge;

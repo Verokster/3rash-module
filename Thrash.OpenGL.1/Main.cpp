@@ -350,11 +350,21 @@ namespace Main
 		GLScalef(1.0, 1.0, -1.0);
 		GLDepthRange(0.0, 1.0);
 
-		if (forced.resolution)
+		if (forced.resolution && forced.aspect)
 		{
 			GLClearColor(0.0, 0.0, 0.0, 1.0);
 			GLClear(GL_COLOR_BUFFER_BIT);
+
+			Window::Window(1);
+			GLClear(GL_COLOR_BUFFER_BIT);
+
+			Window::Window(3);
+			GLClear(GL_COLOR_BUFFER_BIT);
 		}
+
+		Window::Window(0);
+		if (forced.resolution && forced.aspect)
+			GLClear(GL_COLOR_BUFFER_BIT);
 
 		GLEnable(GL_SCISSOR_TEST);
 		memset(&clipRect, NULL, sizeof(RECT));
@@ -362,10 +372,6 @@ namespace Main
 		Clip(rect);
 
 		GLEnable(GL_COLOR_SUM); // For specular
-
-		Window::Window(1);
-		//Window::Unlock(Window::Lock());
-		Window::Window(0);
 
 		State::Set(State::Hint, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "HINT"));
 		State::Set(State::CullFace, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "CULL"));

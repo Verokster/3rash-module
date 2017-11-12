@@ -271,22 +271,33 @@ namespace Window
 		case 0:
 		case 1:
 			buf = GL_FRONT;
+			colorMask = TRUE;
 			break;
 
 		case 2:
-		case 3:
 			buf = GL_BACK;
+			colorMask = TRUE;
+			break;
+
+		case 3:
+			if (glCapsAuxCount > 0)
+			{
+				buf = GL_AUX0;
+				colorMask = TRUE;
+			}
+			else
+			{
+				buf = GL_BACK;
+				colorMask = FALSE;
+			}
 			break;
 
 		default:
-			buf = GL_NONE;
-			break;
+			return FALSE;
 		}
 
 		GLReadBuffer(buf);
 		GLDrawBuffer(buf);
-
-		colorMask = bufferIndex != 3;
 
 		return TRUE;
 	}

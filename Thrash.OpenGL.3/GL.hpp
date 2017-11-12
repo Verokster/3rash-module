@@ -274,6 +274,7 @@ extern GLUNIFORMMATRIX4FV GLUniformMatrix4fv;
 extern HMODULE hModule;
 
 extern WORD glVersion;
+extern INT glCapsAuxCount;
 
 VOID __fastcall CreateContextAttribs(HDC* devContext, HGLRC* glContext);
 

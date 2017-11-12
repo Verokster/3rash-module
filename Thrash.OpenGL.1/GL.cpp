@@ -86,10 +86,12 @@ GLMULTITEXCOORD2F GLMultiTexCoord2f;
 GLMULTITEXCOORD4F GLMultiTexCoord4f;
 GLCOLORTABLE GLColorTable;
 GLPOLYGONOFFSET GLPolygonOffset;
+GLGETINTEGERV GLGetIntegerv;
 
 HMODULE hModule;
 
 WORD glVersion;
+INT glCapsAuxCount;
 BOOL glCapsBGR;
 BOOL glCapsBGRA;
 BOOL glCapsClampToEdge;
@@ -209,6 +211,7 @@ VOID CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 	LoadGLFunction(buffer, "glMultiTexCoord4f", (PROC*)&GLMultiTexCoord4f);
 	LoadGLFunction(buffer, "glColorTable", (PROC*)&GLColorTable, "EXT");
 	LoadGLFunction(buffer, "glPolygonOffset", (PROC*)&GLPolygonOffset);
+	LoadGLFunction(buffer, "glGetIntegerv", (PROC*)&GLGetIntegerv);
 
 	if (GLGetString)
 	{
@@ -255,4 +258,6 @@ VOID CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 	}
 	else
 		glVersion = GL_VER_1_1;
+
+	GLGetIntegerv(GL_AUX_BUFFERS, &glCapsAuxCount);
 }

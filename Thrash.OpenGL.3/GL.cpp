@@ -110,6 +110,7 @@ GLUNIFORMMATRIX4FV GLUniformMatrix4fv;
 HMODULE hModule;
 
 WORD glVersion;
+INT glCapsAuxCount;
 
 VOID __fastcall LoadGLFunction(CHAR* buffer, const CHAR* name, PROC* func, const CHAR* sufix = NULL)
 {
@@ -245,6 +246,8 @@ VOID __fastcall CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 
 	LoadGLFunction(buffer, "glUniformMatrix4fv", (PROC*)&GLUniformMatrix4fv);
 
+	
+
 	if (GLGetString)
 	{
 		glVersion = 0;
@@ -269,6 +272,8 @@ VOID __fastcall CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 
 	if (glVersion < GL_VER_3_0)
 		Main::ShowError("OpenGL 3.0 is required", __FILE__, "CreateContextAttribs", __LINE__);
+
+	GLGetIntegerv(GL_AUX_BUFFERS, &glCapsAuxCount);
 }
 
 #ifdef _DEBUG
