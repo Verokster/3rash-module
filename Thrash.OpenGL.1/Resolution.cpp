@@ -291,7 +291,7 @@ namespace Resolution
 			}
 
 			AdjustWindowRect(&rect, dwStyle, FALSE);
-			SetWindowPos(newHWnd, NULL, rect.left + devMode.dmPosition.x, rect.top + devMode.dmPosition.y, rect.right - rect.left, rect.bottom - rect.top, SWP_NOZORDER | SWP_NOACTIVATE);
+			SetWindowPos(newHWnd, HWND_NOTOPMOST, rect.left + devMode.dmPosition.x, rect.top + devMode.dmPosition.y, rect.right - rect.left, rect.bottom - rect.top, SWP_NOZORDER | SWP_NOACTIVATE);
 		}
 
 		if (result)

@@ -130,12 +130,13 @@ namespace Texture
 
 	VOID __fastcall Bind(ThrashTexture* texture)
 	{
-		if (!texture || !lastTexture)
+		DWORD index = (DWORD)texture;
+		if (!texture || !lastTexture || index < START_TEX_ID)
 			bindedTexture = NULL;
 		else if (bindedTexture != texture)
 		{
 			bindedTexture = texture;
-			GLBindTexture(GL_TEXTURE_2D, texture->id);
+			GLBindTexture(GL_TEXTURE_2D, texture->id - START_TEX_ID);
 		}
 	}
 
@@ -160,6 +161,7 @@ namespace Texture
 		if (texture)
 		{
 			GLGenTextures(1, (GLuint*)&texture->id);
+			texture->id += START_TEX_ID;
 			texture->width = width;
 			texture->height = height;
 			texture->tmu = level >> 16;
@@ -583,7 +585,8 @@ namespace Texture
 			if (lastTexture == texture)
 			{
 				lastTexture = texture->previousTexture;
-				GLDeleteTextures(1, (GLuint*)&texture->id);
+				DWORD id = texture->id - START_TEX_ID;
+				GLDeleteTextures(1, (GLuint*)&id);
 				Memory::Free(texture);
 				return TRUE;
 			}
@@ -595,7 +598,8 @@ namespace Texture
 					if (currTexture->previousTexture == texture)
 					{
 						currTexture->previousTexture = texture->previousTexture;
-						GLDeleteTextures(1, (GLuint*)&texture->id);
+						DWORD id = texture->id - START_TEX_ID;
+						GLDeleteTextures(1, (GLuint*)&id);
 						Memory::Free(texture);
 						return TRUE;
 					}
@@ -618,7 +622,8 @@ namespace Texture
 			do
 			{
 				ThrashTexture* prev = texture->previousTexture;
-				GLDeleteTextures(1, (GLuint*)&texture->id);
+				DWORD id = texture->id - START_TEX_ID;
+				GLDeleteTextures(1, (GLuint*)&id);
 				Memory::Free(texture);
 				texture = prev;
 			} while (texture);

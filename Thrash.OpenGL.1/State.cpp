@@ -113,12 +113,13 @@ namespace State
 			{
 #pragma region Texture
 			case SetTexture:
-				if (value)
+				texturesEnabled = value >= START_TEX_ID;
+
+				if (texturesEnabled)
 					GLEnable(GL_TEXTURE_2D);
 				else
 					GLDisable(GL_TEXTURE_2D);
 
-				texturesEnabled = value;
 				Texture::Bind((ThrashTexture*)value);
 
 				break;

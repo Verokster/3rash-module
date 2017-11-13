@@ -132,12 +132,13 @@ namespace Texture
 
 	VOID __fastcall Bind(ThrashTexture* texture)
 	{
-		if (!texture || !lastTexture)
+		DWORD index = (DWORD)texture;
+		if (!texture || !lastTexture || index < START_TEX_ID)
 			bindedTexture = NULL;
 		else if (bindedTexture != texture)
 		{
 			bindedTexture = texture;
-			GLBindTexture(GL_TEXTURE_2D, texture->id);
+			GLBindTexture(GL_TEXTURE_2D, texture->id - START_TEX_ID);
 		}
 	}
 
@@ -162,6 +163,7 @@ namespace Texture
 		if (texture)
 		{
 			GLGenTextures(1, (GLuint*)&texture->id);
+			texture->id += START_TEX_ID;
 			texture->width = width;
 			texture->height = height;
 			texture->tmu = level >> 16;
@@ -219,7 +221,6 @@ namespace Texture
 					texture->internalFormat = GL_RGB8;
 					texture->type = GL_UNSIGNED_BYTE;
 					texture->size = 3;
-					texture->stride = 0;
 					texture->reconvert = TRUE;
 					break;
 
@@ -228,7 +229,6 @@ namespace Texture
 					texture->internalFormat = GL_RGBA8;
 					texture->type = GL_UNSIGNED_BYTE;
 					texture->size = 4;
-					texture->stride = 0;
 					texture->reconvert = TRUE;
 					break;
 
@@ -243,7 +243,6 @@ namespace Texture
 				texture->internalFormat = GL_RGB5_A1;
 				texture->type = GL_UNSIGNED_SHORT_1_5_5_5_REV;
 				texture->size = 2;
-				texture->stride = 0;
 				break;
 
 			case RGB565_16:
@@ -251,7 +250,6 @@ namespace Texture
 				texture->internalFormat = GL_RGB565;
 				texture->type = GL_UNSIGNED_SHORT_5_6_5;
 				texture->size = 2;
-				texture->stride = 0;
 				break;
 
 			case BGR_24:
@@ -259,7 +257,6 @@ namespace Texture
 				texture->internalFormat = GL_RGB8;
 				texture->type = GL_UNSIGNED_BYTE;
 				texture->size = 3;
-				texture->stride = 0;
 				break;
 
 			case BGRA_32:
@@ -267,7 +264,6 @@ namespace Texture
 				texture->internalFormat = GL_RGBA8;
 				texture->type = GL_UNSIGNED_BYTE;
 				texture->size = 4;
-				texture->stride = 0;
 				break;
 
 			case BGRA4_16:
@@ -275,7 +271,6 @@ namespace Texture
 				texture->internalFormat = GL_RGBA4;
 				texture->type = GL_UNSIGNED_SHORT_4_4_4_4_REV;
 				texture->size = 2;
-				texture->stride = 0;
 				break;
 
 				/*case L4_A4_8:
@@ -371,7 +366,7 @@ namespace Texture
 			do
 			{
 				GLTexSubImage2D(GL_TEXTURE_2D, level, 0, 0, width, height, texture->format, texture->type, pixelsData);
-				pixelsData += (texture->size * width * height) >> texture->stride;
+				pixelsData += texture->size * width * height;
 				width >>= 1;
 				height >>= 1;
 				++level;
@@ -399,7 +394,8 @@ namespace Texture
 			if (lastTexture == texture)
 			{
 				lastTexture = texture->previousTexture;
-				GLDeleteTextures(1, (GLuint*)&texture->id);
+				DWORD id = texture->id - START_TEX_ID;
+				GLDeleteTextures(1, (GLuint*)&id);
 				Memory::Free(texture);
 				return TRUE;
 			}
@@ -411,7 +407,8 @@ namespace Texture
 					if (currTexture->previousTexture == texture)
 					{
 						currTexture->previousTexture = texture->previousTexture;
-						GLDeleteTextures(1, (GLuint*)&texture->id);
+						DWORD id = texture->id - START_TEX_ID;
+						GLDeleteTextures(1, (GLuint*)&id);
 						Memory::Free(texture);
 						return TRUE;
 					}
@@ -434,6 +431,7 @@ namespace Texture
 			do
 			{
 				ThrashTexture* prev = texture->previousTexture;
+				DWORD id = texture->id - START_TEX_ID;
 				GLDeleteTextures(1, (GLuint*)&texture->id);
 				Memory::Free(texture);
 				texture = prev;

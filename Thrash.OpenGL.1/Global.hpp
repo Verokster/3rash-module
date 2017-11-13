@@ -59,8 +59,6 @@ extern BOOL specularEnabled;
 extern BOOL texturesEnabled;
 extern DWORD textureMipMap;
 extern BOOL textureFilterEnabled;
-extern ThrashTexture* lastTexture;
-extern ThrashTexture* bindedTexture;
 
 extern DWORD textureClampS;
 extern DWORD textureClampT;
