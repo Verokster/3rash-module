@@ -67,7 +67,7 @@
 #include "Quad.hpp"
 #include "Sprite.hpp"
 
-#define START_TEX_ID 0x10
+#define MIN_TEX_ADDRESS 0x10
 
 const DWORD MSG_CHANGE_RESOLUTION = 1124;
 const DWORD MSG_RESET_RESOLUTION = 1125;

@@ -113,7 +113,7 @@ namespace State
 			{
 #pragma region Texture
 			case SetTexture:
-				texturesEnabled = value >= START_TEX_ID;
+				texturesEnabled = value >= MIN_TEX_ADDRESS;
 
 				if (texturesEnabled)
 					GLEnable(GL_TEXTURE_2D);

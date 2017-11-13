@@ -173,7 +173,7 @@ namespace State
 			{
 #pragma region Texture
 			case SetTexture:
-				texturesEnabled = value >= START_TEX_ID;
+				texturesEnabled = value >= MIN_TEX_ADDRESS;
 				GLUniform1ui(uniTexEnabledLoc, texturesEnabled);
 				Texture::Bind((ThrashTexture*)value);
 				break;
