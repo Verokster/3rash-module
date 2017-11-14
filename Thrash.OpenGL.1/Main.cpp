@@ -123,6 +123,8 @@ namespace Main
 		if (forced.filtering && forced.filtering > 2)
 			forced.filtering = 0;
 
+		forced.reconvert = GetEnvironmentValue(0, envPrefix, "TEXRGBA32");
+
 		forced.add640x480x16 = GetEnvironmentValue(1, envPrefix, "ADD640X480X16");
 		forced.movies16Bit = GetEnvironmentValue(0, envPrefix, "MOVIES16BIT");
 

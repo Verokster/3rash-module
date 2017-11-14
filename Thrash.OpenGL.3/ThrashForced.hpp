@@ -36,6 +36,7 @@ struct ThrashForced
 	BOOL aspect;
 	FLOAT gamma;
 	DWORD filtering;
+	BOOL reconvert;
 	BOOL add640x480x16;
 	BOOL movies16Bit;
 };

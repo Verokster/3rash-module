@@ -189,12 +189,23 @@ namespace Texture
 				switch (texture->indexFormatIndex)
 				{
 				case INDEXED_BGR:
-					texture->format = GL_RGB;
-					texture->internalFormat = GL_RGB8;
-					texture->type = GL_UNSIGNED_BYTE;
-					texture->size = 3;
-					texture->stride = 0;
-					texture->reconvert = TRUE;
+					if (forced.reconvert)
+					{
+						texture->format = GL_BGRA;
+						texture->internalFormat = GL_RGBA8;
+						texture->type = GL_UNSIGNED_BYTE;
+						texture->size = 4;
+						texture->reconvert = TRUE;
+					}
+					else
+					{
+						texture->format = GL_RGB;
+						texture->internalFormat = GL_RGB8;
+						texture->type = GL_UNSIGNED_BYTE;
+						texture->size = 3;
+						texture->reconvert = TRUE;
+					}
+
 					break;
 
 				case INDEXED_BGRA:
@@ -202,8 +213,8 @@ namespace Texture
 					texture->internalFormat = GL_RGBA8;
 					texture->type = GL_UNSIGNED_BYTE;
 					texture->size = 4;
-					texture->stride = 0;
 					texture->reconvert = TRUE;
+
 					break;
 
 				default:
@@ -216,11 +227,23 @@ namespace Texture
 				switch (texture->indexFormatIndex)
 				{
 				case INDEXED_BGR:
-					texture->format = GL_BGR;
-					texture->internalFormat = GL_RGB8;
-					texture->type = GL_UNSIGNED_BYTE;
-					texture->size = 3;
-					texture->reconvert = TRUE;
+					if (forced.reconvert)
+					{
+						texture->format = GL_BGRA;
+						texture->internalFormat = GL_RGBA8;
+						texture->type = GL_UNSIGNED_BYTE;
+						texture->size = 4;
+						texture->reconvert = TRUE;
+					}
+					else
+					{
+						texture->format = GL_BGR;
+						texture->internalFormat = GL_RGB8;
+						texture->type = GL_UNSIGNED_BYTE;
+						texture->size = 3;
+						texture->reconvert = TRUE;
+					}
+
 					break;
 
 				case INDEXED_BGRA:
@@ -229,6 +252,7 @@ namespace Texture
 					texture->type = GL_UNSIGNED_BYTE;
 					texture->size = 4;
 					texture->reconvert = TRUE;
+
 					break;
 
 				default:
@@ -238,38 +262,99 @@ namespace Texture
 				break;
 
 			case BGR5_A1_16:
-				texture->format = GL_BGRA;
-				texture->internalFormat = GL_RGB5_A1;
-				texture->type = GL_UNSIGNED_SHORT_1_5_5_5_REV;
-				texture->size = 2;
+				if (forced.reconvert)
+				{
+					texture->format = GL_RGBA;
+					texture->internalFormat = GL_RGBA8;
+					texture->type = GL_UNSIGNED_BYTE;
+					texture->size = 4;
+					texture->reconvert = TRUE;
+				}
+				else
+				{
+					texture->format = GL_BGRA;
+					texture->internalFormat = GL_RGB5_A1;
+					texture->type = GL_UNSIGNED_SHORT_1_5_5_5_REV;
+					texture->size = 2;
+				}
+
 				break;
 
 			case RGB565_16:
-				texture->format = GL_RGB;
-				texture->internalFormat = GL_RGB565;
-				texture->type = GL_UNSIGNED_SHORT_5_6_5;
-				texture->size = 2;
+				if (forced.reconvert)
+				{
+					texture->format = GL_RGBA;
+					texture->internalFormat = GL_RGBA8;
+					texture->type = GL_UNSIGNED_BYTE;
+					texture->size = 4;
+					texture->stride = 0;
+					texture->reconvert = TRUE;
+				}
+				else
+				{
+					texture->format = GL_RGB;
+					texture->internalFormat = GL_RGB565;
+					texture->type = GL_UNSIGNED_SHORT_5_6_5;
+					texture->size = 2;
+				}
+
 				break;
 
 			case BGR_24:
-				texture->format = GL_BGR;
-				texture->internalFormat = GL_RGB8;
-				texture->type = GL_UNSIGNED_BYTE;
-				texture->size = 3;
+				if (forced.reconvert)
+				{
+					texture->format = GL_RGBA;
+					texture->internalFormat = GL_RGBA8;
+					texture->type = GL_UNSIGNED_BYTE;
+					texture->size = 4;
+					texture->reconvert = TRUE;
+				}
+				else
+				{
+					texture->format = GL_BGR;
+					texture->internalFormat = GL_RGB8;
+					texture->type = GL_UNSIGNED_BYTE;
+					texture->size = 3;
+				}
+
 				break;
 
 			case BGRA_32:
-				texture->format = GL_BGRA;
-				texture->internalFormat = GL_RGBA8;
-				texture->type = GL_UNSIGNED_BYTE;
-				texture->size = 4;
+				if (forced.reconvert)
+				{
+					texture->format = GL_RGBA;
+					texture->internalFormat = GL_RGBA8;
+					texture->type = GL_UNSIGNED_BYTE;
+					texture->size = 4;
+					texture->reconvert = TRUE;
+				}
+				else
+				{
+					texture->format = GL_BGRA;
+					texture->internalFormat = GL_RGBA8;
+					texture->type = GL_UNSIGNED_BYTE;
+					texture->size = 4;
+				}
+
 				break;
 
 			case BGRA4_16:
-				texture->format = GL_BGRA;
-				texture->internalFormat = GL_RGBA4;
-				texture->type = GL_UNSIGNED_SHORT_4_4_4_4_REV;
-				texture->size = 2;
+				if (forced.reconvert)
+				{
+					texture->format = GL_RGBA;
+					texture->internalFormat = GL_RGBA8;
+					texture->type = GL_UNSIGNED_BYTE;
+					texture->size = 4;
+					texture->reconvert = TRUE;
+				}
+				else
+				{
+					texture->format = GL_BGRA;
+					texture->internalFormat = GL_RGBA4;
+					texture->type = GL_UNSIGNED_SHORT_4_4_4_4_REV;
+					texture->size = 2;
+				}
+
 				break;
 
 				/*case L4_A4_8:
@@ -277,13 +362,13 @@ namespace Texture
 				texture->internalFormat = GL_LUMINANCE4_ALPHA4;
 				texture->type = GL_UNSIGNED_BYTE_4_4_MESA;
 				texture->size = 1;
-				texture->stride = 0;
 
 				break;*/
 
 			default:
 				Main::ShowError("Bad pixel format", __FILE__, "Allocate", texture->colorFormatIndex);
 			}
+
 
 			Buffer::Draw();
 			Texture::Bind(texture);
@@ -320,7 +405,10 @@ namespace Texture
 			switch (texture->indexFormatIndex)
 			{
 			case 3:
-				memory = Convert_BGR_4_To_RGB_24(texture, memory, pallete);
+				if (forced.reconvert)
+					memory = Convert_BGR_4_To_RGBA_32(texture, memory, pallete);
+				else
+					memory = Convert_BGR_4_To_RGB_24(texture, memory, pallete);
 				break;
 
 			case 4:
@@ -336,7 +424,10 @@ namespace Texture
 			switch (texture->indexFormatIndex)
 			{
 			case 3:
-				memory = Convert_BGR_8_To_RGB_24(texture, memory, pallete);
+				if (forced.reconvert)
+					memory = Convert_BGR_8_To_RGBA_32(texture, memory, pallete);
+				else
+					memory = Convert_BGR_8_To_RGB_24(texture, memory, pallete);
 				break;
 
 			case 4:
@@ -348,8 +439,32 @@ namespace Texture
 
 			break;
 
-		default:
+		case BGR5_A1_16:
+			if (texture->reconvert)
+				memory = Convert_BGR5_A1_To_RGBA_32(texture, memory);
 			break;
+
+		case RGB565_16:
+			if (texture->reconvert)
+				memory = Convert_RGB565_To_RGBA_32(texture, memory);
+			break;
+
+		case BGR_24:
+			if (forced.reconvert)
+				memory = Convert_BGR_24_To_RGBA_32(texture, memory);
+			break;
+
+		case BGRA_32:
+			if (texture->reconvert)
+				memory = Convert_BGRA_32_To_RGBA_32(texture, memory);
+			break;
+
+		case BGRA4_16:
+			if (texture->reconvert)
+				memory = Convert_BGRA_16_To_RGBA_32(texture, memory);
+			break;
+
+		default: break;
 		}
 
 

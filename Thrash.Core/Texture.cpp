@@ -57,6 +57,37 @@ namespace Texture
 		return ptr;
 	}
 
+	VOID* __fastcall Convert_BGR_4_To_RGBA_32(ThrashTexture* texture, VOID* memory, BYTE pallete[])
+	{
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
+		if (ptr)
+		{
+			BYTE* dest = (BYTE*)ptr;
+			BYTE* source = (BYTE*)memory;
+
+			BOOL lowPart = TRUE;
+			DWORD total = texture->pixels;
+			do
+			{
+				DWORD index = (lowPart ? (*source & 0x0F) : (*source++ >> 4));
+				lowPart = !lowPart;
+
+				BYTE* color = &pallete[*source * 3];
+
+				*dest++ = *(color + 2);
+				*dest++ = *(color + 1);
+				*dest++ = *color;
+				*dest++ = 0xFF;
+
+				--total;
+			} while (total);
+		}
+		else
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGR_4_To_RGBA_32", __LINE__);
+
+		return ptr;
+	}
+
 	VOID* __fastcall Convert_BGRA_4_To_RGBA_32(ThrashTexture* texture, VOID* memory, BYTE pallete[])
 	{
 		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
@@ -108,6 +139,33 @@ namespace Texture
 		return ptr;
 	}
 
+	VOID* __fastcall Convert_BGR_8_To_RGBA_32(ThrashTexture* texture, VOID* memory, BYTE pallete[])
+	{
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
+		if (ptr)
+		{
+			BYTE* dest = (BYTE*)ptr;
+			BYTE* source = (BYTE*)memory;
+
+			DWORD total = texture->pixels;
+			do
+			{
+				BYTE* color = &pallete[*source++ * 3];
+
+				*dest++ = *(color + 2);
+				*dest++ = *(color + 1);
+				*dest++ = *color;
+				*dest++ = 0xFF;
+
+				--total;
+			} while (total);
+		}
+		else
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGR_8_To_RGBA_32", __LINE__);
+
+		return ptr;
+	}
+
 	VOID* __fastcall Convert_BGRA_8_To_RGBA_32(ThrashTexture* texture, VOID* memory, BYTE pallete[])
 	{
 		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
@@ -129,7 +187,7 @@ namespace Texture
 		return ptr;
 	}
 
-	VOID* __fastcall Convert_BGR5_A1_To_BGRA_32(ThrashTexture* texture, VOID* memory)
+	VOID* __fastcall Convert_BGR5_A1_To_RGBA_32(ThrashTexture* texture, VOID* memory)
 	{
 		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
 		if (ptr)
@@ -150,12 +208,12 @@ namespace Texture
 			} while (total);
 		}
 		else
-			Main::ShowError("Out of memory.", __FILE__, "Convert_BGR5_A1_To_BGRA_32", __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGR5_A1_To_RGBA_32", __LINE__);
 
 		return ptr;
 	}
 
-	VOID* __fastcall Convert_RGB565_To_RGB(ThrashTexture* texture, VOID* memory)
+	VOID* __fastcall Convert_RGB565_To_RGB_24(ThrashTexture* texture, VOID* memory)
 	{
 		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
 		if (ptr)
@@ -175,7 +233,33 @@ namespace Texture
 			} while (total);
 		}
 		else
-			Main::ShowError("Out of memory.", __FILE__, "Convert_RGB565_To_RGB", __LINE__);
+			Main::ShowError("Out of memory.", __FILE__, "Convert_RGB565_To_RGB_24", __LINE__);
+
+		return ptr;
+	}
+
+	VOID* __fastcall Convert_RGB565_To_RGBA_32(ThrashTexture* texture, VOID* memory)
+	{
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
+		if (ptr)
+		{
+			BYTE* dest = (BYTE*)ptr;
+			WORD* source = (WORD*)memory;
+
+			DWORD total = texture->pixels;
+			do
+			{
+				*dest++ = (*source >> 8) & 0xF8;
+				*dest++ = (*source >> 3) & 0xF0;
+				*dest++ = *source << 3;
+				*dest++ = 0xFF;
+
+				++source;
+				--total;
+			} while (total);
+		}
+		else
+			Main::ShowError("Out of memory.", __FILE__, "Convert_RGB565_To_RGBA_32", __LINE__);
 
 		return ptr;
 	}
@@ -201,6 +285,32 @@ namespace Texture
 		}
 		else
 			Main::ShowError("Out of memory.", __FILE__, "Convert_BGR_24_To_RGB_24", __LINE__);
+
+		return ptr;
+	}
+
+	VOID* __fastcall Convert_BGR_24_To_RGBA_32(ThrashTexture* texture, VOID* memory)
+	{
+		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
+		if (ptr)
+		{
+			BYTE* dest = (BYTE*)ptr;
+			BYTE* source = (BYTE*)memory;
+
+			DWORD total = texture->pixels;
+			do
+			{
+				*dest++ = *(source + 2);
+				*dest++ = *(source + 1);
+				*dest++ = *source;
+				*dest++ = 0xFF;
+
+				source += 3;
+				--total;
+			} while (total);
+		}
+		else
+			Main::ShowError("Out of memory.", __FILE__, "Convert_BGR_24_To_RGBA_32", __LINE__);
 
 		return ptr;
 	}
