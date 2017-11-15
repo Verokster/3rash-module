@@ -150,7 +150,7 @@ namespace Resolution
 				xPos = selectedResolution->width - 1;
 			else
 			{
-				FLOAT number = (FLOAT)(xPos - viewport.rectangle.x) / viewport.clipFactor.y;
+				FLOAT number = (FLOAT)(xPos - viewport.rectangle.x) / viewport.clipFactor.x;
 				FLOAT floorVal = floor(number);
 				xPos = INT(floorVal + 0.5f > number ? floorVal : ceil(number));
 			}
@@ -161,7 +161,7 @@ namespace Resolution
 				yPos = selectedResolution->height - 1;
 			else
 			{
-				FLOAT number = (FLOAT)(yPos - viewport.rectangle.y) / viewport.clipFactor.x;
+				FLOAT number = (FLOAT)(yPos - viewport.rectangle.y) / viewport.clipFactor.y;
 				FLOAT floorVal = floor(number);
 				yPos = INT(floorVal + 0.5f > number ? floorVal : ceil(number));
 			}
