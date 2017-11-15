@@ -26,9 +26,11 @@
 
 struct ThrashViewport
 {
+	BOOL refresh;
 	DWORD width;
 	DWORD height;
 	ThrashRectangle rectangle;
+	POINTFLOAT point;
 	POINTFLOAT viewFactor;
 	POINTFLOAT clipFactor;
 };

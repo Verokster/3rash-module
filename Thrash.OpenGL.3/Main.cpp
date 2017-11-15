@@ -24,7 +24,7 @@
 
 #include "stdafx.h"
 #include "Global.hpp"
-#include <math.h>
+#include "math.h"
 
 #define AUTHOR "AUTHOR: Oleksiy Ryabchun, " __TIMESTAMP__
 
@@ -202,23 +202,30 @@ namespace Main
 
 	BOOL THRASHAPI Clip(RECT rect)
 	{
-		if (rect.left != clipRect.left || rect.top != clipRect.top || rect.right != clipRect.right || rect.bottom != clipRect.bottom)
+		if (memcmp(&rect, &clipRect, sizeof(RECT)))
 		{
 			clipRect = rect;
-
 			Buffer::Draw();
 
-			if (viewport.width != selectedResolution->width)
-			{
-				rect.left = viewport.rectangle.x + Round((FLOAT)rect.left * viewport.clipFactor.x);
-				rect.right = viewport.rectangle.x + Round((FLOAT)rect.right * viewport.clipFactor.x);
-			}
+			if (rect.left <= 0)
+				rect.left = viewport.rectangle.x;
+			else if (viewport.rectangle.x || viewport.rectangle.width != selectedResolution->width)
+				rect.left = Round(viewport.point.x + viewport.clipFactor.x * (FLOAT)rect.left);
 
-			if (viewport.height != selectedResolution->height)
-			{
-				rect.top = viewport.rectangle.y + Round((FLOAT)rect.top * viewport.clipFactor.y);
-				rect.bottom = viewport.rectangle.y + Round((FLOAT)rect.bottom * viewport.clipFactor.y);
-			}
+			if (rect.left >= viewport.rectangle.x + viewport.rectangle.width)
+				rect.right = viewport.rectangle.x + viewport.rectangle.width;
+			else if (viewport.rectangle.x || viewport.rectangle.width != selectedResolution->width)
+				rect.right = Round(viewport.point.x + viewport.clipFactor.x * (FLOAT)rect.right);
+
+			if (rect.top <= 0)
+				rect.top = viewport.rectangle.y;
+			else if (viewport.rectangle.y || viewport.rectangle.height != selectedResolution->height)
+				rect.top = Round(viewport.point.y + viewport.clipFactor.y * (FLOAT)rect.top);
+
+			if (rect.bottom >= viewport.rectangle.y + viewport.rectangle.height)
+				rect.bottom = viewport.rectangle.y + viewport.rectangle.height;
+			else if (viewport.rectangle.y || viewport.rectangle.height != selectedResolution->height)
+				rect.bottom = Round(viewport.point.y + viewport.clipFactor.y * (FLOAT)rect.bottom);
 
 			GLScissor(rect.left, viewport.height - rect.bottom, rect.right - rect.left, rect.bottom - rect.top);
 		}
@@ -283,6 +290,17 @@ namespace Main
 
 		if (forced.vSync)
 			GLFinish();
+
+		if (viewport.refresh)
+		{
+			viewport.refresh = FALSE;
+
+			GLViewport(viewport.rectangle.x, viewport.rectangle.y, viewport.rectangle.width, viewport.rectangle.height);
+
+			RECT rect = clipRect;
+			memset(&clipRect, 0, sizeof(RECT));
+			Clip(rect);
+		}
 	}
 
 	BOOL THRASHAPI Restore()
@@ -338,8 +356,7 @@ namespace Main
 		vmIsDepthBuffer16 = isDepthBuffer16;
 
 		Window::Release();
-		if (!forced.windowed)
-			Context::Release();
+		Context::Release();
 
 		if (functions.GetHWND)
 		{
@@ -365,11 +382,12 @@ namespace Main
 		GLHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
 		GLHint(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
 
+		viewport.refresh = FALSE;
 		GLViewport(viewport.rectangle.x, viewport.rectangle.y, viewport.rectangle.width, viewport.rectangle.height);
 
 		FLOAT right = (FLOAT)selectedResolution->width;
 		FLOAT bottom = (FLOAT)selectedResolution->height;
-		FLOAT zFar = FLOAT(1.0f + DEPTH_CORRECTION);
+		FLOAT zFar = 1.0f;
 
 		FLOAT mvpMatrix[4][4] = {
 			2.0f / right,           0.0f,        0.0f, 0.0f,
@@ -381,20 +399,20 @@ namespace Main
 		GLUniformMatrix4fv(uniMVPLoc, 1, GL_FALSE, (GLfloat*)mvpMatrix);
 		GLDepthRange(0, 1.0);
 
-		if (forced.resolution && forced.aspect)
+		if (forced.aspect)
 		{
 			GLClearColor(0.0, 0.0, 0.0, 1.0);
 			GLClear(GL_COLOR_BUFFER_BIT);
 
-			Window::Window(1);
+			Window::Window(3);
 			GLClear(GL_COLOR_BUFFER_BIT);
 
-			Window::Window(3);
+			Window::Window(1);
 			GLClear(GL_COLOR_BUFFER_BIT);
 		}
 
 		Window::Window(0);
-		if (forced.resolution && forced.aspect)
+		if (forced.aspect)
 			GLClear(GL_COLOR_BUFFER_BIT);
 
 		GLEnable(GL_SCISSOR_TEST);

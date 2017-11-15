@@ -24,6 +24,7 @@
 
 #include "stdafx.h"
 #include "Global.hpp"
+#include "math.h"
 
 ThrashResolution* selectedResolution;
 ThrashDesktopMode desktopMode;
@@ -61,8 +62,158 @@ WORD forcedResolutionList[] =
 
 BYTE forcedRefreshRateList[] = { 60, 70, 72, 75, 85, 90, 100, 120, 144 };
 
+#define WM_XBUTTONDOWN                  0x020B
+#define WM_XBUTTONUP                    0x020C
+#define WM_XBUTTONDBLCLK                0x020D
+
 namespace Resolution
 {
+	VOID __fastcall ChangeView(DWORD width, DWORD height)
+	{
+		viewport.refresh = TRUE;
+
+		viewport.rectangle.x = viewport.rectangle.y = 0;
+		viewport.point.x = viewport.point.y = 0.0f;
+
+		viewport.rectangle.width = viewport.width = width;
+		viewport.rectangle.height = viewport.height = height;
+
+		viewport.clipFactor.x = viewport.viewFactor.x = (FLOAT)viewport.width / (FLOAT)selectedResolution->width;
+		viewport.clipFactor.y = viewport.viewFactor.y = (FLOAT)viewport.height / (FLOAT)selectedResolution->height;
+
+		if (forced.aspect && viewport.viewFactor.x != viewport.viewFactor.y)
+		{
+			if (viewport.viewFactor.x > viewport.viewFactor.y)
+			{
+				FLOAT fw = (FLOAT)selectedResolution->width * viewport.viewFactor.y;
+				viewport.rectangle.width = Main::Round(fw);
+
+				viewport.point.x = ((FLOAT)viewport.width - fw) / 2.0f;
+				viewport.rectangle.x = Main::Round(viewport.point.x);
+
+				viewport.clipFactor.x = viewport.viewFactor.y;
+			}
+			else
+			{
+				FLOAT fh = (FLOAT)selectedResolution->height * viewport.viewFactor.x;
+				viewport.rectangle.height = Main::Round(fh);
+
+				viewport.point.y = ((FLOAT)viewport.height - fh) / 2.0f;
+				viewport.rectangle.y = Main::Round(viewport.point.y);
+
+				viewport.clipFactor.y = viewport.viewFactor.x;
+			}
+		}
+	}
+
+	static WNDPROC OldWindowProc = NULL;
+	LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		switch (message)
+		{
+		case WM_SYSCOMMAND:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+
+		case WM_SIZE:
+		{
+			ChangeView(lParam & 0xFFFF, lParam >> 16);
+			return CallWindowProc(OldWindowProc, hWnd, message, wParam, lParam);
+		}
+
+		case WM_KILLFOCUS:
+		case WM_SETFOCUS:
+		case WM_ACTIVATE:
+		case WM_NCACTIVATE:
+		case WM_ACTIVATEAPP:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+
+		case WM_LBUTTONDOWN:
+		case WM_LBUTTONUP:
+		case WM_LBUTTONDBLCLK:
+		case WM_MBUTTONDOWN:
+		case WM_MBUTTONUP:
+		case WM_MBUTTONDBLCLK:
+		case WM_RBUTTONDOWN:
+		case WM_RBUTTONUP:
+		case WM_RBUTTONDBLCLK:
+		case WM_XBUTTONDOWN:
+		case WM_XBUTTONUP:
+		case WM_XBUTTONDBLCLK:
+		case WM_MOUSEMOVE:
+		{
+			INT xPos = LOWORD(lParam);
+			INT yPos = HIWORD(lParam);
+
+			if (xPos < viewport.rectangle.x)
+				xPos = 0;
+			else if (xPos >= viewport.rectangle.x + viewport.rectangle.width)
+				xPos = selectedResolution->width - 1;
+			else
+			{
+				FLOAT number = (FLOAT)(xPos - viewport.rectangle.x) / viewport.clipFactor.y;
+				FLOAT floorVal = floor(number);
+				xPos = INT(floorVal + 0.5f > number ? floorVal : ceil(number));
+			}
+
+			if (yPos < viewport.rectangle.y)
+				yPos = 0;
+			else if (yPos >= viewport.rectangle.y + viewport.rectangle.height)
+				yPos = selectedResolution->height - 1;
+			else
+			{
+				FLOAT number = (FLOAT)(yPos - viewport.rectangle.y) / viewport.clipFactor.x;
+				FLOAT floorVal = floor(number);
+				yPos = INT(floorVal + 0.5f > number ? floorVal : ceil(number));
+			}
+
+			lParam = (SHORT)yPos << 16 | (SHORT)xPos;
+			return CallWindowProc(OldWindowProc, hWnd, message, wParam, lParam);
+		}
+
+		default:
+			return CallWindowProc(OldWindowProc, hWnd, message, wParam, lParam);
+			break;
+		}
+
+		return NULL;
+	}
+
+	HHOOK OldMouseHook;
+	LRESULT CALLBACK MouseHook(INT nCode, WPARAM wParam, LPARAM lParam)
+	{
+		if (nCode >= 0)
+		{
+			LPMOUSEHOOKSTRUCT mouseInfo = (LPMOUSEHOOKSTRUCT)lParam;
+
+			POINT point = mouseInfo->pt;
+			ScreenToClient(hWnd, &point);
+
+			RECT rect;
+			GetClientRect(hWnd, &rect);
+
+			if (point.x <= viewport.rectangle.x || point.x >= viewport.rectangle.x + viewport.rectangle.width - 1 ||
+				point.y <= viewport.rectangle.y || point.y >= viewport.rectangle.y + viewport.rectangle.height - 1)
+			{
+				while (ShowCursor(TRUE) <= 0);
+				return NULL;
+			}
+		}
+
+		return CallNextHookEx(OldMouseHook, nCode, wParam, lParam);
+	}
+
+	BOOL WINAPI EnumNamesFunc(HMODULE hModule, LPCTSTR lpType, LPTSTR lpName, LONG lParam)
+	{
+		HICON hIcon = (HICON)LoadIcon(hModule, lpName);
+		if (hIcon)
+		{
+			SetClassLong((HWND)lParam, GCL_HICON, (LONG)hIcon);
+			return FALSE;
+		}
+
+		return TRUE;
+	}
+
 	DWORD __inline Add(DEVMODE* devMode)
 	{
 		ThrashResolution* resList = resolutionsList + 1;
@@ -195,76 +346,93 @@ namespace Resolution
 		return res;
 	}
 
-	BOOL __stdcall Change(DWORD unknown, HWND newHWnd, UINT msg, DWORD resolutionIndex, DWORD maxPanding, BOOL *result)
+	BOOL __stdcall Change(DWORD unknown, HWND hWnd, UINT msg, DWORD resolutionIndex, DWORD maxPanding, BOOL *result)
 	{
 		selectedResolution = &resolutionsList[resolutionIndex];
-		viewport.rectangle.width = viewport.width = selectedResolution->width;
-		viewport.rectangle.height = viewport.height = selectedResolution->height;
-		viewport.rectangle.x = viewport.rectangle.y = 0;
-		viewport.clipFactor.x = viewport.clipFactor.y = viewport.viewFactor.x = viewport.viewFactor.y = 1.0;
 
 		if (!appWindowed)
 		{
-			if (forced.resolution > 0)
+			switch (forced.resolution)
 			{
-				if (forced.resolution == 1)
-				{
-					viewport.rectangle.width = viewport.width = desktopMode.width;
-					viewport.rectangle.height = viewport.height = desktopMode.height;
-				}
-				else if (forced.resolution >= 2)
-				{
-					WORD* res = &forcedResolutionList[(forced.resolution - 2) << 1];
-					viewport.rectangle.width = viewport.width = *res++;
-					viewport.rectangle.height = viewport.height = *res;
-				}
-
-				viewport.clipFactor.x = viewport.viewFactor.x = (FLOAT)viewport.width / (FLOAT)selectedResolution->width;
-				viewport.clipFactor.y = viewport.viewFactor.y = (FLOAT)viewport.height / (FLOAT)selectedResolution->height;
-
-				if (forced.aspect)
-				{
-					if (viewport.viewFactor.x > viewport.viewFactor.y)
-					{
-						viewport.rectangle.width = Main::Round((FLOAT)selectedResolution->width * viewport.viewFactor.y);
-						viewport.rectangle.x = (viewport.width - viewport.rectangle.width) >> 1;
-						viewport.clipFactor.x = (FLOAT)viewport.rectangle.width / (FLOAT)selectedResolution->width;
-					}
-					else
-					{
-						viewport.rectangle.height = Main::Round((FLOAT)selectedResolution->height * viewport.viewFactor.x);
-						viewport.rectangle.y = (viewport.height - viewport.rectangle.height) >> 1;
-						viewport.clipFactor.y = (FLOAT)viewport.rectangle.height / (FLOAT)selectedResolution->height;
-					}
-				}
+			case 0:
+				ChangeView(selectedResolution->width, selectedResolution->height);
+				break;
+			case 1:
+				ChangeView(desktopMode.width, desktopMode.height);
+				break;
+			default:
+			{
+				WORD* res = &forcedResolutionList[(forced.resolution - 2) << 1];
+				ChangeView(*res++, *res);
+				break;
 			}
-
-			DISPLAY_DEVICE display;
-			display.cb = sizeof(display);
-
-			DEVMODE devMode;
-			devMode.dmSize = sizeof(devMode);
-
-			EnumDisplayDevices(NULL, displayIndex, &display, NULL);
-			EnumDisplaySettings(display.DeviceName, ENUM_REGISTRY_SETTINGS, &devMode);
+			}
 
 			RECT rect;
 			LONG dwStyle;
 			if (forced.windowed)
 			{
-				dwStyle = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+				HMONITOR hMon = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
+				MONITORINFO mi = { sizeof(mi) };
+				GetMonitorInfo(hMon, &mi);
 
-				SetWindowLong(newHWnd, GWL_STYLE, dwStyle);
-				SetWindowLong(newHWnd, GWL_EXSTYLE, WS_EX_APPWINDOW | WS_EX_DLGMODALFRAME);
+				dwStyle = WS_CLIPCHILDREN | WS_VISIBLE | WS_OVERLAPPEDWINDOW;
 
-				rect.left = (devMode.dmPelsWidth - viewport.width) >> 1;
-				rect.top = (devMode.dmPelsHeight - viewport.height) >> 1;
-				rect.right = viewport.width + rect.left;
-				rect.bottom = viewport.height + rect.top;
+				rect.left = mi.rcWork.left + (mi.rcWork.right - mi.rcWork.left - viewport.width) >> 1;
+				rect.top = mi.rcWork.top + (mi.rcWork.bottom - mi.rcWork.top - viewport.height) >> 1;
+				rect.right = rect.left + viewport.width;
+				rect.bottom = rect.top + viewport.height;
+
+				AdjustWindowRect(&rect, dwStyle, FALSE);
+
+				if (rect.right - rect.left >= mi.rcWork.right - mi.rcWork.left ||
+					rect.bottom - rect.top >= mi.rcWork.bottom - mi.rcWork.top)
+				{
+					rect = mi.rcWork;
+					dwStyle |= WS_MAXIMIZE;
+				}
+
+				SetWindowLong(hWnd, GWL_STYLE, dwStyle);
+				SetWindowLong(hWnd, GWL_EXSTYLE, WS_EX_APPWINDOW | WS_EX_DLGMODALFRAME);
+
+				HICON hIcon = (HICON)GetClassLong(hWnd, GCL_HICON);
+				if (!hIcon)
+				{
+					HINSTANCE hIntance = (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE);
+					EnumResourceNames(hIntance, RT_GROUP_ICON, EnumNamesFunc, (LONG_PTR)hWnd);
+				}
+				else
+				{
+					if (!SendMessage(hWnd, WM_GETICON, ICON_BIG, NULL))
+						SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+
+					if (!SendMessage(hWnd, WM_SETICON, ICON_SMALL, NULL))
+						SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+				}
+
+				SetWindowPos(hWnd, HWND_NOTOPMOST, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, NULL);
+
+				if (!OldWindowProc && !OldMouseHook)
+				{
+					GetClientRect(hWnd, &rect);
+					ChangeView(rect.right, rect.bottom);
+
+					OldWindowProc = (WNDPROC)SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)WindowProc);
+					OldMouseHook = SetWindowsHookEx(WH_MOUSE, MouseHook, hDllModule, NULL);
+				}
 			}
 			else
 			{
-				dwStyle = GetWindowLong(newHWnd, GWL_STYLE) | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+				DISPLAY_DEVICE display;
+				display.cb = sizeof(display);
+
+				DEVMODE devMode;
+				devMode.dmSize = sizeof(devMode);
+
+				EnumDisplayDevices(NULL, displayIndex, &display, NULL);
+				EnumDisplaySettings(display.DeviceName, ENUM_REGISTRY_SETTINGS, &devMode);
+
+				dwStyle = GetWindowLong(hWnd, GWL_STYLE) | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
 				rect.left = 0;
 				rect.top = forced.exclusiveMode ? 0 : -1;
@@ -288,11 +456,13 @@ namespace Resolution
 
 				ChangeDisplaySettingsEx(display.DeviceName, &devMode, NULL, CDS_FULLSCREEN | CDS_RESET, NULL);
 				EnumDisplaySettings(display.DeviceName, ENUM_CURRENT_SETTINGS, &devMode);
-			}
 
-			AdjustWindowRect(&rect, dwStyle, FALSE);
-			SetWindowPos(newHWnd, HWND_NOTOPMOST, rect.left + devMode.dmPosition.x, rect.top + devMode.dmPosition.y, rect.right - rect.left, rect.bottom - rect.top, SWP_NOZORDER | SWP_NOACTIVATE);
+				AdjustWindowRect(&rect, dwStyle, FALSE);
+				SetWindowPos(hWnd, HWND_NOTOPMOST, rect.left + devMode.dmPosition.x, rect.top + devMode.dmPosition.y, rect.right - rect.left, rect.bottom - rect.top, NULL);
+			}
 		}
+		else
+			ChangeView(selectedResolution->width, selectedResolution->height);
 
 		if (result)
 		{
