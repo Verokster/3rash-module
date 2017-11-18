@@ -36,9 +36,6 @@
     <ClInclude Include="ThrashColor.hpp">
       <Filter>Header Files\Types</Filter>
     </ClInclude>
-    <ClInclude Include="ThrashColorFormatIndex.hpp">
-      <Filter>Header Files\Types</Filter>
-    </ClInclude>
     <ClInclude Include="ThrashFogMode.hpp">
       <Filter>Header Files\Types</Filter>
     </ClInclude>
@@ -52,12 +49,6 @@
       <Filter>Header Files\Types</Filter>
     </ClInclude>
     <ClInclude Include="ThrashState.hpp">
-      <Filter>Header Files\Types</Filter>
-    </ClInclude>
-    <ClInclude Include="ThrashTexColorFormats.hpp">
-      <Filter>Header Files\Types</Filter>
-    </ClInclude>
-    <ClInclude Include="ThrashTexColorIndexFormats.hpp">
       <Filter>Header Files\Types</Filter>
     </ClInclude>
     <ClInclude Include="ThrashTexCoord.hpp">
@@ -120,7 +111,10 @@
     <ClInclude Include="Color.hpp">
       <Filter>Header Files\Thrash</Filter>
     </ClInclude>
-    <ClInclude Include="ThrashIndexFormatIndex.hpp">
+    <ClInclude Include="ThrashColorFormat.hpp">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
+    <ClInclude Include="ThrashIndexFormat.hpp">
       <Filter>Header Files\Types</Filter>
     </ClInclude>
   </ItemGroup>

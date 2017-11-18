@@ -83,3 +83,4 @@ extern DWORD blendDest;
 extern BOOL stencilEnabled;
 extern BOOL depthEnabled;
 extern DWORD bufferMode;
+extern RECT clipRect;

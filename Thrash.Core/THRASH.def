@@ -19,7 +19,7 @@ EXPORTS
 	_THRASH_writerect@20		= ?Write@Rect@@YGHUThrashRectangle@@PAX@Z
 	_THRASH_getstate@4			= ?Get@State@@YGKK@Z
 	_THRASH_setstate@8			= ?Set@State@@YGKKK@Z
-	_THRASH_talloc@20			= ?Allocate@Texture@@YGPAUThrashTexture@@KKW4ThrashColorFormatIndex@@W4ThrashIndexFormatIndex@@K@Z
+	_THRASH_talloc@20			= ?Allocate@Texture@@YGPAUThrashTexture@@KKW4ThrashColorFormat@@W4ThrashIndexFormat@@K@Z
 	_THRASH_settexture@4		= ?Set@Texture@@YGHPAUThrashTexture@@@Z
 	_THRASH_tupdate@12			= ?Update@Texture@@YGPAUThrashTexture@@PAU2@PAXPAE@Z
 	_THRASH_tfree@4				= ?Free@Texture@@YGHPAUThrashTexture@@@Z

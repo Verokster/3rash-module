@@ -47,10 +47,13 @@ typedef struct ThrashAbout
 	DWORD textureHeightMultiple;				// 36
 
 	DWORD clipAlign;							// 40
-	DWORD texFormatsCount;						// 44
-	ThrashTexColorFormats* texFormats;			// 48
-	DWORD texIndexFormatsCount;					// 52
-	ThrashTexColorIndexFormats* texIndexFormats;// 56
+
+	DWORD colorFormatsCount;					// 44
+	BOOL* colorFormats;							// 48
+
+	DWORD indexFormatsCount;					// 52
+	BOOL* indexFormats;							// 56
+
 	DWORD resolutionsCount;						// 60
 	ThrashResolution* resolutionsList;			// 64
 	DWORD numStages;							// 68	- Multitexturing

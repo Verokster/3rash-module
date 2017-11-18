@@ -33,23 +33,23 @@ namespace Window
 	{
 		DWORD bytesPerPixel = window->bytesPerRow / window->width;
 
-		ThrashColorFormatIndex format;
+		ThrashColorFormat format;
 		switch (bytesPerPixel)
 		{
 		case 3:
-			format = BGR_24;
+			format = COLOR_RGB_888;
 			break;
 
 		case 4:
-			format = BGRA_32;
+			format = COLOR_ARGB_8888;
 			break;
 
 		default:
-			format = RGB565_16;
+			format = COLOR_RGB_565;
 			break;
 		}
 
-		ThrashTexture* texture = Texture::Allocate(about.textureWidthMax, about.textureHeightMax, format, INDEXED_NONE, 0);
+		ThrashTexture* texture = Texture::Allocate(about.textureWidthMax, about.textureHeightMax, format, INDEX_NA, 0);
 		if (texture)
 		{
 			DWORD step = about.textureWidthMax * bytesPerPixel;
@@ -194,18 +194,18 @@ namespace Window
 						switch (selectedResolution->colorDepth)
 						{
 						case 32:
-							windowObject->colorFormatIndex = BGRA_32;
+							windowObject->colorFormat = COLOR_ARGB_8888;
 							break;
 						case 24:
-							windowObject->colorFormatIndex = BGR_24;
+							windowObject->colorFormat = COLOR_RGB_888;
 							break;
 						default:
-							windowObject->colorFormatIndex = RGB565_16;
+							windowObject->colorFormat = COLOR_RGB_565;
 							break;
 						}
 					}
 					else
-						windowObject->colorFormatIndex = RGB565_16;
+						windowObject->colorFormat = COLOR_RGB_565;
 
 					State::Set(State::CurrentWindow, (DWORD)windowObject);
 				}
@@ -263,6 +263,17 @@ namespace Window
 
 	BOOL THRASHAPI Window(DWORD bufferIndex)
 	{
+		if (viewport.refresh)
+		{
+			viewport.refresh = FALSE;
+
+			GLViewport(viewport.rectangle.x, viewport.rectangle.y, viewport.rectangle.width, viewport.rectangle.height);
+
+			RECT rect = clipRect;
+			memset(&clipRect, 0, sizeof(RECT));
+			Main::Clip(rect);
+		}
+
 		State::Set(State::BufferMode, bufferIndex);
 
 		GLenum buf;

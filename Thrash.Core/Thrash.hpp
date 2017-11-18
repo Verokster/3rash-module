@@ -32,8 +32,8 @@
 #include <windows.h>
 #include "stdafx.h"
 
-#include "ThrashTexColorFormats.hpp"
-#include "ThrashTexColorIndexFormats.hpp"
+#include "ThrashColorFormat.hpp"
+#include "ThrashIndexFormat.hpp"
 #include "ThrashList.hpp"
 #include "ThrashResolution.hpp"
 #include "ThrashAbout.hpp"
@@ -43,8 +43,6 @@
 #include "ThrashTexCoord.hpp"
 #include "ThrashVertex.hpp"
 #include "ThrashPrimitive.hpp"
-#include "ThrashColorFormatIndex.hpp"
-#include "ThrashIndexFormatIndex.hpp"
 #include "ThrashTexture.hpp"
 #include "ThrashWindow.hpp"
 #include "ThrashFogMode.hpp"
@@ -82,8 +80,6 @@ extern HANDLE hRestoreHandle;
 extern HINSTANCE hDllModule;
 extern TCHAR iniFile[];
 
-extern ThrashTexColorFormats textureFormats;
-extern ThrashTexColorIndexFormats textureIndexFormats;
 extern ThrashAbout about;
 extern ThrashFunctionsExt functions;
 extern ThrashResolution resolutionsList[];

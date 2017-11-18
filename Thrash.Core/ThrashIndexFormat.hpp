@@ -24,17 +24,12 @@
 
 #pragma once
 
-struct ThrashTexColorIndexFormats
+enum ThrashIndexFormat
 {
-	BOOL uncnown_0;
-	BOOL uncnown_1;
-	BOOL uncnown_2;
-	BOOL uncnown_3;
-	BOOL uncnown_4;
-	BOOL uncnown_5;
-	BOOL uncnown_6;
-	BOOL uncnown_7;
-	BOOL uncnown_8;
-	BOOL uncnown_9;
-	DWORD end;
+	INDEX_NA			= 0,
+	INDEX_PALETTE6666	= 1,
+	INDEX_UNKNOWN		= 2,
+	INDEX_RGB			= 3,
+	INDEX_ARGB			= 4,
+	INDEX_LAST			= 5
 };

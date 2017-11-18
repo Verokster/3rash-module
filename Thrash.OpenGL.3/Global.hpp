@@ -84,6 +84,7 @@ extern DWORD fogDensity;
 
 extern FLOAT gamma;
 extern DWORD bufferMode;
+extern RECT clipRect;
 
 extern BOOL isWindowLocked;
 

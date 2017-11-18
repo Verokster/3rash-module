@@ -31,8 +31,9 @@ typedef struct ThrashTexture
 	DWORD height;
 	DWORD tmu;
 	DWORD level;
-	ThrashColorFormatIndex colorFormatIndex;
-	DWORD indexFormatIndex;
+
+	ThrashColorFormat colorFormat;
+	ThrashIndexFormat indexFormat;
 
 	DWORD format;
 	DWORD internalFormat;

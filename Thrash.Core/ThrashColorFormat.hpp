@@ -24,17 +24,25 @@
 
 #pragma once
 
-struct ThrashTexColorFormats
+enum ThrashColorFormat
 {
-	BOOL uncnown_0;
-	BOOL bit4_INDEXED;
-	BOOL bit8_INDEXED;
-	BOOL bit16_RGB5_A1;
-	BOOL bit16_RGB565;
-	BOOL bit24_BGR;
-	BOOL bit32_BGRA;
-	BOOL bit16_BGRA4;
-	BOOL uncnown_8;		// GL_LUMINANCE_ALPHA
-	BOOL uncnown_9;
-	DWORD end;
+	COLOR_NA					= 0,
+	COLOR_INDEX_4				= 1,
+	COLOR_INDEX_8				= 2,
+	COLOR_ARGB_1555				= 3,
+	COLOR_RGB_565				= 4,
+	COLOR_RGB_888				= 5,
+	COLOR_ARGB_8888				= 6,
+	COLOR_ARGB_4444				= 7,
+	COLOR_ALPHAINTENSITY_44		= 8,
+	COLOR_ALPHAINDEX_88			= 9,
+	COLOR_YUV_8888				= 10,
+	COLOR_RGB_555				= 11,
+	COLOR_TEX_565				= 12,
+	COLOR_TEX_4565				= 13,
+	COLOR_MPEG_555				= 14,
+	COLOR_MPEG_888				= 15,
+	COLOR_MPEG_4888				= 16,
+	COLOR_MPEG_8888				= 17,
+	COLOR_LAST					= 18
 };

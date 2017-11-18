@@ -28,29 +28,6 @@
 ThrashTexture* lastTexture;
 ThrashTexture* bindedTexture;
 
-ThrashTexColorIndexFormats textureIndexFormats = {
-	0, // BGR_4
-	0, // PALETTE6666
-	0,
-	1, // BGR_8
-	1, // BGRA_8
-	0xFFFFFFFF // END
-};
-
-ThrashTexColorFormats textureFormats = {
-	0,
-	0, // Indexed_4
-	0, // Indexed_8
-	1, // BGR5_A1_16
-	1, // RGB565_16
-	1, // BGR_24
-	1, // BGRA_32
-	1, // BGRA4_16
-	0, // L4_A4_8
-	0, // A_8
-	0xFFFFFFFF // END
-};
-
 namespace Texture
 {
 	VOID __fastcall CheckWrap()
@@ -64,14 +41,14 @@ namespace Texture
 			{
 			case 1:
 				GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, textureMipMap != 0 && bindedTexture->level != 0
+				GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, textureMipMap && bindedTexture->level
 					? GL_LINEAR_MIPMAP_LINEAR
 					: GL_LINEAR);
 				break;
 
 			case 2:
 				GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, textureMipMap != 0 && bindedTexture->level != 0
+				GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, textureMipMap && bindedTexture->level
 					? GL_NEAREST_MIPMAP_NEAREST
 					: GL_NEAREST);
 				break;
@@ -88,13 +65,13 @@ namespace Texture
 						break;
 
 					case 1:
-						GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bindedTexture->level != 0
+						GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bindedTexture->level
 							? GL_LINEAR_MIPMAP_NEAREST
 							: GL_LINEAR);
 						break;
 
 					default:
-						GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bindedTexture->level != 0
+						GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bindedTexture->level
 							? GL_LINEAR_MIPMAP_LINEAR
 							: GL_LINEAR);
 						break;
@@ -111,13 +88,13 @@ namespace Texture
 						break;
 
 					case 1:
-						GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bindedTexture->level != 0
+						GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bindedTexture->level
 							? GL_NEAREST_MIPMAP_NEAREST
 							: GL_NEAREST);
 						break;
 
 					default:
-						GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bindedTexture->level != 0
+						GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, bindedTexture->level
 							? GL_NEAREST_MIPMAP_LINEAR
 							: GL_NEAREST);
 						break;
@@ -140,20 +117,20 @@ namespace Texture
 		}
 	}
 
-	LPTHRASHTEXTURE THRASHAPI Allocate(DWORD width, DWORD height, ThrashColorFormatIndex colorFormatIndex, ThrashIndexFormatIndex indexFormatIndex, DWORD level)
+	LPTHRASHTEXTURE THRASHAPI Allocate(DWORD width, DWORD height, ThrashColorFormat colorFormat, ThrashIndexFormat indexFormat, DWORD level)
 	{
 		if (level & 0xFFFF0000)
 			Main::ShowError("Multitexturing required", __FILE__, "Allocate", __LINE__);
-		else if (((DWORD*)&textureFormats)[(DWORD)colorFormatIndex] <= 0)
+		else if (!about.colorFormats[colorFormat])
 		{
 			CHAR fname[15];
-			sprintf(fname, "Bad color format: %d", colorFormatIndex);
+			sprintf(fname, "Bad color format: %d", colorFormat);
 			Main::ShowError(fname, __FILE__, "Allocate", __LINE__);
 		}
-		else if ((colorFormatIndex == INDEXED_4 || colorFormatIndex == INDEXED_8) && ((DWORD*)&textureIndexFormats)[(DWORD)indexFormatIndex] <= 0)
+		else if ((colorFormat == COLOR_INDEX_4 || colorFormat == COLOR_INDEX_8) && !about.indexFormats[indexFormat])
 		{
 			CHAR fname[15];
-			sprintf(fname, "Bad color index format: %d", indexFormatIndex);
+			sprintf(fname, "Bad color index format: %d", indexFormat);
 			Main::ShowError(fname, __FILE__, "Allocate", __LINE__);
 		}
 
@@ -165,8 +142,8 @@ namespace Texture
 			texture->height = height;
 			texture->tmu = level >> 16;
 			texture->level = level & 0x0000FFFF;
-			texture->colorFormatIndex = colorFormatIndex;
-			texture->indexFormatIndex = indexFormatIndex;
+			texture->colorFormat = colorFormat;
+			texture->indexFormat = indexFormat;
 			texture->reconvert = FALSE;
 			texture->previousTexture = lastTexture;
 			lastTexture = texture;
@@ -181,12 +158,12 @@ namespace Texture
 				--level;
 			} while (level);
 
-			switch (texture->colorFormatIndex)
+			switch (texture->colorFormat)
 			{
-			case INDEXED_4:
-				switch (texture->indexFormatIndex)
+			case COLOR_INDEX_4:
+				switch (texture->indexFormat)
 				{
-				case INDEXED_BGR:
+				case INDEX_RGB:
 					if (forced.reconvert)
 					{
 						texture->format = GL_RGBA;
@@ -216,7 +193,7 @@ namespace Texture
 
 					break;
 
-				case INDEXED_BGRA:
+				case INDEX_ARGB:
 					if (forced.reconvert || !GLColorTable)
 					{
 						texture->format = GL_RGBA;
@@ -243,10 +220,10 @@ namespace Texture
 
 				break;
 
-			case INDEXED_8:
-				switch (texture->indexFormatIndex)
+			case COLOR_INDEX_8:
+				switch (texture->indexFormat)
 				{
-				case INDEXED_BGR:
+				case INDEX_RGB:
 					if (forced.reconvert)
 					{
 						texture->format = GL_BGRA;
@@ -276,7 +253,7 @@ namespace Texture
 
 					break;
 
-				case INDEXED_BGRA:
+				case INDEX_ARGB:
 					if (forced.reconvert || !GLColorTable)
 					{
 						texture->format = GL_BGRA;
@@ -303,7 +280,7 @@ namespace Texture
 
 				break;
 
-			case BGR5_A1_16:
+			case COLOR_ARGB_1555:
 				if (forced.reconvert || glVersion < GL_VER_1_2)
 				{
 					texture->format = GL_RGBA;
@@ -324,7 +301,7 @@ namespace Texture
 
 				break;
 
-			case RGB565_16:
+			case COLOR_RGB_565:
 				if (forced.reconvert)
 				{
 					texture->format = GL_RGBA;
@@ -354,7 +331,7 @@ namespace Texture
 
 				break;
 
-			case BGR_24:
+			case COLOR_RGB_888:
 				if (forced.reconvert)
 				{
 					texture->format = GL_RGBA;
@@ -384,7 +361,7 @@ namespace Texture
 
 				break;
 
-			case BGRA_32:
+			case COLOR_ARGB_8888:
 				if (forced.reconvert || !glCapsBGRA)
 				{
 					texture->format = GL_RGBA;
@@ -405,7 +382,7 @@ namespace Texture
 
 				break;
 
-			case BGRA4_16:
+			case COLOR_ARGB_4444:
 				if (forced.reconvert || glVersion < GL_VER_1_2)
 				{
 					texture->format = GL_RGBA;
@@ -436,13 +413,16 @@ namespace Texture
 					break;*/
 
 			default:
-				Main::ShowError("Bad pixel format", __FILE__, "Allocate", texture->colorFormatIndex);
+				Main::ShowError("Bad pixel format", __FILE__, "Allocate", texture->colorFormat);
 			}
 
 			Texture::Bind(texture);
 
-			GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-			GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, texture->level);
+			if (glVersion >= GL_VER_1_2)
+			{
+				GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+				GLTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, texture->level);
+			}
 
 			if (texture->level >= 0)
 			{
@@ -464,22 +444,22 @@ namespace Texture
 
 	LPTHRASHTEXTURE THRASHAPI Update(ThrashTexture* texture, VOID* memory, BYTE* pallete)
 	{
-		if (!texture || !memory || texture->colorFormatIndex == COLOR_NONE)
+		if (!texture || !memory || texture->colorFormat == COLOR_NA)
 			return NULL;
 
-		switch (texture->colorFormatIndex)
+		switch (texture->colorFormat)
 		{
-		case INDEXED_4:
-			switch (texture->indexFormatIndex)
+		case COLOR_INDEX_4:
+			switch (texture->indexFormat)
 			{
-			case 3:
+			case INDEX_RGB:
 				if (forced.reconvert)
 					memory = Convert_BGR_4_To_RGBA_32(texture, memory, pallete);
 				else if (texture->reconvert)
 					memory = Convert_BGR_4_To_RGB_24(texture, memory, pallete);
 				break;
 
-			case 4:
+			case INDEX_ARGB:
 				if (texture->reconvert)
 					memory = Convert_BGRA_4_To_RGBA_32(texture, memory, pallete);
 				break;
@@ -489,17 +469,17 @@ namespace Texture
 
 			break;
 
-		case INDEXED_8:
-			switch (texture->indexFormatIndex)
+		case COLOR_INDEX_8:
+			switch (texture->indexFormat)
 			{
-			case 3:
+			case INDEX_RGB:
 				if (forced.reconvert)
 					memory = Convert_BGR_8_To_RGBA_32(texture, memory, pallete);
 				if (texture->reconvert)
 					memory = Convert_BGR_8_To_RGB_24(texture, memory, pallete);
 				break;
 
-			case 4:
+			case INDEX_ARGB:
 				if (texture->reconvert)
 					memory = Convert_BGRA_8_To_RGBA_32(texture, memory, pallete);
 				break;
@@ -509,31 +489,31 @@ namespace Texture
 
 			break;
 
-		case BGR5_A1_16:
+		case COLOR_ARGB_1555:
 			if (texture->reconvert)
 				memory = Convert_BGR5_A1_To_RGBA_32(texture, memory);
 			break;
 
-		case RGB565_16:
+		case COLOR_RGB_565:
 			if (forced.reconvert)
 				memory = Convert_RGB565_To_RGBA_32(texture, memory);
 			else if (texture->reconvert)
 				memory = Convert_RGB565_To_RGB_24(texture, memory);
 			break;
 
-		case BGR_24:
+		case COLOR_RGB_888:
 			if (forced.reconvert)
 				memory = Convert_BGR_24_To_RGBA_32(texture, memory);
 			else if (texture->reconvert)
 				memory = Convert_BGR_24_To_RGB_24(texture, memory);
 			break;
 
-		case BGRA_32:
+		case COLOR_ARGB_8888:
 			if (texture->reconvert)
 				memory = Convert_BGRA_32_To_RGBA_32(texture, memory);
 			break;
 
-		case BGRA4_16:
+		case COLOR_ARGB_4444:
 			if (texture->reconvert)
 				memory = Convert_BGRA_16_To_RGBA_32(texture, memory);
 			break;
@@ -562,14 +542,14 @@ namespace Texture
 		if (texture->reconvert)
 			Memory::Free(memory);
 
-		if ((texture->colorFormatIndex == INDEXED_4 || texture->colorFormatIndex == INDEXED_8) && !texture->reconvert)
+		if ((texture->colorFormat == COLOR_INDEX_4 || texture->colorFormat == COLOR_INDEX_8) && !texture->reconvert)
 		{
 			DWORD format, internalFormat;
 
-			switch (texture->colorFormatIndex)
+			switch (texture->colorFormat)
 			{
 			case 1:
-				switch (texture->indexFormatIndex)
+				switch (texture->indexFormat)
 				{
 				case 3:
 					format = GL_BGR;
@@ -585,7 +565,7 @@ namespace Texture
 				}
 				break;
 			case 2:
-				switch (texture->indexFormatIndex)
+				switch (texture->indexFormat)
 				{
 				case 3:
 					format = GL_BGR;

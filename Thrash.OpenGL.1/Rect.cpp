@@ -179,23 +179,23 @@ namespace Rect
 		DWORD bytesPerPixel = !forced.movies16Bit ? selectedResolution->colorDepth >> 3 : 2;
 		DWORD bytesPerRow = bytesPerPixel * rectangle.width;
 
-		ThrashColorFormatIndex format;
+		ThrashColorFormat format;
 		switch (bytesPerPixel)
 		{
 		case 3:
-			format = BGR_24;
+			format = COLOR_RGB_888;
 			break;
 
 		case 4:
-			format = BGRA_32;
+			format = COLOR_ARGB_8888;
 			break;
 
 		default:
-			format = RGB565_16;
+			format = COLOR_RGB_565;
 			break;
 		}
 
-		ThrashTexture* texture = Texture::Allocate(about.textureWidthMax, about.textureHeightMax, format, INDEXED_NONE, 0);
+		ThrashTexture* texture = Texture::Allocate(about.textureWidthMax, about.textureHeightMax, format, INDEX_NA, 0);
 		if (texture)
 		{
 			DWORD step = about.textureWidthMax * bytesPerPixel;

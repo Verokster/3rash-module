@@ -28,7 +28,7 @@ typedef struct ThrashWindow
 {
 	VOID* data;
 	DWORD bytesPerRow;
-	ThrashColorFormatIndex colorFormatIndex;
+	ThrashColorFormat colorFormat;
 	DWORD width;
 	DWORD height;
 	DWORD buffer;

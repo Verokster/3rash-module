@@ -80,6 +80,9 @@ DWORD vmResolutionIndex;
 DWORD vmMaxPanding;
 BOOL vmIsDepthBuffer16;
 
+BOOL textureColorFormats[COLOR_LAST + 1];
+BOOL textureIndexFormats[INDEX_LAST + 1];
+
 namespace Main
 {
 	DWORD __fastcall Round(FLOAT number)
@@ -153,11 +156,18 @@ namespace Main
 			about.textureHeightMultiple = 8;
 			about.clipAlign = 1;
 
-			about.texFormatsCount = 10;
-			about.texFormats = &textureFormats;
+			about.colorFormatsCount = COLOR_LAST;
+			about.colorFormats = textureColorFormats;
+			about.colorFormats[COLOR_ARGB_1555] = TRUE;
+			about.colorFormats[COLOR_RGB_565] = TRUE;
+			about.colorFormats[COLOR_RGB_888] = TRUE;
+			about.colorFormats[COLOR_ARGB_8888] = TRUE;
+			about.colorFormats[COLOR_ARGB_4444] = TRUE;
 
-			about.texIndexFormatsCount = 5;
-			about.texIndexFormats = &textureIndexFormats;
+			about.indexFormatsCount = INDEX_LAST;
+			about.indexFormats = textureIndexFormats;
+			about.indexFormats[INDEX_RGB] = TRUE;
+			about.indexFormats[INDEX_ARGB] = TRUE;
 
 			about.resolutionsCount = resolutionsListCount;
 			about.resolutionsList = resolutionsList;
@@ -265,17 +275,6 @@ namespace Main
 
 		if (forced.vSync)
 			GLFinish();
-
-		if (viewport.refresh)
-		{
-			viewport.refresh = FALSE;
-
-			GLViewport(viewport.rectangle.x, viewport.rectangle.y, viewport.rectangle.width, viewport.rectangle.height);
-
-			RECT rect = clipRect;
-			memset(&clipRect, 0, sizeof(RECT));
-			Clip(rect);
-		}
 	}
 
 	BOOL THRASHAPI Restore()
