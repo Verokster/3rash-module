@@ -175,10 +175,10 @@ namespace Main
 			about.version = API_VERSION;
 			about.flags = About_TextureSquare | About_TextureWidthPowerOf2 | About_TextureHeighPpowerOf2;
 			about.textureWidthMin = 2;
-			about.textureWidthMax = 256;
+			about.textureWidthMax = 512;
 			about.textureWidthMultiple = 8;
 			about.textureHeightMin = 2;
-			about.textureHeightMax = 256;
+			about.textureHeightMax = 512;
 			about.textureHeightMultiple = 8;
 			about.clipAlign = 0;
 

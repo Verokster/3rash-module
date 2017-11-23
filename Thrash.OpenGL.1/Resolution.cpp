@@ -412,11 +412,11 @@ namespace Resolution
 
 				SetWindowPos(hWnd, HWND_NOTOPMOST, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, NULL);
 
+				GetClientRect(hWnd, &rect);
+				ChangeView(rect.right, rect.bottom);
+
 				if (!OldWindowProc && !OldMouseHook)
 				{
-					GetClientRect(hWnd, &rect);
-					ChangeView(rect.right, rect.bottom);
-
 					OldWindowProc = (WNDPROC)SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)WindowProc);
 					OldMouseHook = SetWindowsHookEx(WH_MOUSE, MouseHook, hDllModule, NULL);
 				}
