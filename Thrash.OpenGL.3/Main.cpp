@@ -104,7 +104,7 @@ GLuint uniGammaLoc;
 BOOL vmChanged;
 DWORD vmResolutionIndex;
 DWORD vmMaxPanding;
-BOOL vmIsDepthBuffer16;
+ThrashDepthBufferType vmDepthBufferType;
 
 BOOL textureColorFormats[COLOR_LAST + 1];
 BOOL textureIndexFormats[INDEX_LAST + 1];
@@ -136,9 +136,9 @@ namespace Main
 		if (forced.colorDepth != 16 && forced.colorDepth != 24 && forced.colorDepth != 32)
 			forced.colorDepth = 32;
 
-		forced.zdepth = GetEnvironmentValue(0, envPrefix, "ZDEPTH");
-		if (forced.zdepth && forced.zdepth != 16 && forced.zdepth != 24 && forced.zdepth != 32)
-			forced.zdepth = 0;
+		forced.zdepth = GetEnvironmentValue(24, envPrefix, "ZDEPTH");
+		if (forced.zdepth != 16 && forced.zdepth != 24 && forced.zdepth != 32)
+			forced.zdepth = 24;
 
 		forced.refreshRate = GetEnvironmentValue(0, envPrefix, "REFRESH");
 		if (forced.refreshRate && forced.refreshRate > 9)
@@ -344,38 +344,39 @@ namespace Main
 		return TRUE;
 	}
 
-	BOOL THRASHAPI SetVideoMode(DWORD resolutionIndex, DWORD maxPanding, BOOL isDepthBuffer16)
+	BOOL THRASHAPI SetVideoMode(DWORD resolutionIndex, DWORD maxPanding, ThrashDepthBufferType depthBufferType)
 	{
-		if (vmChanged && resolutionIndex == vmResolutionIndex && maxPanding == vmMaxPanding && isDepthBuffer16 == vmIsDepthBuffer16)
+		if (vmChanged && resolutionIndex == vmResolutionIndex && maxPanding == vmMaxPanding && depthBufferType == vmDepthBufferType)
 			return TRUE;
 
 		vmChanged = TRUE;
 		vmResolutionIndex = resolutionIndex;
 		vmMaxPanding = maxPanding;
-		vmIsDepthBuffer16 = isDepthBuffer16;
+		vmDepthBufferType = depthBufferType;
 
 		Window::Release();
-		Context::Release();
-
-		if (functions.GetHWND)
 		{
-			hWnd = functions.GetHWND();
-			DWORD processId = GetWindowThreadProcessId(hWnd, NULL);
-			if (functions.Event && GetCurrentThreadId() != processId)
+			Context::Release();
 			{
-				hChangeHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
-				SetForegroundWindow(hWnd);
-				PostMessage(hWnd, MSG_CHANGE_RESOLUTION, resolutionIndex, maxPanding);
-				WaitForSingleObject(hChangeHandle, 10000);
+				if (functions.GetHWND)
+				{
+					hWnd = functions.GetHWND();
+					DWORD processId = GetWindowThreadProcessId(hWnd, NULL);
+					if (functions.Event && GetCurrentThreadId() != processId)
+					{
+						hChangeHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
+						SetForegroundWindow(hWnd);
+						PostMessage(hWnd, MSG_CHANGE_RESOLUTION, resolutionIndex, maxPanding);
+						WaitForSingleObject(hChangeHandle, 10000);
+					}
+					else
+						Resolution::Change(NULL, hWnd, MSG_CHANGE_RESOLUTION, resolutionIndex, maxPanding, NULL);
+				}
+				else
+					Resolution::Change(NULL, hWnd, MSG_CHANGE_RESOLUTION, resolutionIndex, maxPanding, NULL);
 			}
-			else
-				Resolution::Change(NULL, hWnd, MSG_CHANGE_RESOLUTION, resolutionIndex, maxPanding, NULL);
+			Context::Create();
 		}
-		else
-			Resolution::Change(NULL, hWnd, MSG_CHANGE_RESOLUTION, resolutionIndex, maxPanding, NULL);
-
-		Context::Create(isDepthBuffer16);
-
 		Window::Window(2);
 
 		GLHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);

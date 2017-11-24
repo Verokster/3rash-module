@@ -113,6 +113,7 @@
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="Texture.hpp" />
     <ClInclude Include="Thrash.hpp" />
+    <ClInclude Include="ThrashDepthBufferType.hpp" />
     <ClInclude Include="ThrashFunctions.hpp" />
     <ClInclude Include="ThrashIndexFormat.hpp" />
     <ClInclude Include="ThrashPrimitive.hpp" />

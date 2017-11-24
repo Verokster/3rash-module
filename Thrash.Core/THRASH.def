@@ -9,7 +9,7 @@ EXPORTS
 	_THRASH_restore@0			= ?Restore@Main@@YGHXZ
 	_THRASH_sync@4				= ?Sync@Main@@YGHK@Z
 	_THRASH_selectdisplay@4		= ?SelectDisplay@Main@@YGHK@Z
-	_THRASH_setvideomode@12		= ?SetVideoMode@Main@@YGHKKH@Z
+	_THRASH_setvideomode@12		= ?SetVideoMode@Main@@YGHKKW4ThrashDepthBufferType@@@Z
 	_THRASH_clearwindow@0		= ?Clear@Window@@YGXXZ
 	_THRASH_flushwindow@0		= ?Flush@Window@@YGXXZ
 	_THRASH_window@4			= ?Window@0@YGHK@Z

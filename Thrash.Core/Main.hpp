@@ -39,6 +39,6 @@ namespace Main
 	VOID THRASHAPI PageFlip();
 	BOOL THRASHAPI Restore();
 	BOOL THRASHAPI SelectDisplay(DWORD index);
-	BOOL THRASHAPI SetVideoMode(DWORD resolutionIndex, DWORD maxPanding, BOOL isDepthBuffer16);
+	BOOL THRASHAPI SetVideoMode(DWORD resolutionIndex, DWORD maxPanding, ThrashDepthBufferType depthBufferType);
 	BOOL THRASHAPI Sync(DWORD value);
 }

@@ -26,6 +26,6 @@
 
 namespace Context
 {
-	VOID __fastcall Create(BOOL isDepthBuffer16);
+	VOID __fastcall Create();
 	VOID __fastcall Release();
 }

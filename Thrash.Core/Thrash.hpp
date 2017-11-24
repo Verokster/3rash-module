@@ -34,6 +34,7 @@
 
 #include "ThrashColorFormat.hpp"
 #include "ThrashIndexFormat.hpp"
+#include "ThrashDepthBufferType.hpp"
 #include "ThrashList.hpp"
 #include "ThrashResolution.hpp"
 #include "ThrashAbout.hpp"

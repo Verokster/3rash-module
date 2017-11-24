@@ -32,7 +32,7 @@ namespace Context
 		return DefWindowProc(hWnd, uMsg, wParam, lParam);
 	}
 
-	BOOL __inline PreparePixelFormat(PIXELFORMATDESCRIPTOR* pfd, DWORD* pixelFormat, BOOL isDepthBuffer16)
+	BOOL __inline PreparePixelFormat(PIXELFORMATDESCRIPTOR* pfd, DWORD* pixelFormat)
 	{
 		HINSTANCE hIntance = (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE);
 
@@ -92,7 +92,7 @@ namespace Context
 											WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
 											WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
 											WGL_COLOR_BITS_ARB, forced.colorDepth,
-											WGL_DEPTH_BITS_ARB, (!forced.zdepth ? (isDepthBuffer16 ? 16 : 24) : forced.zdepth),
+											WGL_DEPTH_BITS_ARB, forced.zdepth,
 											WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
 											0
 										};
@@ -131,7 +131,7 @@ namespace Context
 		return FALSE;
 	}
 
-	VOID __fastcall Create(BOOL isDepthBuffer16)
+	VOID __fastcall Create()
 	{
 		if (hGlRc)
 			return;
@@ -153,8 +153,8 @@ namespace Context
 			0, // Shift Bit Ignored
 			0, // No Accumulation Buffer
 			0, 0, 0, 0, // Accumulation Bits Ignored
-			(!forced.zdepth ? (isDepthBuffer16 ? 16 : 24) : LOBYTE(forced.zdepth)), // Z-Buffer (Depth Buffer) 
-			(!forced.zdepth ? (isDepthBuffer16 ? 0 : 8) : (forced.zdepth == 24 ? 8 : 0)), // Stencil Buffer
+			LOBYTE(forced.zdepth), // Z-Buffer (Depth Buffer) 
+			forced.zdepth == 24 ? 8 : 0, // Stencil Buffer
 			0, // No Auxiliary Buffer
 			PFD_MAIN_PLANE, // Main Drawing Layer
 			0, // Reserved
@@ -162,7 +162,7 @@ namespace Context
 		};
 
 		DWORD pfIndex;
-		if (!PreparePixelFormat(&pfd, &pfIndex, isDepthBuffer16))
+		if (!PreparePixelFormat(&pfd, &pfIndex))
 		{
 			pfIndex = ChoosePixelFormat(hDc, &pfd);
 			if (pfIndex == NULL)
