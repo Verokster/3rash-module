@@ -154,7 +154,7 @@ namespace Main
 			about.textureHeightMin = 2;
 			about.textureHeightMax = 512;
 			about.textureHeightMultiple = 8;
-			about.clipAlign = 1;
+			about.clipAlign = 0;
 
 			about.colorFormatsCount = COLOR_LAST;
 			about.colorFormats = textureColorFormats;

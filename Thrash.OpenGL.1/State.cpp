@@ -145,21 +145,7 @@ namespace State
 					switch (value)
 					{
 					case 0:
-						GLTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-
-						GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-						GLTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
-						GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_TEXTURE);
-						GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
-						GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-						GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
-
-						GLTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
-						GLTexEnvi(GL_TEXTURE_ENV, GL_ALPHA_SCALE, 1);
-						GLTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_TEXTURE);
-						GLTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
-						GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-						GLTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+						GLTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 						break;
 
 					case 1:
@@ -556,11 +542,8 @@ namespace State
 				break;
 
 			case AlphaMode:
-				if (value)
-					alphaVal = (FLOAT)value / FLOAT_255;
-				else
-					alphaVal = 0.0f;
-
+				alphaVal = value != 0 ? (FLOAT)value / FLOAT_255 : 0.0f;
+				GLAlphaFunc(alphaCmp, alphaVal);
 				break;
 
 			case AlphaCompare:
@@ -741,7 +724,8 @@ namespace State
 				case Enabled:
 					fogEnabled = TRUE;
 					GLEnable(GL_FOG);
-					GLFogi(GL_FOG_COORD_SRC, GL_FOG_COORD);
+					if (GLFogCoordf)
+						GLFogi(GL_FOG_COORD_SRC, GL_FOG_COORD);
 					break;
 
 				case Linear:
@@ -765,10 +749,10 @@ namespace State
 			case FogColor:
 			{
 				GLfloat color[4];
-				color[2] = (UINT8)value / FLOAT_255;
-				color[1] = (UINT8)(value >> 8) / FLOAT_255;
-				color[0] = (UINT8)(value >> 16) / FLOAT_255;
-				color[3] = (UINT8)(value >> 24) / FLOAT_255;
+				color[2] = (FLOAT)(UINT8)value / FLOAT_255;
+				color[1] = (FLOAT)(UINT8)(value >> 8) / FLOAT_255;
+				color[0] = (FLOAT)(UINT8)(value >> 16) / FLOAT_255;
+				color[3] = (FLOAT)(UINT8)(value >> 24) / FLOAT_255;
 				GLFogfv(GL_FOG_COLOR, color);
 
 				break;
@@ -1035,10 +1019,10 @@ namespace State
 
 			case ClearColor:
 				GLClearColor(
-					GLclampf((UINT8)(value >> 16) / FLOAT_255),
-					GLclampf((UINT8)(value >> 8) / FLOAT_255),
-					GLclampf((UINT8)(value) / FLOAT_255),
-					GLclampf((UINT8)(value >> 24) / FLOAT_255));
+					GLclampf((FLOAT)(UINT8)(value >> 16) / FLOAT_255),
+					GLclampf((FLOAT)(UINT8)(value >> 8) / FLOAT_255),
+					GLclampf((FLOAT)(UINT8)(value) / FLOAT_255),
+					GLclampf((FLOAT)(UINT8)(value >> 24) / FLOAT_255));
 
 				break;
 

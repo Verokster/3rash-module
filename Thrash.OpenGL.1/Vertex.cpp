@@ -38,11 +38,11 @@ namespace Vertex
 			GLSecondaryColor3ubv((GLubyte*)&specular);
 		}
 
-		GLfloat w = (GLfloat)(1.0 / vertex->vertCoord.rhw);
+		GLfloat w = (GLfloat)(1.0f / vertex->vertCoord.rhw);
 		if (fogEnabled && GLFogCoordf)
 			GLFogCoordf(w);
 
-		if (vertex->vertCoord.z <= 1.0)
+		if (vertex->vertCoord.z <= 1.0f)
 		{
 			if (texturesEnabled)
 				GLTexCoord2f(vertex->texCoord0.u, vertex->texCoord0.v);
@@ -69,11 +69,11 @@ namespace Vertex
 			GLSecondaryColor3ubv((GLubyte*)&specular);
 		}
 
-		GLfloat w = (GLfloat)(1.0 / vertex->vertCoord.rhw);
+		GLfloat w = (GLfloat)(1.0f / vertex->vertCoord.rhw);
 		if (fogEnabled && GLFogCoordf)
 			GLFogCoordf(w);
 
-		if (vertex->vertCoord.z <= 1.0)
+		if (vertex->vertCoord.z <= 1.0f)
 		{
 			if (texturesEnabled)
 			{
@@ -97,7 +97,7 @@ namespace Vertex
 
 	VOID __fastcall DrawArray(GLenum mode, DWORD step, DWORD count, ThrashVertex vertexArray[])
 	{
-		if (count > 0)
+		if (count)
 		{
 			Texture::CheckWrap();
 
@@ -127,7 +127,7 @@ namespace Vertex
 
 	VOID __fastcall DrawIndexedArray(GLenum mode, DWORD step, DWORD count, ThrashVertex vertexArray[], DWORD indexes[])
 	{
-		if (count > 0)
+		if (count)
 		{
 			Texture::CheckWrap();
 
@@ -157,7 +157,7 @@ namespace Vertex
 
 	VOID __fastcall DrawIndexedArray(GLenum mode, DWORD step, DWORD count, ThrashVertex vertexArray[], WORD indexes[])
 	{
-		if (count > 0)
+		if (count)
 		{
 			Texture::CheckWrap();
 

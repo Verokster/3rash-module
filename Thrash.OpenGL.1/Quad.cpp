@@ -52,7 +52,7 @@ namespace Quad
 
 	VOID THRASHAPI DrawMesh(DWORD count, ThrashVertex vertexArray[], DWORD indexes[])
 	{
-		if (count > 0)
+		if (count)
 		{
 			Texture::CheckWrap();
 			GLBegin(GL_TRIANGLES);
