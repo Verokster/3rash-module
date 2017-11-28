@@ -3,9 +3,6 @@
 precision highp float;
 
 uniform sampler2D tex01;
-uniform sampler2D tex02;
-uniform sampler2D tex03;
-uniform sampler2D tex04;
 
 uniform bool texEnabled;
 uniform bool alphaEnabled;
@@ -28,11 +25,12 @@ out vec4 fragColor;
 void main(void)
 {
 	fragColor = shadeModel ? fDiffuseSmooth : fDiffuseFlat;
-	if (specularEnabled)
-		fragColor += fSpecular;
-
+	
 	if (texEnabled)
 		fragColor *=  texture(tex01, fTexCoord);
+
+	if (specularEnabled)
+		fragColor += fSpecular;
 
 	switch (alphaFunc)
 	{
@@ -82,5 +80,6 @@ void main(void)
 		}
 	}
 
-	fragColor.rgb = pow(fragColor.rgb, vec3(1.0 / gamma));
+	if (gamma != 1.0)
+		fragColor.rgb = pow(fragColor.rgb, vec3(1.0 / gamma));
 }

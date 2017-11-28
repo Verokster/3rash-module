@@ -25,8 +25,8 @@
 #include "stdafx.h"
 #include "Global.hpp"
 
-CHAR* VERTEX_SHADER = "[VERTEX SHADER]";
-CHAR* FRAGMENT_SHADER = "[FRAGMENT SHADER]";
+#define VERTEX_SHADER "[VERTEX SHADER]"
+#define FRAGMENT_SHADER "[FRAGMENT SHADER]"
 
 GLuint shProgram;
 

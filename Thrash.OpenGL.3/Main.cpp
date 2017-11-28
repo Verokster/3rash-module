@@ -65,13 +65,6 @@ DWORD alphaCmp;
 DWORD blendSrc;
 DWORD blendDest;
 
-BOOL fogEnabled;
-DWORD fogMode;
-DWORD fogColor;
-DWORD fogStart;
-DWORD fogEnd;
-DWORD fogDensity;
-
 FLOAT gamma = 1.0;
 DWORD bufferMode;
 RECT clipRect;

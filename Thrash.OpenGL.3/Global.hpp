@@ -75,13 +75,6 @@ extern DWORD alphaCmp;
 extern DWORD blendSrc;
 extern DWORD blendDest;
 
-extern BOOL fogEnabled;
-extern DWORD fogMode;
-extern DWORD fogColor;
-extern DWORD fogStart;
-extern DWORD fogEnd;
-extern DWORD fogDensity;
-
 extern FLOAT gamma;
 extern DWORD bufferMode;
 extern RECT clipRect;
