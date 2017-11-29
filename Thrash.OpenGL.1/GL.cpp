@@ -37,7 +37,7 @@ GLGETSTRING GLGetString;
 GLCOLOR4UBV GLColor4ubv;
 GLSECONDARYCOLOR3UBV GLSecondaryColor3ubv;
 GLVERTEX2F GLVertex2f;
-GLVERTEX4F GLVertex4f;
+GLVERTEX3F GLVertex3f;
 GLTEXCOORD2F GLTexCoord2f;
 GLTEXCOORD4F GLTexCoord4f;
 GLBEGIN GLBegin;
@@ -85,7 +85,6 @@ GLACTIVETEXTURE GLActiveTexture;
 GLMULTITEXCOORD2F GLMultiTexCoord2f;
 GLMULTITEXCOORD4F GLMultiTexCoord4f;
 GLCOLORTABLE GLColorTable;
-GLPOLYGONOFFSET GLPolygonOffset;
 GLGETINTEGERV GLGetIntegerv;
 
 HMODULE hModule;
@@ -164,7 +163,7 @@ VOID CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 	LoadGLFunction(buffer, "glTexCoord2f", (PROC*)&GLTexCoord2f);
 	LoadGLFunction(buffer, "glTexCoord4f", (PROC*)&GLTexCoord4f);
 	LoadGLFunction(buffer, "glVertex2f", (PROC*)&GLVertex2f);
-	LoadGLFunction(buffer, "glVertex4f", (PROC*)&GLVertex4f);
+	LoadGLFunction(buffer, "glVertex3f", (PROC*)&GLVertex3f);
 	LoadGLFunction(buffer, "glBegin", (PROC*)&GLBegin);
 	LoadGLFunction(buffer, "glEnd", (PROC*)&GLEnd);
 	LoadGLFunction(buffer, "glScissor", (PROC*)&GLScissor);
@@ -210,7 +209,6 @@ VOID CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 	LoadGLFunction(buffer, "glMultiTexCoord2f", (PROC*)&GLMultiTexCoord2f);
 	LoadGLFunction(buffer, "glMultiTexCoord4f", (PROC*)&GLMultiTexCoord4f);
 	LoadGLFunction(buffer, "glColorTable", (PROC*)&GLColorTable, "EXT");
-	LoadGLFunction(buffer, "glPolygonOffset", (PROC*)&GLPolygonOffset);
 	LoadGLFunction(buffer, "glGetIntegerv", (PROC*)&GLGetIntegerv);
 
 	if (GLGetString)

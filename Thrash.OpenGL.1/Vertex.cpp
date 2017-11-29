@@ -38,24 +38,16 @@ namespace Vertex
 			GLSecondaryColor3ubv((GLubyte*)&specular);
 		}
 
-		GLfloat w = (GLfloat)(1.0f / vertex->vertCoord.rhw);
+		if (texturesEnabled)
+			GLTexCoord4f((GLfloat)(vertex->texCoord0.u * vertex->vertCoord.rhw), (GLfloat)(vertex->texCoord0.v * vertex->vertCoord.rhw), 0.0, vertex->vertCoord.rhw);
+
 		if (fogEnabled && GLFogCoordf)
-			GLFogCoordf(w);
+			GLFogCoordf(1.0f / vertex->vertCoord.rhw);
 
 		if (vertex->vertCoord.z <= 1.0f)
-		{
-			if (texturesEnabled)
-				GLTexCoord2f(vertex->texCoord0.u, vertex->texCoord0.v);
-
-			GLVertex4f((GLfloat)(vertex->vertCoord.x * w), (GLfloat)(vertex->vertCoord.y * w), (GLfloat)(vertex->vertCoord.z * w), w);
-		}
+			GLVertex3f(vertex->vertCoord.x, vertex->vertCoord.y, vertex->vertCoord.z + depthBias);
 		else
-		{
-			if (texturesEnabled)
-				GLTexCoord4f((GLfloat)(vertex->texCoord0.u * vertex->vertCoord.rhw), (GLfloat)(vertex->texCoord0.v * vertex->vertCoord.rhw), 0.0, vertex->vertCoord.rhw);
-
 			GLVertex2f(vertex->vertCoord.x, vertex->vertCoord.y);
-		}
 	}
 
 	VOID __fastcall Draw(ThrashVertexV2* vertex)
@@ -69,30 +61,19 @@ namespace Vertex
 			GLSecondaryColor3ubv((GLubyte*)&specular);
 		}
 
-		GLfloat w = (GLfloat)(1.0f / vertex->vertCoord.rhw);
+		if (texturesEnabled)
+		{
+			GLMultiTexCoord4f(GL_TEXTURE0, (GLfloat)(vertex->texCoord0.u * vertex->vertCoord.rhw), (GLfloat)(vertex->texCoord0.v * vertex->vertCoord.rhw), 0.0, vertex->vertCoord.rhw);
+			GLMultiTexCoord4f(GL_TEXTURE1, (GLfloat)(vertex->texCoord1.u * vertex->vertCoord.rhw), (GLfloat)(vertex->texCoord1.v * vertex->vertCoord.rhw), 0.0, vertex->vertCoord.rhw);
+		}
+
 		if (fogEnabled && GLFogCoordf)
-			GLFogCoordf(w);
+			GLFogCoordf(1.0f / vertex->vertCoord.rhw);
 
 		if (vertex->vertCoord.z <= 1.0f)
-		{
-			if (texturesEnabled)
-			{
-				GLMultiTexCoord2f(GL_TEXTURE0, vertex->texCoord0.u, vertex->texCoord0.v);
-				GLMultiTexCoord2f(GL_TEXTURE1, vertex->texCoord1.u, vertex->texCoord1.v);
-			}
-
-			GLVertex4f((GLfloat)(vertex->vertCoord.x * w), (GLfloat)(vertex->vertCoord.y * w), (GLfloat)(vertex->vertCoord.z * w), w);
-		}
+			GLVertex3f(vertex->vertCoord.x, vertex->vertCoord.y, vertex->vertCoord.z + depthBias);
 		else
-		{
-			if (texturesEnabled)
-			{
-				GLMultiTexCoord4f(GL_TEXTURE0, (GLfloat)(vertex->texCoord0.u * vertex->vertCoord.rhw), (GLfloat)(vertex->texCoord0.v * vertex->vertCoord.rhw), 0.0, vertex->vertCoord.rhw);
-				GLMultiTexCoord4f(GL_TEXTURE1, (GLfloat)(vertex->texCoord1.u * vertex->vertCoord.rhw), (GLfloat)(vertex->texCoord1.v * vertex->vertCoord.rhw), 0.0, vertex->vertCoord.rhw);
-			}
-
 			GLVertex2f(vertex->vertCoord.x, vertex->vertCoord.y);
-		}
 	}
 
 	VOID __fastcall DrawArray(GLenum mode, DWORD step, DWORD count, ThrashVertex vertexArray[])

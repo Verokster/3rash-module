@@ -500,13 +500,7 @@ namespace State
 
 			case DepthBias:
 			case DepthBias2:
-				if (value)
-				{
-					GLEnable(GL_POLYGON_OFFSET_FILL);
-					GLPolygonOffset(0.0, (FLOAT)*(INT*)&value);
-				}
-				else
-					GLDisable(GL_POLYGON_OFFSET_FILL);
+				depthBias = (FLOAT)*(INT*)&value * DEPTH_CORRECTION;
 
 				break;
 
@@ -767,7 +761,7 @@ namespace State
 				break;
 
 			case FogDensity:
-				if (value == 0 || value & 0xFFFFF000)
+				if (!value || value & 0xFFFFF000)
 					GLFogf(GL_FOG_DENSITY, *(GLfloat*)&value);
 				else
 					GLFogf(GL_FOG_DENSITY, GLfloat(1.0 / value));

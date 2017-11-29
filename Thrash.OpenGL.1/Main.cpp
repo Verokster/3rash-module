@@ -49,6 +49,8 @@ DWORD textureClampS;
 DWORD textureClampT;
 
 DWORD depthCmp = GL_LEQUAL;
+FLOAT depthBias;
+
 DWORD alphaCmp = GL_GEQUAL;
 FLOAT alphaVal;
 

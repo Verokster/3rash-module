@@ -17,7 +17,7 @@ uniform float gamma;
 in vec4 fDiffuseSmooth;
 flat in vec4 fDiffuseFlat;
 in vec4 fSpecular;
-in vec2 fTexCoord;
+in vec3 fTexCoord;
 in float fogFactor;
 out vec4 fragColor;
 
@@ -26,7 +26,7 @@ void main(void)
 	fragColor = shadeModel ? fDiffuseSmooth : fDiffuseFlat;
 	
 	if (texEnabled)
-		fragColor *=  texture(tex01, fTexCoord);
+		fragColor *= texture(tex01, fTexCoord.xy / fTexCoord.z);
 
 	if (specularEnabled)
 		fragColor += fSpecular;

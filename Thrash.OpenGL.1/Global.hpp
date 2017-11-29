@@ -73,6 +73,8 @@ extern DWORD stencilPass;
 extern BOOL isWindowLocked;
 
 extern DWORD depthCmp;
+extern FLOAT depthBias;
+
 extern DWORD alphaCmp;
 extern FLOAT alphaVal;
 
