@@ -62,7 +62,6 @@ extern BOOL textureFilterEnabled;
 
 extern DWORD textureClampS;
 extern DWORD textureClampT;
-extern DWORD bufferModesArray[];
 
 extern BOOL fogEnabled;
 
