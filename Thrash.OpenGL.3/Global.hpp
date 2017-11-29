@@ -64,8 +64,6 @@ extern FLOAT textureLodBias;
 extern DWORD textureClampS;
 extern DWORD textureClampT;
 
-extern DWORD bufferModesArray[];
-
 extern DWORD cullFace;
 
 extern BOOL alphaEnabled;
@@ -103,7 +101,6 @@ extern GLuint uniTexEnabledLoc;
 extern GLuint uniShadeModelLoc;
 extern GLuint uniAlphaFuncLoc;
 extern GLuint uniAlphaValLoc;
-extern GLuint uniFogEnabledLoc;
 extern GLuint uniFogModeLoc;
 extern GLuint uniFogColorLoc;
 extern GLuint uniFogStartLoc;

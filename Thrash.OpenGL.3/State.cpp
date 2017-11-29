@@ -27,6 +27,7 @@
 #include "math.h"
 
 BOOL specularEnabled;
+DWORD fogMode;
 
 namespace State
 {
@@ -493,9 +494,12 @@ namespace State
 			case EnableFog2:
 			case FogMode:
 				if (value <= 1)
-					GLUniform1ui(uniFogEnabledLoc, value);
+					GLUniform1ui(uniFogModeLoc, value ? fogMode : value);
 				else
-					GLUniform1ui(uniFogModeLoc, value);
+				{
+					fogMode = value;
+					GLUniform1ui(uniFogModeLoc, fogMode);
+				}
 				break;
 
 			case FogColor:

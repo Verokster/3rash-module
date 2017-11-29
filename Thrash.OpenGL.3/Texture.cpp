@@ -270,7 +270,7 @@ namespace Texture
 				else
 				{
 					texture->format = GL_RGB;
-					texture->internalFormat = GL_RGB565;
+					texture->internalFormat = GL_RGB;
 					texture->type = GL_UNSIGNED_SHORT_5_6_5;
 					texture->size = 2;
 				}

@@ -85,7 +85,6 @@ GLuint uniTexEnabledLoc;
 GLuint uniShadeModelLoc;
 GLuint uniAlphaFuncLoc;
 GLuint uniAlphaValLoc;
-GLuint uniFogEnabledLoc;
 GLuint uniFogModeLoc;
 GLuint uniFogColorLoc;
 GLuint uniFogStartLoc;

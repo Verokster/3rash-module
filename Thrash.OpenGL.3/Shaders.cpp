@@ -93,7 +93,6 @@ namespace Shaders
 		uniAlphaFuncLoc = GLGetUniformLocation(shProgram, "alphaFunc");
 		uniAlphaValLoc = GLGetUniformLocation(shProgram, "alphaValue");
 
-		uniFogEnabledLoc = GLGetUniformLocation(shProgram, "fogEnabled");
 		uniFogModeLoc = GLGetUniformLocation(shProgram, "fogMode");
 		uniFogColorLoc = GLGetUniformLocation(shProgram, "fogColor");
 		uniFogStartLoc = GLGetUniformLocation(shProgram, "fogStart");

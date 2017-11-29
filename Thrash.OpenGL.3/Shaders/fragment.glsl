@@ -9,7 +9,6 @@ uniform bool alphaEnabled;
 uniform uint alphaFunc;
 uniform float alphaValue;
 uniform bool shadeModel;
-uniform bool fogEnabled;
 uniform uint fogMode;
 uniform vec4 fogColor;
 uniform bool specularEnabled;
@@ -36,7 +35,7 @@ void main(void)
 	{
 		case 0u: // GL_NEVER:
 			discard;
-			break;
+
 		case 1u: // GL_LESS:
 			if (fragColor.a >= alphaValue)
 				discard;
@@ -65,19 +64,16 @@ void main(void)
 			break;
 	}
 
-	if (fogEnabled)
+	switch (fogMode)
 	{
-		switch (fogMode)
-		{
-			case 2u:
-			case 4u:
-			case 8u:
-				fragColor = vec4(mix(fragColor.xyz, fogColor.rgb, fogFactor), fragColor.a);
-				break;
+		case 2u:
+		case 4u:
+		case 8u:
+			fragColor = vec4(mix(fragColor.rgb, fogColor.rgb, fogFactor), fragColor.a);
+			break;
 
-			default:
-				break;
-		}
+		default:
+			break;
 	}
 
 	if (gamma != 1.0)
