@@ -31,7 +31,7 @@ namespace Texture
 	VOID* __fastcall Convert_BGRA_4_To_RGBA_32(ThrashTexture* texture, VOID* memory, BYTE pallete[]);
 	VOID* __fastcall Convert_BGR_8_To_RGB_24(ThrashTexture* texture, VOID* memory, BYTE pallete[]);
 	VOID* __fastcall Convert_BGR_8_To_RGBA_32(ThrashTexture* texture, VOID* memory, BYTE pallete[]);
-	VOID* __fastcall Convert_BGRA_8_To_RGBA_32(ThrashTexture* texture, VOID* memory, BYTE pallete[]);
+	VOID* __fastcall Convert_RGBA_8_To_RGBA_32(ThrashTexture* texture, VOID* memory, BYTE pallete[]);
 	VOID* __fastcall Convert_BGR5_A1_To_RGBA_32(ThrashTexture* texture, VOID* memory);
 	VOID* __fastcall Convert_RGB565_To_RGB_24(ThrashTexture* texture, VOID* memory);
 	VOID* __fastcall Convert_RGB565_To_RGBA_32(ThrashTexture* texture, VOID* memory);

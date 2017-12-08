@@ -1102,6 +1102,10 @@ namespace State
 				GammaRamp::Set(*(FLOAT*)&value);
 				break;
 
+			case Windowed:
+				appWindowed = value;
+				break;
+
 				/*case Hint:
 					if (value)
 					{

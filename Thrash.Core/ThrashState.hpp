@@ -45,7 +45,7 @@ namespace State
 		FogColor = 15,
 		LineWidth = 16,
 		FlatFans = 17,
-
+		Windowed = 18,
 		Functions = 19,
 		EnableFog = 20,
 		FogMode = 21,

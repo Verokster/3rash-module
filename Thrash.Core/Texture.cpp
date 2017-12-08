@@ -166,7 +166,7 @@ namespace Texture
 		return ptr;
 	}
 
-	VOID* __fastcall Convert_BGRA_8_To_RGBA_32(ThrashTexture* texture, VOID* memory, BYTE pallete[])
+	VOID* __fastcall Convert_RGBA_8_To_RGBA_32(ThrashTexture* texture, VOID* memory, BYTE pallete[])
 	{
 		VOID* ptr = Memory::Allocate(texture->pixels * texture->size);
 		if (ptr)
@@ -177,7 +177,7 @@ namespace Texture
 			DWORD total = texture->pixels;
 			do
 			{
-				*dest++ = Color::Swap(*(DWORD*)&pallete[*source++ << 2]);
+				*dest++ = *(DWORD*)&pallete[*source++ << 2];
 				--total;
 			} while (total);
 		}

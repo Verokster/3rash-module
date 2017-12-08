@@ -158,8 +158,8 @@ namespace Main
 	{
 		if (!about.size)
 		{
-			//strcpy(about.signature, "OGL3"); strcpy(about.driverName, "OpenGL 3.0");
-			strcpy(about.signature, "D3D7");  strcpy(about.driverName, "DX7 3rash");
+			strcpy(about.signature, "OGL3"); strcpy(about.driverName, "OpenGL 3.0");
+			//strcpy(about.signature, "D3D7");  strcpy(about.driverName, "DX7 3rash");
 
 			strcpy(about.deviceName, "D3D Device");
 
@@ -244,9 +244,6 @@ namespace Main
 			isInit = TRUE;
 
 			LoadForced();
-
-			if (GetWindowLong(hWnd, GWL_STYLE) & WS_BORDER)
-				forced.windowed = appWindowed = TRUE;
 
 			CHAR library[256];
 			if (GetEnvironmentVariable("THRASH_OGL_DRIVER", library, sizeof(library)))

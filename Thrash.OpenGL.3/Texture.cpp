@@ -408,7 +408,7 @@ namespace Texture
 				break;
 
 			case INDEX_ARGB:
-				memory = Convert_BGRA_8_To_RGBA_32(texture, memory, pallete);
+				memory = Convert_RGBA_8_To_RGBA_32(texture, memory, pallete);
 				break;
 
 			default: break;

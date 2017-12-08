@@ -843,6 +843,10 @@ namespace State
 				GLUniform1f(uniGammaLoc, gamma * forced.gamma);
 				break;
 
+			case Windowed:
+				appWindowed = value;
+				break;
+
 				/*case Hint:
 					if (value)
 					{

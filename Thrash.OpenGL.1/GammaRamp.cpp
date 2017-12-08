@@ -32,7 +32,7 @@ namespace GammaRamp
 {
 	VOID __fastcall Check()
 	{
-		if (!forced.windowed)
+		if (!forced.windowed && !appWindowed)
 		{
 			HWND dWnd = GetDesktopWindow();
 			HDC dDc = GetDC(dWnd);

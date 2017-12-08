@@ -177,6 +177,66 @@ namespace Resolution
 
 		return NULL;
 	}
+	LRESULT CALLBACK WindowWindowedProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		switch (message)
+		{
+		case WM_SIZE:
+		{
+			ChangeView(lParam & 0xFFFF, lParam >> 16);
+			return CallWindowProc(OldWindowProc, hWnd, message, wParam, lParam);
+		}
+
+		case WM_LBUTTONDOWN:
+		case WM_LBUTTONUP:
+		case WM_LBUTTONDBLCLK:
+		case WM_MBUTTONDOWN:
+		case WM_MBUTTONUP:
+		case WM_MBUTTONDBLCLK:
+		case WM_RBUTTONDOWN:
+		case WM_RBUTTONUP:
+		case WM_RBUTTONDBLCLK:
+		case WM_XBUTTONDOWN:
+		case WM_XBUTTONUP:
+		case WM_XBUTTONDBLCLK:
+		case WM_MOUSEMOVE:
+		{
+			INT xPos = LOWORD(lParam);
+			INT yPos = HIWORD(lParam);
+
+			if (xPos < viewport.rectangle.x)
+				xPos = 0;
+			else if (xPos >= viewport.rectangle.x + viewport.rectangle.width)
+				xPos = selectedResolution->width - 1;
+			else
+			{
+				FLOAT number = (FLOAT)(xPos - viewport.rectangle.x) / viewport.clipFactor.x;
+				FLOAT floorVal = floor(number);
+				xPos = INT(floorVal + 0.5f > number ? floorVal : ceil(number));
+			}
+
+			if (yPos < viewport.rectangle.y)
+				yPos = 0;
+			else if (yPos >= viewport.rectangle.y + viewport.rectangle.height)
+				yPos = selectedResolution->height - 1;
+			else
+			{
+				FLOAT number = (FLOAT)(yPos - viewport.rectangle.y) / viewport.clipFactor.y;
+				FLOAT floorVal = floor(number);
+				yPos = INT(floorVal + 0.5f > number ? floorVal : ceil(number));
+			}
+
+			lParam = (SHORT)yPos << 16 | (SHORT)xPos;
+			return CallWindowProc(OldWindowProc, hWnd, message, wParam, lParam);
+		}
+
+		default:
+			return CallWindowProc(OldWindowProc, hWnd, message, wParam, lParam);
+			break;
+		}
+
+		return NULL;
+	}
 
 	HHOOK OldMouseHook;
 	LRESULT CALLBACK MouseHook(INT nCode, WPARAM wParam, LPARAM lParam)
@@ -300,7 +360,7 @@ namespace Resolution
 		desktopMode.height = devMode.dmPelsHeight;
 
 		DWORD dbp = devMode.dmBitsPerPel;
-		if (forced.windowed)
+		if (forced.windowed || appWindowed)
 			forced.colorDepth = devMode.dmBitsPerPel;
 		else
 		{
@@ -350,6 +410,7 @@ namespace Resolution
 	{
 		selectedResolution = &resolutionsList[resolutionIndex];
 
+		RECT rect;
 		if (!appWindowed)
 		{
 			switch (forced.resolution)
@@ -368,7 +429,6 @@ namespace Resolution
 			}
 			}
 
-			RECT rect;
 			LONG dwStyle;
 			if (forced.windowed)
 			{
@@ -387,10 +447,7 @@ namespace Resolution
 
 				if (rect.right - rect.left >= mi.rcWork.right - mi.rcWork.left ||
 					rect.bottom - rect.top >= mi.rcWork.bottom - mi.rcWork.top)
-				{
-					rect = mi.rcWork;
 					dwStyle |= WS_MAXIMIZE;
-				}
 
 				SetWindowLong(hWnd, GWL_STYLE, dwStyle);
 				SetWindowLong(hWnd, GWL_EXSTYLE, WS_EX_APPWINDOW | WS_EX_DLGMODALFRAME);
@@ -410,7 +467,15 @@ namespace Resolution
 						SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
 				}
 
-				SetWindowPos(hWnd, HWND_NOTOPMOST, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, NULL);
+				if (dwStyle & WS_MAXIMIZE)
+					SetWindowPos(hWnd, HWND_NOTOPMOST, mi.rcWork.left, mi.rcWork.top, mi.rcWork.right - mi.rcWork.left, mi.rcWork.bottom - mi.rcWork.top, NULL);
+
+				WINDOWPLACEMENT plc = { NULL };
+				plc.length = sizeof(WINDOWPLACEMENT);
+
+				GetWindowPlacement(hWnd, &plc);
+				plc.rcNormalPosition = rect;
+				SetWindowPlacement(hWnd, &plc);
 
 				GetClientRect(hWnd, &rect);
 				ChangeView(rect.right, rect.bottom);
@@ -452,7 +517,7 @@ namespace Resolution
 
 				DWORD res = ChangeDisplaySettingsEx(display.DeviceName, &devMode, NULL, CDS_FULLSCREEN | CDS_TEST | CDS_RESET, NULL);
 				if (res != DISP_CHANGE_SUCCESSFUL)
-					Main::ShowError("Bad display mode", __FILE__, "Change", __LINE__);
+					Main::ShowError("Bad display mode", __FILE__, "Change", devMode.dmBitsPerPel);
 
 				ChangeDisplaySettingsEx(display.DeviceName, &devMode, NULL, CDS_FULLSCREEN | CDS_RESET, NULL);
 				EnumDisplaySettings(display.DeviceName, ENUM_CURRENT_SETTINGS, &devMode);
@@ -462,7 +527,13 @@ namespace Resolution
 			}
 		}
 		else
-			ChangeView(selectedResolution->width, selectedResolution->height);
+		{
+			GetClientRect(hWnd, &rect);
+			ChangeView(rect.right - rect.left, rect.bottom - rect.top);
+
+			if (!OldWindowProc)
+				OldWindowProc = (WNDPROC)SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)WindowWindowedProc);
+		}
 
 		if (result)
 		{
@@ -474,7 +545,7 @@ namespace Resolution
 
 	BOOL __stdcall Restore(DWORD a1, HWND hWnd, UINT msg, DWORD resolutionIndex, DWORD maxPanding, BOOL *result)
 	{
-		if (!forced.windowed)
+		if (!forced.windowed && !appWindowed)
 			ChangeDisplaySettingsA(NULL, NULL);
 
 		if (result)
