@@ -242,4 +242,4 @@ extern BOOL glCapsClampToEdge;
 extern BOOL glCapsMirroredRepeat;
 extern BOOL glCapsAnisotropic;
 
-VOID CreateContextAttribs(HDC* devContext, HGLRC* glContext);
+VOID CreateContextAttribs(HDC devContext, HGLRC* glContext);

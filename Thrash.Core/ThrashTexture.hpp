@@ -41,6 +41,11 @@ typedef struct ThrashTexture
 	DWORD size;
 	DWORD stride;
 	DWORD pixels;
+	BOOL isPalleted;
+	VOID* indexes;
+	VOID* data;
+	VOID* pallete;
+	DWORD palleteAddress;
 
 	BOOL reconvert;
 	ThrashTexture* previousTexture;

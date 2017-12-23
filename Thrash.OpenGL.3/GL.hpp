@@ -276,7 +276,7 @@ extern HMODULE hModule;
 extern WORD glVersion;
 extern INT glCapsAuxCount;
 
-VOID __fastcall CreateContextAttribs(HDC* devContext, HGLRC* glContext);
+VOID __fastcall CreateContextAttribs(HDC devContext, HGLRC* glContext);
 
 #ifdef _DEBUG
 VOID __fastcall CheckError(CHAR* file, CHAR* function, DWORD line);

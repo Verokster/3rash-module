@@ -144,14 +144,25 @@ namespace Main
 		if (forced.filtering && forced.filtering > 2)
 			forced.filtering = 0;
 
-		forced.reconvert = GetEnvironmentValue(0, envPrefix, "TEXRGBA32");
-
 		forced.add640x480x16 = GetEnvironmentValue(1, envPrefix, "ADD640X480X16");
 		forced.movies16Bit = GetEnvironmentValue(0, envPrefix, "MOVIES16BIT");
 
 		forced.gamma = GetEnvironmentValue(5, envPrefix, "GAMMA") * 0.1f + 0.5f;
 		if (forced.gamma < 0.5f || forced.gamma > 1.5f)
 			forced.gamma = 1.0f;
+
+		forced.reconvert = GetEnvironmentValue(0, envPrefix, "TEX_CONVERT_ARGB32");
+
+		forced.texColor_INDEX_4 = GetEnvironmentValue(0, envPrefix, "TEX_COLOR_INDEX_4");
+		forced.texColor_INDEX_8 = GetEnvironmentValue(0, envPrefix, "TEX_COLOR_INDEX_8");
+		forced.texColor_ARGB_1555 = GetEnvironmentValue(0, envPrefix, "TEX_COLOR_ARGB_1555");
+		forced.texColor_RGB_565 = GetEnvironmentValue(0, envPrefix, "TEX_COLOR_RGB_565");
+		forced.texColor_RGB_888 = GetEnvironmentValue(0, envPrefix, "TEX_COLOR_RGB_888");
+		forced.texColor_ARGB_8888 = GetEnvironmentValue(0, envPrefix, "TEX_COLOR_ARGB_8888");
+		forced.texColor_ARGB_4444 = GetEnvironmentValue(0, envPrefix, "TEX_COLOR_ARGB_4444");
+
+		forced.texIndex_RGB = GetEnvironmentValue(0, envPrefix, "TEX_INDEX_RGB");
+		forced.texIndex_ARGB = GetEnvironmentValue(0, envPrefix, "TEX_INDEX_ARGB");
 	}
 
 	LPTHRASHABOUT THRASHAPI About()
@@ -159,8 +170,6 @@ namespace Main
 		if (!about.size)
 		{
 			strcpy(about.signature, "OGL3"); strcpy(about.driverName, "OpenGL 3.0");
-			//strcpy(about.signature, "D3D7");  strcpy(about.driverName, "DX7 3rash");
-
 			strcpy(about.deviceName, "D3D Device");
 
 			about.size = sizeof(ThrashAbout);
@@ -176,16 +185,18 @@ namespace Main
 
 			about.colorFormatsCount = COLOR_LAST;
 			about.colorFormats = textureColorFormats;
-			about.colorFormats[COLOR_ARGB_1555] = TRUE;
-			about.colorFormats[COLOR_RGB_565] = TRUE;
-			about.colorFormats[COLOR_RGB_888] = TRUE;
-			about.colorFormats[COLOR_ARGB_8888] = TRUE;
-			about.colorFormats[COLOR_ARGB_4444] = TRUE;
+			about.colorFormats[COLOR_INDEX_4] = forced.texColor_INDEX_4;
+			about.colorFormats[COLOR_INDEX_8] = forced.texColor_INDEX_8;
+			about.colorFormats[COLOR_ARGB_1555] = forced.texColor_ARGB_1555;
+			about.colorFormats[COLOR_RGB_565] = forced.texColor_RGB_565;
+			about.colorFormats[COLOR_RGB_888] = forced.texColor_RGB_888;
+			about.colorFormats[COLOR_ARGB_8888] = forced.texColor_ARGB_8888;
+			about.colorFormats[COLOR_ARGB_4444] = forced.texColor_ARGB_4444;
 
 			about.indexFormatsCount = INDEX_LAST;
 			about.indexFormats = textureIndexFormats;
-			about.indexFormats[INDEX_RGB] = TRUE;
-			about.indexFormats[INDEX_ARGB] = TRUE;
+			about.indexFormats[INDEX_RGB] = forced.texIndex_RGB;
+			about.indexFormats[INDEX_ARGB] = forced.texIndex_ARGB;
 
 			about.resolutionsCount = resolutionsListCount;
 			about.resolutionsList = resolutionsList;
@@ -416,11 +427,11 @@ namespace Main
 		State::Set(State::TextureFilter, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "FILTER"));
 		State::Set(State::ShadeModel, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "SHADE"));
 		State::Set(State::EnableAlphaBlend, 0xFFFF0000, GetEnvironmentValue(2, envPrefix, "TRANSPARENCY"));
-		State::Set(State::AlphaMode, 0xFFFF0000, GetEnvironmentValue(16, envPrefix, "ALPHATEST"));
+		State::Set(State::AlphaValue, 0xFFFF0000, GetEnvironmentValue(16, envPrefix, "ALPHATEST"));
 		State::Set(State::TextureMipMap, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "MIPMAP"));
 		State::Set(State::ClearColor, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "BACKGROUNDCOLOUR"));
-		State::Set(State::ChromaColor, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "CHROMACOLOUR"));
-		State::Set(State::EnableDither, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "DITHER"));
+		State::Set(State::ChromaKeyColor, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "CHROMACOLOUR"));
+		State::Set(State::DitherMode, 0xFFFF0000, GetEnvironmentValue(1, envPrefix, "DITHER"));
 		State::Set(State::EnableFog, 0xFFFF0000, FALSE);
 		State::Set(State::FogMode, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "FOGMODE"));
 		State::Set(State::FogDensity, 0xFFFF0000, GetEnvironmentValue(0, envPrefix, "FOGDENSITY"));

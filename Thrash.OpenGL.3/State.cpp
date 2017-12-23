@@ -44,19 +44,19 @@ namespace State
 		DepthCompare,
 		EnableDepthWrite, EnableDepthWrite2,
 		EnableAlphaBlend,
-		AlphaMode,
+		AlphaValue,
 		AlphaCompare,
 		BlendMode, BlendMode2,
 		BlendSourceFactor,
 		BlendDestinationFactor,
-		EnableFog, EnableFog2, FogMode,
+		EnableFog, FogTable, FogMode,
 		FogColor,
 		FogStart,
 		FogEnd,
 		FogDensity,
 		ClearColor,
 		ClearDepth,
-		EnableDither,
+		DitherMode,
 		ShadeModel,
 		EnableSmoothPolygon,
 		Gamma, Gamma2
@@ -175,6 +175,10 @@ namespace State
 #pragma region Texture
 			case SetTexture:
 				texturesEnabled = value >= MIN_TEX_ADDRESS;
+
+				if (texturesEnabled)
+				Texture::CheckPallete((ThrashTexture*)value);
+
 				GLUniform1ui(uniTexEnabledLoc, texturesEnabled);
 				Texture::Bind((ThrashTexture*)value);
 				break;
@@ -336,30 +340,53 @@ namespace State
 #pragma endregion
 #pragma region Alpha & Blend
 			case EnableAlphaBlend:
-				switch (value)
+				if (API_VERSION >= 107)
 				{
-				case 0:
-				case 1:
-					GLUniform1ui(uniAlphaFuncLoc, 7);
+					switch (value)
+					{
+					case 0:
+					case 1:
+						GLUniform1ui(uniAlphaFuncLoc, 7);
+						GLDisable(GL_BLEND);
+						break;
 
-					GLDisable(GL_BLEND);
-					break;
+					case 2:
+					case 3:
+						GLUniform1ui(uniAlphaFuncLoc, 4);
 
-				case 2:
-				case 3:
-					GLUniform1ui(uniAlphaFuncLoc, 4);
+						GLEnable(GL_BLEND);
+						GLBlendFunc(blendSrc, blendDest);
+						break;
 
-					GLEnable(GL_BLEND);
-					GLBlendFunc(blendSrc, blendDest);
-					break;
+					default:
+						return NULL;
+					}
+				}
+				else
+				{
+					switch (value)
+					{
+					case 0:
+						GLUniform1ui(uniAlphaFuncLoc, 7);
+						GLDisable(GL_BLEND);
+						break;
 
-				default:
-					return NULL;
+					case 1:
+					case 2:
+						GLUniform1ui(uniAlphaFuncLoc, 4);
+
+						GLEnable(GL_BLEND);
+						GLBlendFunc(blendSrc, blendDest);
+						break;
+
+					default:
+						return NULL;
+					}
 				}
 
 				break;
 
-			case AlphaMode:
+			case AlphaValue:
 				GLUniform1f(uniAlphaValLoc, value != 0 ? (FLOAT)value / FLOAT_255 : 0.0f);
 				break;
 
@@ -491,7 +518,7 @@ namespace State
 #pragma endregion
 #pragma region Fog
 			case EnableFog:
-			case EnableFog2:
+			case FogTable:
 			case FogMode:
 				if (value <= 1)
 					GLUniform1ui(uniFogModeLoc, value ? fogMode : value);
@@ -767,7 +794,7 @@ namespace State
 				GLClearDepth(*(FLOAT*)&value);
 				break;
 
-			case EnableDither:
+			case DitherMode:
 				if (value)
 					GLEnable(GL_DITHER);
 				else

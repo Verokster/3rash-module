@@ -188,7 +188,7 @@ namespace Context
 
 		hGlRc = WGLCreateContext(hDc);
 		WGLMakeCurrent(hDc, hGlRc);
-		CreateContextAttribs(&hDc, &hGlRc);
+		CreateContextAttribs(hDc, &hGlRc);
 
 		if (forced.vSync)
 		{

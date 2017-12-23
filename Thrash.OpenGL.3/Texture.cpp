@@ -28,6 +28,8 @@
 ThrashTexture* lastTexture;
 ThrashTexture* bindedTexture;
 
+BOOL palleteInit = FALSE;
+
 namespace Texture
 {
 	VOID __fastcall CheckWrap()
@@ -107,6 +109,12 @@ namespace Texture
 		}
 	}
 
+	VOID __fastcall CheckPallete(ThrashTexture* texture)
+	{
+		if (texture->indexes && (!texture->pallete || memcmp(texture->pallete, colorPallete, sizeof(colorPallete))))
+			Update(texture, texture->indexes, NULL);
+	}
+
 	VOID __fastcall Bind(ThrashTexture* texture)
 	{
 		DWORD address = (DWORD)texture;
@@ -117,6 +125,20 @@ namespace Texture
 			bindedTexture = texture;
 			GLBindTexture(GL_TEXTURE_2D, texture->id);
 		}
+	}
+
+	VOID __fastcall Delete(ThrashTexture* texture)
+	{
+		GLDeleteTextures(1, (GLuint*)&texture->id);
+
+		if (texture->indexes)
+			Memory::Free(texture->indexes);
+		if (texture->data)
+			Memory::Free(texture->data);
+		if (texture->pallete)
+			Memory::Free(texture->pallete);
+
+		Memory::Free(texture);
 	}
 
 	LPTHRASHTEXTURE THRASHAPI Allocate(DWORD width, DWORD height, ThrashColorFormat colorFormat, ThrashIndexFormat indexFormat, DWORD level)
@@ -147,18 +169,20 @@ namespace Texture
 			texture->colorFormat = colorFormat;
 			texture->indexFormat = indexFormat;
 			texture->reconvert = FALSE;
+			texture->indexes = NULL;
+			texture->data = NULL;
+			texture->pallete = NULL;
 			texture->previousTexture = lastTexture;
 			lastTexture = texture;
 
 			DWORD size = texture->width * texture->height;
-			++level;
+			level = texture->level + 1;
 			texture->pixels = 0;
 			do
 			{
 				texture->pixels += size;
 				size >>= 2;
-				--level;
-			} while (level);
+			} while (--level);
 
 			switch (texture->colorFormat)
 			{
@@ -173,6 +197,7 @@ namespace Texture
 						texture->type = GL_UNSIGNED_BYTE;
 						texture->size = 4;
 						texture->reconvert = TRUE;
+						texture->indexes = (BYTE*)Memory::Allocate(texture->pixels >> 1);
 					}
 					else
 					{
@@ -181,6 +206,7 @@ namespace Texture
 						texture->type = GL_UNSIGNED_BYTE;
 						texture->size = 3;
 						texture->reconvert = TRUE;
+						texture->indexes = (BYTE*)Memory::Allocate(texture->pixels >> 1);
 					}
 
 					break;
@@ -191,6 +217,7 @@ namespace Texture
 					texture->type = GL_UNSIGNED_BYTE;
 					texture->size = 4;
 					texture->reconvert = TRUE;
+					texture->indexes = (BYTE*)Memory::Allocate(texture->pixels >> 1);
 
 					break;
 
@@ -211,6 +238,7 @@ namespace Texture
 						texture->type = GL_UNSIGNED_BYTE;
 						texture->size = 4;
 						texture->reconvert = TRUE;
+						texture->indexes = (BYTE*)Memory::Allocate(texture->pixels);
 					}
 					else
 					{
@@ -219,6 +247,7 @@ namespace Texture
 						texture->type = GL_UNSIGNED_BYTE;
 						texture->size = 3;
 						texture->reconvert = TRUE;
+						texture->indexes = (BYTE*)Memory::Allocate(texture->pixels);
 					}
 
 					break;
@@ -229,6 +258,7 @@ namespace Texture
 					texture->type = GL_UNSIGNED_BYTE;
 					texture->size = 4;
 					texture->reconvert = TRUE;
+					texture->indexes = (BYTE*)Memory::Allocate(texture->pixels);
 
 					break;
 
@@ -373,99 +403,150 @@ namespace Texture
 
 	LPTHRASHTEXTURE THRASHAPI Update(ThrashTexture* texture, VOID* memory, BYTE* pallete)
 	{
-		if (!texture || !memory || texture->colorFormat == COLOR_NA)
-			return NULL;
-
-		switch (texture->colorFormat)
+		if (pallete)
 		{
-		case COLOR_INDEX_4:
-			switch (texture->indexFormat)
+			palleteInit = TRUE;
+			memcpy(colorPallete, pallete, sizeof(colorPallete));
+		}
+
+		if (memory)
+		{
+			BOOL upload = TRUE;
+
+			switch (texture->colorFormat)
 			{
-			case INDEX_RGB:
-				if (forced.reconvert)
-					memory = Convert_BGR_4_To_RGBA_32(texture, memory, pallete);
-				else
-					memory = Convert_BGR_4_To_RGB_24(texture, memory, pallete);
+			case COLOR_INDEX_4:
+				switch (texture->indexFormat)
+				{
+				case INDEX_RGB:
+					if (forced.reconvert)
+					{
+						if (memory != texture->indexes)
+							memcpy(texture->indexes, memory, texture->pixels >> 1);
+
+						if (palleteInit)
+							memory = Convert_BGR_4_To_RGBA_32(texture);
+						else
+							upload = FALSE;
+					}
+					else
+					{
+						if (memory != texture->indexes)
+							memcpy(texture->indexes, memory, texture->pixels >> 1);
+
+						if (palleteInit)
+							memory = Convert_BGR_4_To_RGB_24(texture);
+						else
+							upload = FALSE;
+					}
+					break;
+
+				case INDEX_ARGB:
+					if (memory != texture->indexes)
+						memcpy(texture->indexes, memory, texture->pixels >> 1);
+
+					if (palleteInit)
+						memory = Convert_BGRA_4_To_RGBA_32(texture);
+					else
+						upload = FALSE;
+
+					break;
+
+				default: break;
+				}
+
 				break;
 
-			case INDEX_ARGB:
-				memory = Convert_BGRA_4_To_RGBA_32(texture, memory, pallete);
+			case COLOR_INDEX_8:
+				switch (texture->indexFormat)
+				{
+				case INDEX_RGB:
+					if (forced.reconvert)
+					{
+						if (memory != texture->indexes)
+							memcpy(texture->indexes, memory, texture->pixels);
+
+						if (palleteInit)
+							memory = Convert_BGR_8_To_RGBA_32(texture);
+						else
+							upload = FALSE;
+					}
+					else
+					{
+						if (memory != texture->indexes)
+							memcpy(texture->indexes, memory, texture->pixels);
+
+						if (palleteInit)
+							memory = Convert_BGR_8_To_RGB_24(texture);
+						else
+							upload = FALSE;
+					}
+					break;
+
+				case INDEX_ARGB:
+					if (memory != texture->indexes)
+						memcpy(texture->indexes, memory, texture->pixels);
+
+					if (palleteInit)
+						memory = Convert_RGBA_8_To_RGBA_32(texture);
+					else
+						upload = FALSE;
+
+					break;
+
+				default: break;
+				}
+
+				break;
+
+			case COLOR_ARGB_1555:
+				if (texture->reconvert)
+					memory = Convert_BGR5_A1_To_RGBA_32(texture, memory);
+				break;
+
+			case COLOR_RGB_565:
+				if (texture->reconvert)
+					memory = Convert_RGB565_To_RGBA_32(texture, memory);
+				break;
+
+			case COLOR_RGB_888:
+				if (forced.reconvert)
+					memory = Convert_BGR_24_To_RGBA_32(texture, memory);
+				break;
+
+			case COLOR_ARGB_8888:
+				if (texture->reconvert)
+					memory = Convert_BGRA_32_To_RGBA_32(texture, memory);
+				break;
+
+			case COLOR_ARGB_4444:
+				if (texture->reconvert)
+					memory = Convert_BGRA_16_To_RGBA_32(texture, memory);
 				break;
 
 			default: break;
 			}
 
-			break;
 
-		case COLOR_INDEX_8:
-			switch (texture->indexFormat)
+			Buffer::Draw();
+			Texture::Bind(texture);
+
+			if (upload && texture->level >= 0)
 			{
-			case INDEX_RGB:
-				if (forced.reconvert)
-					memory = Convert_BGR_8_To_RGBA_32(texture, memory, pallete);
-				else
-					memory = Convert_BGR_8_To_RGB_24(texture, memory, pallete);
-				break;
-
-			case INDEX_ARGB:
-				memory = Convert_RGBA_8_To_RGBA_32(texture, memory, pallete);
-				break;
-
-			default: break;
+				DWORD width = texture->width;
+				DWORD height = texture->height;
+				BYTE* pixelsData = (BYTE*)memory;
+				DWORD level = 0;
+				do
+				{
+					GLTexSubImage2D(GL_TEXTURE_2D, level, 0, 0, width, height, texture->format, texture->type, pixelsData);
+					pixelsData += texture->size * width * height;
+					width >>= 1;
+					height >>= 1;
+					++level;
+				} while (level <= texture->level);
 			}
-
-			break;
-
-		case COLOR_ARGB_1555:
-			if (texture->reconvert)
-				memory = Convert_BGR5_A1_To_RGBA_32(texture, memory);
-			break;
-
-		case COLOR_RGB_565:
-			if (texture->reconvert)
-				memory = Convert_RGB565_To_RGBA_32(texture, memory);
-			break;
-
-		case COLOR_RGB_888:
-			if (forced.reconvert)
-				memory = Convert_BGR_24_To_RGBA_32(texture, memory);
-			break;
-
-		case COLOR_ARGB_8888:
-			if (texture->reconvert)
-				memory = Convert_BGRA_32_To_RGBA_32(texture, memory);
-			break;
-
-		case COLOR_ARGB_4444:
-			if (texture->reconvert)
-				memory = Convert_BGRA_16_To_RGBA_32(texture, memory);
-			break;
-
-		default: break;
 		}
-
-
-		Buffer::Draw();
-		Texture::Bind(texture);
-
-		if (texture->level >= 0)
-		{
-			DWORD width = texture->width;
-			DWORD height = texture->height;
-			BYTE* pixelsData = (BYTE*)memory;
-			DWORD level = 0;
-			do
-			{
-				GLTexSubImage2D(GL_TEXTURE_2D, level, 0, 0, width, height, texture->format, texture->type, pixelsData);
-				pixelsData += texture->size * width * height;
-				width >>= 1;
-				height >>= 1;
-				++level;
-			} while (level <= texture->level);
-		}
-
-		if (texture->reconvert)
-			Memory::Free(memory);
 
 		return texture;
 	}
@@ -485,8 +566,7 @@ namespace Texture
 			if (lastTexture == texture)
 			{
 				lastTexture = texture->previousTexture;
-				GLDeleteTextures(1, (GLuint*)&texture->id);
-				Memory::Free(texture);
+				Delete(texture);
 				return TRUE;
 			}
 			else
@@ -497,8 +577,7 @@ namespace Texture
 					if (currTexture->previousTexture == texture)
 					{
 						currTexture->previousTexture = texture->previousTexture;
-						GLDeleteTextures(1, (GLuint*)&texture->id);
-						Memory::Free(texture);
+						Delete(texture);
 						return TRUE;
 					}
 
@@ -520,8 +599,7 @@ namespace Texture
 			do
 			{
 				ThrashTexture* prev = texture->previousTexture;
-				GLDeleteTextures(1, (GLuint*)&texture->id);
-				Memory::Free(texture);
+				Delete(texture);
 				texture = prev;
 			} while (texture);
 

@@ -331,8 +331,6 @@ namespace Window
 		if (!isWindowLocked)
 			return TRUE;
 
-		
-
 		Write(window);
 
 		isWindowLocked = FALSE;

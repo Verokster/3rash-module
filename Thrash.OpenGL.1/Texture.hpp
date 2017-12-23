@@ -27,5 +27,6 @@
 namespace Texture
 {
 	VOID __fastcall CheckWrap();
+	VOID __fastcall CheckPallete(ThrashTexture* texture);
 	VOID __fastcall Bind(ThrashTexture* texture);
 }

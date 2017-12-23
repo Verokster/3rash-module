@@ -116,7 +116,10 @@ namespace State
 				texturesEnabled = value >= MIN_TEX_ADDRESS;
 
 				if (texturesEnabled)
+				{
 					GLEnable(GL_TEXTURE_2D);
+					Texture::CheckPallete((ThrashTexture*)value);
+				}
 				else
 					GLDisable(GL_TEXTURE_2D);
 
@@ -512,30 +515,55 @@ namespace State
 #pragma endregion
 #pragma region Alpha & Blend
 			case EnableAlphaBlend:
-				switch (value)
+				if (API_VERSION >= 107)
 				{
-				case 0:
-				case 1:
-					GLDisable(GL_ALPHA_TEST);
-					GLDisable(GL_BLEND);
-					break;
+					switch (value)
+					{
+					case 0:
+					case 1:
+						GLDisable(GL_ALPHA_TEST);
+						GLDisable(GL_BLEND);
+						break;
 
-				case 2:
-				case 3:
-					GLEnable(GL_ALPHA_TEST);
-					GLAlphaFunc(alphaCmp, alphaVal);
+					case 2:
+					case 3:
+						GLEnable(GL_ALPHA_TEST);
+						GLAlphaFunc(alphaCmp, alphaVal);
 
-					GLEnable(GL_BLEND);
-					GLBlendFunc(blendSrc, blendDest);
-					break;
+						GLEnable(GL_BLEND);
+						GLBlendFunc(blendSrc, blendDest);
+						break;
 
-				default:
-					return NULL;
+					default:
+						return NULL;
+					}
+				}
+				else
+				{
+					switch (value)
+					{
+					case 0:
+						GLDisable(GL_ALPHA_TEST);
+						GLDisable(GL_BLEND);
+						break;
+
+					case 1:
+					case 2:
+						GLEnable(GL_ALPHA_TEST);
+						GLAlphaFunc(alphaCmp, alphaVal);
+
+						GLEnable(GL_BLEND);
+						GLBlendFunc(blendSrc, blendDest);
+						break;
+
+					default:
+						return NULL;
+					}
 				}
 
 				break;
 
-			case AlphaMode:
+			case AlphaValue:
 				alphaVal = value != 0 ? (FLOAT)value / FLOAT_255 : 0.0f;
 				GLAlphaFunc(alphaCmp, alphaVal);
 				break;
@@ -605,10 +633,10 @@ namespace State
 					InternalSet(BlendDestinationFactor, tmu, 3);
 					break;
 				case 3:
-					InternalSet(BlendSourceFactor, tmu, 7);
-					InternalSet(BlendDestinationFactor, tmu, 1);
 					blendSrc = GL_DST_COLOR;
 					blendDest = GL_ZERO;
+					InternalSet(BlendSourceFactor, tmu, 7);
+					InternalSet(BlendDestinationFactor, tmu, 1);
 					break;
 				default:
 					return NULL;
@@ -706,7 +734,7 @@ namespace State
 #pragma endregion
 #pragma region Fog
 			case EnableFog:
-			case EnableFog2:
+			case FogTable:
 			case FogMode:
 				switch (value)
 				{
@@ -1028,7 +1056,7 @@ namespace State
 				GLLineWidth((FLOAT)value);
 				break;
 
-			case EnableDither:
+			case DitherMode:
 				if (value)
 					GLEnable(GL_DITHER);
 				else

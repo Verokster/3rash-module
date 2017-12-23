@@ -138,7 +138,7 @@ VOID __fastcall LoadGLFunction(CHAR* buffer, const CHAR* name, PROC* func, const
 	}
 }
 
-VOID __fastcall CreateContextAttribs(HDC* devContext, HGLRC* glContext)
+VOID __fastcall CreateContextAttribs(HDC devContext, HGLRC* glContext)
 {
 	CHAR buffer[256];
 
@@ -154,10 +154,10 @@ VOID __fastcall CreateContextAttribs(HDC* devContext, HGLRC* glContext)
 			0
 		};
 
-		HGLRC glHandler = WGLCreateContextAttribs(*devContext, NULL, wglAttributes);
+		HGLRC glHandler = WGLCreateContextAttribs(devContext, NULL, wglAttributes);
 		if (glHandler)
 		{
-			WGLMakeCurrent(*devContext, glHandler);
+			WGLMakeCurrent(devContext, glHandler);
 			WGLDeleteContext(*glContext);
 			*glContext = glHandler;
 		}

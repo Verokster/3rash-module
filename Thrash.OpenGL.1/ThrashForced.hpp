@@ -36,7 +36,18 @@ struct ThrashForced
 	BOOL aspect;
 	FLOAT gamma;
 	DWORD filtering;
-	BOOL reconvert;
 	BOOL add640x480x16;
 	BOOL movies16Bit;
+	BOOL reconvert;
+
+	BOOL texColor_INDEX_4;
+	BOOL texColor_INDEX_8;
+	BOOL texColor_ARGB_1555;
+	BOOL texColor_RGB_565;
+	BOOL texColor_RGB_888;
+	BOOL texColor_ARGB_8888;
+	BOOL texColor_ARGB_4444;
+
+	BOOL texIndex_RGB;
+	BOOL texIndex_ARGB;
 };
