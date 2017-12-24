@@ -34,7 +34,7 @@ CHAR* envPrefix = "OGL";
 ThrashForced forced;
 ThrashViewport viewport;
 
-DWORD appWindowed = FALSE;
+DWORD appWindowed;
 DWORD displayIndex = 0;
 ThrashResolution resolutionsList[100];
 DWORD resolutionsListCount = sizeof(resolutionsList) / sizeof(ThrashResolution);
@@ -54,7 +54,7 @@ FLOAT depthBias;
 DWORD alphaCmp = GL_GEQUAL;
 FLOAT alphaVal;
 
-BOOL fogEnabled = FALSE;
+BOOL fogEnabled;
 
 BOOL stencilEnabled;
 BOOL depthEnabled;
@@ -64,8 +64,8 @@ DWORD stencilFail;
 DWORD stencilDepthFail;
 DWORD stencilPass;
 
-BOOL isInit = FALSE;
-BOOL isWindowLocked = FALSE;
+BOOL isInit, isForced;
+BOOL isWindowLocked;
 
 HGLRC hGlRc;
 
@@ -95,6 +95,10 @@ namespace Main
 
 	VOID __inline LoadForced()
 	{
+		if (isForced)
+			return;
+		isForced = TRUE;
+
 		TCHAR path[MAX_PATH];
 		GetModuleFileName(hDllModule, path, MAX_PATH);
 		TCHAR* dot = strrchr(path, '.');
@@ -147,12 +151,16 @@ namespace Main
 
 		forced.texIndex_RGB = GetEnvironmentValue(1, envPrefix, "TEX_INDEX_RGB");
 		forced.texIndex_ARGB = GetEnvironmentValue(1, envPrefix, "TEX_INDEX_ARGB");
+
+		Resolution::LoadList();
 	}
 
 	LPTHRASHABOUT THRASHAPI About()
 	{
 		if (!about.size)
 		{
+			LoadForced();
+
 			strcpy(about.signature, "OGL1"); strcpy(about.driverName, "OpenGL 1.4");
 			strcpy(about.deviceName, "D3D Device");
 
@@ -239,7 +247,7 @@ namespace Main
 
 			LoadForced();
 
-			CHAR library[256];
+			CHAR library[MAX_PATH];
 			if (GetEnvironmentVariable("THRASH_OGL_DRIVER", library, sizeof(library)))
 				hModule = LoadLibrary(library);
 			else
@@ -259,8 +267,6 @@ namespace Main
 			}
 			else
 				return FALSE;
-
-			Resolution::LoadList();
 
 			if (functions.Event != NULL)
 			{
