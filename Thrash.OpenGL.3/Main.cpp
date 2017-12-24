@@ -65,7 +65,6 @@ DWORD alphaCmp;
 DWORD blendSrc;
 DWORD blendDest;
 
-FLOAT gamma = 1.0;
 DWORD bufferMode;
 RECT clipRect;
 
@@ -151,18 +150,20 @@ namespace Main
 		if (forced.gamma < 0.5f || forced.gamma > 1.5f)
 			forced.gamma = 1.0f;
 
+		gamma = 1.0f / forced.gamma;
+
 		forced.reconvert = GetEnvironmentValue(0, envPrefix, "TEX_CONVERT_ARGB32");
 
-		forced.texColor_INDEX_4 = GetEnvironmentValue(0, envPrefix, "TEX_COLOR_INDEX_4");
-		forced.texColor_INDEX_8 = GetEnvironmentValue(0, envPrefix, "TEX_COLOR_INDEX_8");
-		forced.texColor_ARGB_1555 = GetEnvironmentValue(0, envPrefix, "TEX_COLOR_ARGB_1555");
-		forced.texColor_RGB_565 = GetEnvironmentValue(0, envPrefix, "TEX_COLOR_RGB_565");
-		forced.texColor_RGB_888 = GetEnvironmentValue(0, envPrefix, "TEX_COLOR_RGB_888");
-		forced.texColor_ARGB_8888 = GetEnvironmentValue(0, envPrefix, "TEX_COLOR_ARGB_8888");
-		forced.texColor_ARGB_4444 = GetEnvironmentValue(0, envPrefix, "TEX_COLOR_ARGB_4444");
+		forced.texColor_INDEX_4 = GetEnvironmentValue(1, envPrefix, "TEX_COLOR_INDEX_4");
+		forced.texColor_INDEX_8 = GetEnvironmentValue(1, envPrefix, "TEX_COLOR_INDEX_8");
+		forced.texColor_ARGB_1555 = GetEnvironmentValue(1, envPrefix, "TEX_COLOR_ARGB_1555");
+		forced.texColor_RGB_565 = GetEnvironmentValue(1, envPrefix, "TEX_COLOR_RGB_565");
+		forced.texColor_RGB_888 = GetEnvironmentValue(1, envPrefix, "TEX_COLOR_RGB_888");
+		forced.texColor_ARGB_8888 = GetEnvironmentValue(1, envPrefix, "TEX_COLOR_ARGB_8888");
+		forced.texColor_ARGB_4444 = GetEnvironmentValue(1, envPrefix, "TEX_COLOR_ARGB_4444");
 
-		forced.texIndex_RGB = GetEnvironmentValue(0, envPrefix, "TEX_INDEX_RGB");
-		forced.texIndex_ARGB = GetEnvironmentValue(0, envPrefix, "TEX_INDEX_ARGB");
+		forced.texIndex_RGB = GetEnvironmentValue(1, envPrefix, "TEX_INDEX_RGB");
+		forced.texIndex_ARGB = GetEnvironmentValue(1, envPrefix, "TEX_INDEX_ARGB");
 	}
 
 	LPTHRASHABOUT THRASHAPI About()

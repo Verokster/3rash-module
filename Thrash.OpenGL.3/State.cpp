@@ -28,6 +28,8 @@
 
 BOOL specularEnabled;
 DWORD fogMode;
+FLOAT gamma = 1.0;
+ThrashColor clearColor;
 
 namespace State
 {
@@ -177,7 +179,7 @@ namespace State
 				texturesEnabled = value >= MIN_TEX_ADDRESS;
 
 				if (texturesEnabled)
-				Texture::CheckPallete((ThrashTexture*)value);
+					Texture::CheckPallete((ThrashTexture*)value);
 
 				GLUniform1ui(uniTexEnabledLoc, texturesEnabled);
 				Texture::Bind((ThrashTexture*)value);
@@ -530,13 +532,16 @@ namespace State
 				break;
 
 			case FogColor:
+			{
+				ThrashColor color = *(ThrashColor*)&value;
 				GLUniform4f(uniFogColorLoc,
-					GLfloat((UINT8)(value >> 16) / FLOAT_255),
-					GLfloat((UINT8)(value >> 8) / FLOAT_255),
-					GLfloat((UINT8)(value) / FLOAT_255),
-					GLfloat((UINT8)(value >> 24) / FLOAT_255));
+					(FLOAT)color.red / FLOAT_255,
+					(FLOAT)color.green / FLOAT_255,
+					(FLOAT)color.blue / FLOAT_255,
+					(FLOAT)color.alpha / FLOAT_255);
 
 				break;
+			}
 
 			case FogStart:
 				GLUniform1f(uniFogStartLoc, (FLOAT)value);
@@ -780,12 +785,13 @@ namespace State
 
 			case ClearColor:
 			{
-				FLOAT tempFloat = 1.0f / (gamma * forced.gamma);
+				clearColor = *(ThrashColor*)&value;
+
 				GLClearColor(
-					GLclampf(pow((UINT8)(value >> 16) / FLOAT_255, tempFloat)),
-					GLclampf(pow((UINT8)(value >> 8) / FLOAT_255, tempFloat)),
-					GLclampf(pow((UINT8)(value) / FLOAT_255, tempFloat)),
-					GLclampf(pow((UINT8)(value >> 24) / FLOAT_255, tempFloat)));
+					pow((FLOAT)clearColor.red / FLOAT_255, gamma),
+					pow((FLOAT)clearColor.green / FLOAT_255, gamma),
+					pow((FLOAT)clearColor.blue / FLOAT_255, gamma),
+					(FLOAT)clearColor.alpha / FLOAT_255);
 			}
 
 			break;
@@ -866,9 +872,18 @@ namespace State
 
 			case Gamma:
 			case Gamma2:
-				gamma = *(FLOAT*)&value;
-				GLUniform1f(uniGammaLoc, gamma * forced.gamma);
-				break;
+			{
+				gamma = *(FLOAT*)&value * forced.gamma;
+				GLUniform1f(uniGammaLoc, gamma);
+				gamma = 1.0f / gamma;
+
+				GLClearColor(
+					pow((FLOAT)clearColor.red / FLOAT_255, gamma),
+					pow((FLOAT)clearColor.green / FLOAT_255, gamma),
+					pow((FLOAT)clearColor.blue / FLOAT_255, gamma),
+					(FLOAT)clearColor.alpha / FLOAT_255);
+			}
+			break;
 
 			case Windowed:
 				appWindowed = value;

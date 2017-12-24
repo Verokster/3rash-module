@@ -770,12 +770,13 @@ namespace State
 
 			case FogColor:
 			{
-				GLfloat color[4];
-				color[2] = (FLOAT)(UINT8)value / FLOAT_255;
-				color[1] = (FLOAT)(UINT8)(value >> 8) / FLOAT_255;
-				color[0] = (FLOAT)(UINT8)(value >> 16) / FLOAT_255;
-				color[3] = (FLOAT)(UINT8)(value >> 24) / FLOAT_255;
-				GLFogfv(GL_FOG_COLOR, color);
+				ThrashColor color = *(ThrashColor*)&value;
+				GLfloat fogColor[4] = {
+				(FLOAT)color.red / FLOAT_255,
+				(FLOAT)color.green / FLOAT_255,
+				(FLOAT)color.blue / FLOAT_255,
+				(FLOAT)color.alpha / FLOAT_255 };
+				GLFogfv(GL_FOG_COLOR, fogColor);
 
 				break;
 			}
@@ -1040,13 +1041,16 @@ namespace State
 				break;
 
 			case ClearColor:
+			{
+				ThrashColor color = *(ThrashColor*)&value;
 				GLClearColor(
-					GLclampf((FLOAT)(UINT8)(value >> 16) / FLOAT_255),
-					GLclampf((FLOAT)(UINT8)(value >> 8) / FLOAT_255),
-					GLclampf((FLOAT)(UINT8)(value) / FLOAT_255),
-					GLclampf((FLOAT)(UINT8)(value >> 24) / FLOAT_255));
+					(FLOAT)color.red / FLOAT_255,
+					(FLOAT)color.green / FLOAT_255,
+					(FLOAT)color.blue / FLOAT_255,
+					(FLOAT)color.alpha / FLOAT_255);
 
 				break;
+			}
 
 			case ClearDepth:
 				GLClearDepth(*(FLOAT*)&value);
