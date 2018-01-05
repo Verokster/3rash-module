@@ -184,7 +184,7 @@
     <ClInclude Include="Vertex.hpp" />
     <ClInclude Include="ThrashForced.hpp" />
     <ClInclude Include="ThrashViewport.hpp" />
-    <ClInclude Include="Window.hpp" />
+    <ClInclude Include="Rect.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Thrash.rc" />

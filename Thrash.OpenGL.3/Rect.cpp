@@ -27,10 +27,9 @@
 
 namespace Rect
 {
-	VOID __fastcall SwapRows(ThrashRectangle* rectangle, VOID* data, DWORD bytesPerPixel)
+	VOID __fastcall SwapRows(DWORD width, DWORD height, VOID* data, DWORD bytesPerPixel)
 	{
-		DWORD height = rectangle->height;
-		DWORD bytesPerRow = bytesPerPixel * rectangle->width;
+		DWORD bytesPerRow = bytesPerPixel * width;
 		if (bytesPerRow % 4 == 0)
 		{
 			DWORD sectPerRow = bytesPerRow >> 2;
@@ -168,7 +167,7 @@ namespace Rect
 		else
 			GLReadPixels(rectangle.x, viewport.height - rectangle.height - rectangle.y, rectangle.width, rectangle.height, format, type, data);
 
-		SwapRows(&rectangle, data, bytesPerPixel);
+		SwapRows(rectangle.width, rectangle.height, data, bytesPerPixel);
 
 		return TRUE;
 	}

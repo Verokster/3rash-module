@@ -90,7 +90,7 @@
     <ClInclude Include="Context.hpp">
       <Filter>Header Files\Thrash</Filter>
     </ClInclude>
-    <ClInclude Include="Window.hpp">
+    <ClInclude Include="Rect.hpp">
       <Filter>Header Files\Thrash</Filter>
     </ClInclude>
   </ItemGroup>

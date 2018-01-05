@@ -25,11 +25,78 @@
 #include "stdafx.h"
 #include "Global.hpp"
 
-ThrashWindow* windowObject;
-
 namespace Window
 {
-	BOOL __inline Write(ThrashWindow* window)
+	VOID __inline Read(ThrashWindow* window)
+	{
+		DWORD bytesPerPixel = window->bytesPerRow / window->width;
+		GLenum format, type;
+
+		switch (bytesPerPixel)
+		{
+		case 3:
+			format = GL_BGR;
+			type = GL_UNSIGNED_BYTE;
+			break;
+
+		case 4:
+			format = GL_BGRA;
+			type = GL_UNSIGNED_BYTE;
+			break;
+
+		default:
+			format = GL_RGB;
+			type = GL_UNSIGNED_SHORT_5_6_5;
+			break;
+		}
+
+		if (viewport.width != selectedResolution->width || viewport.height != selectedResolution->height)
+		{
+			DWORD width = Main::Round((FLOAT)window->width * viewport.clipFactor.x);
+			DWORD height = Main::Round((FLOAT)window->height * viewport.clipFactor.y);
+
+			DWORD count = width * height;
+			VOID* memory = Memory::Allocate(count * bytesPerPixel);
+
+			GLReadPixels(0, 0, width, height, format, type, memory);
+			if (bytesPerPixel == 4)
+			{
+				DWORD* read = (DWORD*)memory;
+				DWORD* write = (DWORD*)window->data;
+				for (DWORD y = 0; y < window->height; ++y)
+				{
+					DWORD step = Main::Round((FLOAT)y * viewport.clipFactor.y) * width;
+					for (DWORD x = 0; x < window->width; ++x)
+					{
+						DWORD pos = step + Main::Round((FLOAT)x * viewport.clipFactor.x);
+						*write++ = read[pos];
+					}
+				}
+			}
+			else
+			{
+				WORD* read = (WORD*)memory;
+				WORD* write = (WORD*)window->data;
+				for (DWORD y = 0; y < window->height; ++y)
+				{
+					DWORD step = Main::Round((FLOAT)y * viewport.clipFactor.y) * width;
+					for (DWORD x = 0; x < window->width; ++x)
+					{
+						DWORD pos = step + Main::Round((FLOAT)x * viewport.clipFactor.x);
+						*write++ = read[pos];
+					}
+				}
+			}
+
+			Memory::Free(memory);
+		}
+		else
+			GLReadPixels(0, 0, window->width, window->height, format, type, window->data);
+
+		Rect::SwapRows(window->width, window->height, window->data, bytesPerPixel);
+	}
+
+	VOID __inline Write(ThrashWindow* window)
 	{
 		DWORD bytesPerPixel = window->bytesPerRow / window->width;
 
@@ -163,76 +230,6 @@ namespace Window
 		}
 		else
 			Main::ShowError("Out of memory.", __FILE__, "Write", __LINE__);
-
-		return TRUE;
-	}
-
-	LPTHRASHWINDOW __fastcall Create()
-	{
-		if (!windowObject)
-		{
-			windowObject = (ThrashWindow*)Memory::Allocate(sizeof(ThrashWindow));
-			if (windowObject)
-			{
-				windowObject->width = selectedResolution->width;
-				windowObject->height = selectedResolution->height;
-
-				DWORD bytesPerPixel = !forced.movies16Bit ? selectedResolution->colorDepth >> 3 : 2;
-				windowObject->bytesPerRow = windowObject->width * bytesPerPixel;
-
-				DWORD size = windowObject->height * windowObject->bytesPerRow;
-				VOID* data = Memory::Allocate(size);
-				if (data)
-				{
-					memset(data, NULL, size);
-
-					windowObject->data = data;
-					windowObject->unknown = 1;
-
-					if (!forced.movies16Bit)
-					{
-						switch (selectedResolution->colorDepth)
-						{
-						case 32:
-							windowObject->colorFormat = COLOR_ARGB_8888;
-							break;
-						case 24:
-							windowObject->colorFormat = COLOR_RGB_888;
-							break;
-						default:
-							windowObject->colorFormat = COLOR_RGB_565;
-							break;
-						}
-					}
-					else
-						windowObject->colorFormat = COLOR_RGB_565;
-
-					State::Set(State::CurrentWindow, (DWORD)windowObject);
-				}
-				else
-					Main::ShowError("Out of memory.", __FILE__, "Lock", __LINE__);
-			}
-			else
-				Main::ShowError("Out of memory.", __FILE__, "Lock", __LINE__);
-		}
-
-		return windowObject;
-	}
-
-	BOOL __fastcall Release()
-	{
-		if (windowObject)
-		{
-			if (windowObject->data)
-				Memory::Free(windowObject->data);
-
-			Memory::Free(windowObject);
-			windowObject = NULL;
-
-			//State::Set(State::CurrentWindow, NULL);
-		}
-
-		return TRUE;
 	}
 
 	VOID THRASHAPI Clear()
@@ -246,11 +243,7 @@ namespace Window
 			bufferBit |= GL_STENCIL_BUFFER_BIT;
 
 		if (colorMask)
-		{
 			bufferBit |= GL_COLOR_BUFFER_BIT;
-			if (windowObject)
-				memset(windowObject->data, NULL, windowObject->height * windowObject->bytesPerRow);
-		}
 
 		GLClear(bufferBit);
 	}
@@ -322,8 +315,51 @@ namespace Window
 		if (functions.LockStatus)
 			functions.LockStatus(isWindowLocked);
 
-		ThrashWindow* window = Create();
-		window->buffer = bufferMode;
+		ThrashWindow* window = (ThrashWindow*)Memory::Allocate(sizeof(ThrashWindow));
+		if (window)
+		{
+			window->width = selectedResolution->width;
+			window->height = selectedResolution->height;
+
+			DWORD bytesPerPixel = !forced.movies16Bit ? selectedResolution->colorDepth >> 3 : 2;
+			window->bytesPerRow = window->width * bytesPerPixel;
+
+			DWORD size = window->height * window->bytesPerRow;
+			VOID* data = Memory::Allocate(size);
+			if (data)
+			{
+				window->data = data;
+				window->buffer = bufferMode;
+				window->unknown = 1;
+
+				if (!forced.movies16Bit)
+				{
+					switch (selectedResolution->colorDepth)
+					{
+					case 32:
+						window->colorFormat = COLOR_ARGB_8888;
+						break;
+					case 24:
+						window->colorFormat = COLOR_RGB_888;
+						break;
+					default:
+						window->colorFormat = COLOR_RGB_565;
+						break;
+					}
+				}
+				else
+					window->colorFormat = COLOR_RGB_565;
+
+				Read(window);
+
+				State::Set(State::CurrentWindow, (DWORD)window);
+			}
+			else
+				Main::ShowError("Out of memory.", __FILE__, "Lock", __LINE__);
+		}
+		else
+			Main::ShowError("Out of memory.", __FILE__, "Lock", __LINE__);
+
 		return window;
 	}
 

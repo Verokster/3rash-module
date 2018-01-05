@@ -88,7 +88,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <AssemblyDebug>true</AssemblyDebug>
-      <OutputFile>$(OutDir)opengl3z$(TargetExt)</OutputFile>
+      <OutputFile>D:\Games\NFS5\Drivers\opengl3\opengl3z$(TargetExt)</OutputFile>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -191,7 +191,7 @@
     <ClInclude Include="ThrashForced.hpp" />
     <ClInclude Include="ThrashViewport.hpp" />
     <ClInclude Include="Tri.hpp" />
-    <ClInclude Include="Window.hpp" />
+    <ClInclude Include="Rect.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Thrash.rc" />

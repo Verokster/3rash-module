@@ -96,14 +96,14 @@
     <ClInclude Include="Global.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Window.hpp">
-      <Filter>Header Files\Thrash</Filter>
-    </ClInclude>
     <ClInclude Include="Line.hpp">
       <Filter>Header Files\Thrash\Draw</Filter>
     </ClInclude>
     <ClInclude Include="Point.hpp">
       <Filter>Header Files\Thrash\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="Rect.hpp">
+      <Filter>Header Files\Thrash</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

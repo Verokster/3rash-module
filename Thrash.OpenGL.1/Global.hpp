@@ -36,7 +36,7 @@
 #include "Context.hpp"
 #include "Main.hpp"
 #include "Texture.hpp"
-#include "Window.hpp"
+#include "Rect.hpp"
 
 #define FLOAT_255 255.0f
 #define FLOAT_65536 65536.0f

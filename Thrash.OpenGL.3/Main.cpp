@@ -177,7 +177,7 @@ namespace Main
 		if (!about.size)
 		{
 			LoadForced();
-			
+
 			strcpy(about.signature, "OGL3"); strcpy(about.driverName, "OpenGL 3.0");
 			strcpy(about.deviceName, "D3D Device");
 
@@ -311,7 +311,6 @@ namespace Main
 
 	BOOL THRASHAPI Restore()
 	{
-		Window::Release();
 		Context::Release();
 
 		if (hModule)
@@ -361,29 +360,26 @@ namespace Main
 		vmMaxPanding = maxPanding;
 		vmDepthBufferType = depthBufferType;
 
-		Window::Release();
+		Context::Release();
 		{
-			Context::Release();
+			if (functions.GetHWND)
 			{
-				if (functions.GetHWND)
+				hWnd = functions.GetHWND();
+				DWORD processId = GetWindowThreadProcessId(hWnd, NULL);
+				if (functions.Event && GetCurrentThreadId() != processId)
 				{
-					hWnd = functions.GetHWND();
-					DWORD processId = GetWindowThreadProcessId(hWnd, NULL);
-					if (functions.Event && GetCurrentThreadId() != processId)
-					{
-						hChangeHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
-						SetForegroundWindow(hWnd);
-						PostMessage(hWnd, MSG_CHANGE_RESOLUTION, resolutionIndex, maxPanding);
-						WaitForSingleObject(hChangeHandle, 10000);
-					}
-					else
-						Resolution::Change(NULL, hWnd, MSG_CHANGE_RESOLUTION, resolutionIndex, maxPanding, NULL);
+					hChangeHandle = CreateEvent(NULL, FALSE, FALSE, NULL);
+					SetForegroundWindow(hWnd);
+					PostMessage(hWnd, MSG_CHANGE_RESOLUTION, resolutionIndex, maxPanding);
+					WaitForSingleObject(hChangeHandle, 10000);
 				}
 				else
 					Resolution::Change(NULL, hWnd, MSG_CHANGE_RESOLUTION, resolutionIndex, maxPanding, NULL);
 			}
-			Context::Create();
+			else
+				Resolution::Change(NULL, hWnd, MSG_CHANGE_RESOLUTION, resolutionIndex, maxPanding, NULL);
 		}
+		Context::Create();
 		Window::Window(2);
 
 		GLHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
