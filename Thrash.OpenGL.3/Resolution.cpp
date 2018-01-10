@@ -238,30 +238,6 @@ namespace Resolution
 		return NULL;
 	}
 
-	HHOOK OldMouseHook;
-	LRESULT CALLBACK MouseHook(INT nCode, WPARAM wParam, LPARAM lParam)
-	{
-		if (nCode >= 0)
-		{
-			LPMOUSEHOOKSTRUCT mouseInfo = (LPMOUSEHOOKSTRUCT)lParam;
-
-			POINT point = mouseInfo->pt;
-			ScreenToClient(hWnd, &point);
-
-			RECT rect;
-			GetClientRect(hWnd, &rect);
-
-			if (point.x <= viewport.rectangle.x || point.x >= viewport.rectangle.x + viewport.rectangle.width - 1 ||
-				point.y <= viewport.rectangle.y || point.y >= viewport.rectangle.y + viewport.rectangle.height - 1)
-			{
-				while (ShowCursor(TRUE) <= 0);
-				return NULL;
-			}
-		}
-
-		return CallNextHookEx(OldMouseHook, nCode, wParam, lParam);
-	}
-
 	BOOL WINAPI EnumNamesFunc(HMODULE hModule, LPCTSTR lpType, LPTSTR lpName, LONG lParam)
 	{
 		HICON hIcon = (HICON)LoadIcon(hModule, lpName);
@@ -480,11 +456,8 @@ namespace Resolution
 				GetClientRect(hWnd, &rect);
 				ChangeView(rect.right, rect.bottom);
 
-				if (!OldWindowProc && !OldMouseHook)
-				{
+				if (!OldWindowProc)
 					OldWindowProc = (WNDPROC)SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)WindowProc);
-					OldMouseHook = SetWindowsHookEx(WH_MOUSE, MouseHook, hDllModule, NULL);
-				}
 			}
 			else
 			{
