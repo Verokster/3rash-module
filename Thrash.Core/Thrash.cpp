@@ -33,4 +33,4 @@ HWND hWnd;
 HANDLE hChangeHandle;
 HANDLE hRestoreHandle;
 HINSTANCE hDllModule;
-TCHAR iniFile[256];
+CHAR iniFile[256];

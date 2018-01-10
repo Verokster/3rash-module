@@ -114,9 +114,9 @@ namespace Main
 			return;
 		isForced = TRUE;
 
-		TCHAR path[MAX_PATH];
+		CHAR path[MAX_PATH];
 		GetModuleFileName(hDllModule, path, MAX_PATH);
-		TCHAR* dot = strrchr(path, '.');
+		CHAR* dot = strrchr(path, '.');
 		*dot = NULL;
 		strcpy(iniFile, path);
 		strcat(iniFile, ".ini");
@@ -266,9 +266,12 @@ namespace Main
 			LoadForced();
 
 			CHAR library[MAX_PATH];
-			if (GetEnvironmentVariable("THRASH_OGL_DRIVER", library, sizeof(library)))
-				hModule = LoadLibrary(library);
-			else
+			GetModuleFileName(hDllModule, library, sizeof(library));
+			CHAR* p = strrchr(library, '\\') + 1;
+			*p = NULL;
+			strcat(library, "OPENGL32.DLL");
+			hModule = LoadLibrary(library);
+			if (!hModule)
 			{
 				hModule = LoadLibrary("OPENGL32.DLL");
 				if (!hModule)

@@ -53,7 +53,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2018,1,10,84
+ FILEVERSION 2018,1,10,85
  PRODUCTVERSION 1,4,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
@@ -70,7 +70,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "OpenGL v1.4 3rash Module (API v107)"
-            VALUE "FileVersion", "2018.01.10.84"
+            VALUE "FileVersion", "2018.01.10.85"
             VALUE "LegalCopyright", "2018 Verok"
             VALUE "OriginalFilename", "opengl1z.dll"
             VALUE "ProductVersion", "1.4.0"

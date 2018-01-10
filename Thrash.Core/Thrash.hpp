@@ -79,7 +79,7 @@ extern HWND hWnd;
 extern HANDLE hChangeHandle;
 extern HANDLE hRestoreHandle;
 extern HINSTANCE hDllModule;
-extern TCHAR iniFile[];
+extern CHAR iniFile[];
 
 extern ThrashAbout about;
 extern ThrashFunctionsExt functions;
