@@ -738,7 +738,7 @@ namespace State
 			case FogMode:
 				switch (value)
 				{
-				/*case Disabled:
+				case Disabled:
 					fogEnabled = FALSE;
 					GLDisable(GL_FOG);
 					break;
@@ -760,7 +760,7 @@ namespace State
 
 				case Exp2:
 					GLFogi(GL_FOG_MODE, GL_EXP2);
-					break;*/
+					break;
 
 				default:
 					return NULL;
