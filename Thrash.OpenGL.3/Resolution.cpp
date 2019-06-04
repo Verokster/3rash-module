@@ -25,12 +25,12 @@
 #include "stdafx.h"
 #include "Global.hpp"
 #include "math.h"
+#include "Windowsx.h"
 
 ThrashResolution* selectedResolution;
 ThrashDesktopMode desktopMode;
 
-WORD forcedResolutionList[] =
-{
+WORD forcedResolutionList[] = {
 	640, 480,
 	800, 600,
 	1024, 600,
@@ -62,9 +62,9 @@ WORD forcedResolutionList[] =
 
 BYTE forcedRefreshRateList[] = { 60, 70, 72, 75, 85, 90, 100, 120, 144 };
 
-#define WM_XBUTTONDOWN                  0x020B
-#define WM_XBUTTONUP                    0x020C
-#define WM_XBUTTONDBLCLK                0x020D
+#define WM_XBUTTONDOWN 0x020B
+#define WM_XBUTTONUP 0x020C
+#define WM_XBUTTONDBLCLK 0x020D
 
 namespace Resolution
 {
@@ -86,20 +86,20 @@ namespace Resolution
 			if (viewport.viewFactor.x > viewport.viewFactor.y)
 			{
 				FLOAT fw = (FLOAT)selectedResolution->width * viewport.viewFactor.y;
-				viewport.rectangle.width = Main::Round(fw);
+				viewport.rectangle.width = (DWORD)MathRound(fw);
 
 				viewport.point.x = ((FLOAT)viewport.width - fw) / 2.0f;
-				viewport.rectangle.x = Main::Round(viewport.point.x);
+				viewport.rectangle.x = (DWORD)MathRound(viewport.point.x);
 
 				viewport.clipFactor.x = viewport.viewFactor.y;
 			}
 			else
 			{
 				FLOAT fh = (FLOAT)selectedResolution->height * viewport.viewFactor.x;
-				viewport.rectangle.height = Main::Round(fh);
+				viewport.rectangle.height = (DWORD)MathRound(fh);
 
 				viewport.point.y = ((FLOAT)viewport.height - fh) / 2.0f;
-				viewport.rectangle.y = Main::Round(viewport.point.y);
+				viewport.rectangle.y = (DWORD)MathRound(viewport.point.y);
 
 				viewport.clipFactor.y = viewport.viewFactor.x;
 			}
@@ -141,32 +141,24 @@ namespace Resolution
 		case WM_XBUTTONDBLCLK:
 		case WM_MOUSEMOVE:
 		{
-			INT xPos = LOWORD(lParam);
-			INT yPos = HIWORD(lParam);
+			INT xPos = GET_X_LPARAM(lParam);
+			INT yPos = GET_Y_LPARAM(lParam);
 
-			if (xPos < viewport.rectangle.x)
+			if (xPos < INT(viewport.rectangle.x))
 				xPos = 0;
-			else if (xPos >= viewport.rectangle.x + viewport.rectangle.width)
+			else if (xPos >= INT(viewport.rectangle.x + viewport.rectangle.width))
 				xPos = selectedResolution->width - 1;
 			else
-			{
-				FLOAT number = (FLOAT)(xPos - viewport.rectangle.x) / viewport.clipFactor.x;
-				FLOAT floorVal = floor(number);
-				xPos = INT(floorVal + 0.5f > number ? floorVal : ceil(number));
-			}
+				xPos = (INT)MathRound((FLOAT)(xPos - viewport.rectangle.x) / viewport.clipFactor.x);
 
-			if (yPos < viewport.rectangle.y)
+			if (yPos < INT(viewport.rectangle.y))
 				yPos = 0;
-			else if (yPos >= viewport.rectangle.y + viewport.rectangle.height)
+			else if (yPos >= INT(viewport.rectangle.y + viewport.rectangle.height))
 				yPos = selectedResolution->height - 1;
 			else
-			{
-				FLOAT number = (FLOAT)(yPos - viewport.rectangle.y) / viewport.clipFactor.y;
-				FLOAT floorVal = floor(number);
-				yPos = INT(floorVal + 0.5f > number ? floorVal : ceil(number));
-			}
+				yPos = (INT)MathRound((FLOAT)(yPos - viewport.rectangle.y) / viewport.clipFactor.y);
 
-			lParam = (SHORT)yPos << 16 | (SHORT)xPos;
+			lParam = MAKELONG(xPos, yPos);
 			return CallWindowProc(OldWindowProc, hWnd, message, wParam, lParam);
 		}
 
@@ -177,6 +169,7 @@ namespace Resolution
 
 		return NULL;
 	}
+
 	LRESULT CALLBACK WindowWindowedProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		switch (message)
@@ -201,32 +194,24 @@ namespace Resolution
 		case WM_XBUTTONDBLCLK:
 		case WM_MOUSEMOVE:
 		{
-			INT xPos = LOWORD(lParam);
-			INT yPos = HIWORD(lParam);
+			INT xPos = GET_X_LPARAM(lParam);
+			INT yPos = GET_Y_LPARAM(lParam);
 
-			if (xPos < viewport.rectangle.x)
+			if (xPos < INT(viewport.rectangle.x))
 				xPos = 0;
-			else if (xPos >= viewport.rectangle.x + viewport.rectangle.width)
+			else if (xPos >= INT(viewport.rectangle.x + viewport.rectangle.width))
 				xPos = selectedResolution->width - 1;
 			else
-			{
-				FLOAT number = (FLOAT)(xPos - viewport.rectangle.x) / viewport.clipFactor.x;
-				FLOAT floorVal = floor(number);
-				xPos = INT(floorVal + 0.5f > number ? floorVal : ceil(number));
-			}
+				xPos = (INT)MathRound((FLOAT)(xPos - viewport.rectangle.x) / viewport.clipFactor.x);
 
-			if (yPos < viewport.rectangle.y)
+			if (yPos < INT(viewport.rectangle.y))
 				yPos = 0;
-			else if (yPos >= viewport.rectangle.y + viewport.rectangle.height)
+			else if (yPos >= INT(viewport.rectangle.y + viewport.rectangle.height))
 				yPos = selectedResolution->height - 1;
 			else
-			{
-				FLOAT number = (FLOAT)(yPos - viewport.rectangle.y) / viewport.clipFactor.y;
-				FLOAT floorVal = floor(number);
-				yPos = INT(floorVal + 0.5f > number ? floorVal : ceil(number));
-			}
+				yPos = (INT)MathRound((FLOAT)(yPos - viewport.rectangle.y) / viewport.clipFactor.y);
 
-			lParam = (SHORT)yPos << 16 | (SHORT)xPos;
+			lParam = MAKELONG(xPos, yPos);
 			return CallWindowProc(OldWindowProc, hWnd, message, wParam, lParam);
 		}
 
@@ -270,9 +255,7 @@ namespace Resolution
 				ThrashResolution* oldRes = resolutionsList + 1;
 				for (DWORD j = 1; j < i; ++j, ++oldRes)
 				{
-					if (resList->colorDepth < oldRes->colorDepth ||
-						resList->width < oldRes->width ||
-						resList->height < oldRes->height)
+					if (resList->colorDepth < oldRes->colorDepth || resList->width < oldRes->width || resList->height < oldRes->height)
 					{
 						DWORD temp = oldRes->width;
 						oldRes->width = resList->width;
@@ -308,7 +291,7 @@ namespace Resolution
 
 	BOOL __fastcall LoadList()
 	{
-		memset(resolutionsList, NULL, resolutionsListCount);
+		MemoryZero(resolutionsList, resolutionsListCount);
 
 		if (forced.add640x480x16)
 		{
@@ -324,11 +307,13 @@ namespace Resolution
 
 		LPCSTR displayName = NULL;
 		DISPLAY_DEVICE display;
-		display.cb = sizeof(display);
+		MemoryZero(&display, sizeof(DISPLAY_DEVICE));
+		display.cb = sizeof(DISPLAY_DEVICE);
 		if (EnumDisplayDevices(NULL, displayIndex, &display, NULL))
 			displayName = display.DeviceName;
 
 		DEVMODE devMode;
+		MemoryZero(&devMode, sizeof(DEVMODE));
 		devMode.dmSize = sizeof(DEVMODE);
 
 		EnumDisplaySettings(displayName, ENUM_REGISTRY_SETTINGS, &devMode);
@@ -342,7 +327,10 @@ namespace Resolution
 		{
 			BOOL found = FALSE;
 			DWORD maxAvailable = 0;
-			memset(&devMode, NULL, sizeof(DEVMODE));
+
+			MemoryZero(&devMode, sizeof(DEVMODE));
+			devMode.dmSize = sizeof(DEVMODE);
+
 			for (DWORD i = 0; EnumDisplaySettings(displayName, i, &devMode); ++i)
 			{
 				if (devMode.dmPelsWidth >= 640 && devMode.dmPelsHeight >= 480)
@@ -356,7 +344,8 @@ namespace Resolution
 						maxAvailable = devMode.dmBitsPerPel;
 				}
 
-				memset(&devMode, NULL, sizeof(DEVMODE));
+				MemoryZero(&devMode, sizeof(DEVMODE));
+				devMode.dmSize = sizeof(DEVMODE);
 			}
 
 			if (!found)
@@ -365,7 +354,9 @@ namespace Resolution
 
 		DWORD res = FALSE;
 
-		memset(&devMode, NULL, sizeof(DEVMODE));
+		MemoryZero(&devMode, sizeof(DEVMODE));
+		devMode.dmSize = sizeof(DEVMODE);
+
 		for (DWORD i = 0; EnumDisplaySettings(displayName, i, &devMode); ++i)
 		{
 			if (devMode.dmPelsWidth >= 640 && devMode.dmPelsHeight >= 480 && devMode.dmBitsPerPel == forced.colorDepth)
@@ -376,13 +367,14 @@ namespace Resolution
 					break;
 			}
 
-			memset(&devMode, NULL, sizeof(DEVMODE));
+			MemoryZero(&devMode, sizeof(DEVMODE));
+			devMode.dmSize = sizeof(DEVMODE);
 		}
 
 		return res;
 	}
 
-	BOOL __stdcall Change(DWORD unknown, HWND hWnd, UINT msg, DWORD resolutionIndex, DWORD maxPanding, BOOL *result)
+	BOOL __stdcall Change(DWORD unknown, HWND hWnd, UINT msg, DWORD resolutionIndex, DWORD maxPanding, BOOL* result)
 	{
 		selectedResolution = &resolutionsList[resolutionIndex];
 
@@ -413,7 +405,7 @@ namespace Resolution
 				GetMonitorInfo(hMon, &mi);
 
 				dwStyle = WS_CLIPCHILDREN | WS_VISIBLE | WS_OVERLAPPEDWINDOW;
-				
+
 				rect.left = mi.rcWork.left + (mi.rcWork.right - mi.rcWork.left - viewport.width) >> 1;
 				rect.top = mi.rcWork.top + (mi.rcWork.bottom - mi.rcWork.top - viewport.height) >> 1;
 				rect.right = rect.left + viewport.width;
@@ -421,8 +413,7 @@ namespace Resolution
 
 				AdjustWindowRect(&rect, dwStyle, FALSE);
 
-				if (rect.right - rect.left >= mi.rcWork.right - mi.rcWork.left ||
-					rect.bottom - rect.top >= mi.rcWork.bottom - mi.rcWork.top)
+				if (rect.right - rect.left >= mi.rcWork.right - mi.rcWork.left || rect.bottom - rect.top >= mi.rcWork.bottom - mi.rcWork.top)
 					dwStyle |= WS_MAXIMIZE;
 
 				SetWindowLong(hWnd, GWL_STYLE, dwStyle);
@@ -446,7 +437,8 @@ namespace Resolution
 				if (dwStyle & WS_MAXIMIZE)
 					SetWindowPos(hWnd, HWND_NOTOPMOST, mi.rcWork.left, mi.rcWork.top, mi.rcWork.right - mi.rcWork.left, mi.rcWork.bottom - mi.rcWork.top, NULL);
 
-				WINDOWPLACEMENT plc = { NULL };
+				WINDOWPLACEMENT plc;
+				MemoryZero(&plc, sizeof(WINDOWPLACEMENT));
 				plc.length = sizeof(WINDOWPLACEMENT);
 
 				GetWindowPlacement(hWnd, &plc);
@@ -462,10 +454,12 @@ namespace Resolution
 			else
 			{
 				DISPLAY_DEVICE display;
-				display.cb = sizeof(display);
+				MemoryZero(&display, sizeof(DISPLAY_DEVICE));
+				display.cb = sizeof(DISPLAY_DEVICE);
 
 				DEVMODE devMode;
-				devMode.dmSize = sizeof(devMode);
+				MemoryZero(&devMode, sizeof(DEVMODE));
+				devMode.dmSize = sizeof(DEVMODE);
 
 				EnumDisplayDevices(NULL, displayIndex, &display, NULL);
 				EnumDisplaySettings(display.DeviceName, ENUM_REGISTRY_SETTINGS, &devMode);
@@ -516,10 +510,10 @@ namespace Resolution
 		return TRUE;
 	}
 
-	BOOL __stdcall Restore(DWORD a1, HWND hWnd, UINT msg, DWORD resolutionIndex, DWORD maxPanding, BOOL *result)
+	BOOL __stdcall Restore(DWORD a1, HWND hWnd, UINT msg, DWORD resolutionIndex, DWORD maxPanding, BOOL* result)
 	{
 		if (!forced.windowed && !appWindowed)
-			ChangeDisplaySettingsA(NULL, NULL);
+			ChangeDisplaySettings(NULL, NULL);
 
 		if (result)
 		{

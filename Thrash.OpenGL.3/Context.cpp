@@ -25,170 +25,149 @@
 #include "stdafx.h"
 #include "Global.hpp"
 
+#define WC_DRAW "40bd3b41-ff62-4227-b8d5-dae24eb338b7"
+
 namespace Context
 {
-	LRESULT CALLBACK DummyWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+	VOID __fastcall ResetPixelFormatDescription(PIXELFORMATDESCRIPTOR* pfd)
 	{
-		return DefWindowProc(hWnd, uMsg, wParam, lParam);
+		MemoryZero(pfd, sizeof(PIXELFORMATDESCRIPTOR));
+		pfd->nSize = sizeof(PIXELFORMATDESCRIPTOR);
+		pfd->nVersion = 1;
 	}
 
-	BOOL __inline PreparePixelFormat(PIXELFORMATDESCRIPTOR* pfd, DWORD* pixelFormat)
+	VOID __fastcall PreparePixelFormatDescription(PIXELFORMATDESCRIPTOR* pfd)
 	{
-		HINSTANCE hIntance = (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE);
+		ResetPixelFormatDescription(pfd);
 
-		CHAR* dummyclassname = "40bd3b41-ff62-4227-b8d5-dae24eb338b7";
-		WNDCLASS wc = { NULL };
-		wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC | CS_DBLCLKS;
-		wc.lpfnWndProc = DummyWndProc;
-		wc.cbClsExtra = 0;
-		wc.cbWndExtra = 0;
-		wc.hInstance = hIntance;
-		wc.hIcon = NULL;
-		wc.hCursor = NULL;
-		wc.hbrBackground = NULL;
-		wc.lpszMenuName = NULL;
-		wc.lpszClassName = dummyclassname;
+		pfd->dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER | PFD_DEPTH_DONTCARE | PFD_STEREO_DONTCARE | PFD_SWAP_EXCHANGE;
+		pfd->cColorBits = LOBYTE(forced.colorDepth);
+		pfd->cDepthBits = LOBYTE(forced.zdepth);
+		pfd->cStencilBits = 8;
+		pfd->iLayerType = PFD_MAIN_PLANE;
+	}
+
+	BOOL __fastcall PreparePixelFormat(PIXELFORMATDESCRIPTOR* pfd, DWORD* pixelFormat)
+	{
+		BOOL res = FALSE;
+
+		WNDCLASS wc;
+		MemoryZero(&wc, sizeof(WNDCLASS));
+		wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+		wc.lpfnWndProc = DefWindowProc;
+		wc.hInstance = hDllModule;
+		wc.lpszClassName = WC_DRAW;
 
 		if (RegisterClass(&wc))
 		{
-			HWND dummyhWnd = CreateWindowEx(
+
+			HWND hWndDraw = CreateWindowEx(
 				WS_EX_APPWINDOW,
-				dummyclassname,
+				WC_DRAW,
 				"DUMMY",
-				WS_POPUP |
-				WS_CLIPSIBLINGS |
-				WS_CLIPCHILDREN,
-				0, 0, // Window Position
-				1, 1, // Window size
-				NULL, // No Parent Window
-				NULL, // No Menu
-				hIntance,
-				NULL
-			);
+				WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+				0, 0,
+				1, 1,
+				NULL,
+				NULL,
+				NULL,
+				NULL);
 
-			if (dummyhWnd != NULL)
+			if (hWndDraw)
 			{
-				HDC dummyDc = GetDC(dummyhWnd);
-				if (dummyDc != NULL)
+				HDC hDcDraw = GetDC(hWndDraw);
+				if (hDcDraw)
 				{
-					*pixelFormat = ChoosePixelFormat(dummyDc, pfd);
-					if (*pixelFormat != 0)
+					PreparePixelFormatDescription(pfd);
+					*pixelFormat = ChoosePixelFormat(hDcDraw, pfd);
+					if (*pixelFormat)
 					{
-						if (SetPixelFormat(dummyDc, *pixelFormat, pfd))
+						if (SetPixelFormat(hDcDraw, *pixelFormat, pfd))
 						{
-							HGLRC hRc = WGLCreateContext(dummyDc);
-							if (hRc != NULL)
+							HGLRC hRcDraw = WGLCreateContext(hDcDraw);
+							if (hRcDraw)
 							{
-								if (WGLMakeCurrent(dummyDc, hRc))
+								if (WGLMakeCurrent(hDcDraw, hRcDraw))
 								{
-									UINT numGlFormats;
-									PFNWGLCHOOSEPIXELFORMATARBPROC WGLChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)WGLGetProcAddress("wglChoosePixelFormatARB");
-
-									if (WGLChoosePixelFormatARB != NULL)
+									WGLChoosePixelFormat = (PFNWGLCHOOSEPIXELFORMATARBPROC)WGLGetProcAddress("wglChoosePixelFormatARB");
+									if (WGLChoosePixelFormat)
 									{
-										DWORD attribList[] = {
-											WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
-											WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
-											WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
+										INT piFormats[128];
+										UINT nNumFormats = 0;
+
+										INT glAttributes[] = {
+											WGL_DRAW_TO_WINDOW_ARB, (pfd->dwFlags & PFD_DRAW_TO_WINDOW) ? GL_TRUE : GL_FALSE,
+											WGL_SUPPORT_OPENGL_ARB, (pfd->dwFlags & PFD_SUPPORT_OPENGL) ? GL_TRUE : GL_FALSE,
+											WGL_DOUBLE_BUFFER_ARB, (pfd->dwFlags & PFD_DOUBLEBUFFER) ? GL_TRUE : GL_FALSE,
 											WGL_PIXEL_TYPE_ARB, WGL_TYPE_RGBA_ARB,
-											WGL_COLOR_BITS_ARB, forced.colorDepth,
-											WGL_DEPTH_BITS_ARB, forced.zdepth,
+											WGL_COLOR_BITS_ARB, pfd->cColorBits,
+											WGL_DEPTH_BITS_ARB, pfd->cDepthBits,
+											WGL_STENCIL_BITS_ARB, pfd->cStencilBits,
 											WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
+											WGL_SWAP_METHOD_ARB, (pfd->dwFlags & PFD_SWAP_EXCHANGE) ? WGL_SWAP_EXCHANGE_ARB : WGL_SWAP_COPY_ARB,
 											0
 										};
 
-										int glPixelFormats[128];
-										if (WGLChoosePixelFormatARB(dummyDc, (const int*)attribList, NULL, sizeof(glPixelFormats) / sizeof(int), glPixelFormats, &numGlFormats))
-											if (numGlFormats >= 1)
-												*pixelFormat = glPixelFormats[0];
+										if (WGLChoosePixelFormat(hDcDraw, glAttributes, NULL, sizeof(piFormats) / sizeof(INT), piFormats, &nNumFormats) && nNumFormats)
+											res = piFormats[0];
 									}
 
-									if (hRc != NULL)
-									{
-										WGLMakeCurrent(NULL, NULL);
-										WGLDeleteContext(hRc);
-										hRc = NULL;
-									}
-
-									if (dummyDc != NULL)
-									{
-										ReleaseDC(dummyhWnd, dummyDc);
-										dummyDc = NULL;
-									}
-
-									DestroyWindow(dummyhWnd);
-									UnregisterClass(dummyclassname, hIntance);
-
-									return TRUE;
+									res = TRUE;
+									WGLMakeCurrent(hDcDraw, NULL);
 								}
+
+								WGLDeleteContext(hRcDraw);
 							}
 						}
 					}
+
+					ReleaseDC(hWndDraw, hDcDraw);
 				}
+
+				DestroyWindow(hWndDraw);
 			}
+
+			UnregisterClass(WC_DRAW, hDllModule);
 		}
 
-		return FALSE;
+		return res;
 	}
 
 	VOID __fastcall Create()
 	{
-		if (hGlRc)
+		if (hRc)
 			return;
 
 		if (!hDc)
 			hDc = GetDC(hWnd);
 
-		PIXELFORMATDESCRIPTOR pfd =
+		if (!::GetPixelFormat(hDc))
 		{
-			sizeof(PIXELFORMATDESCRIPTOR), // Size Of This Pixel Format Descriptor
-			1, // Version Number
-			PFD_DRAW_TO_WINDOW | // Format Must Support Window
-			PFD_SUPPORT_OPENGL | // Format Must Support OpenGL
-			PFD_DOUBLEBUFFER, // Must Support Double Buffering
-			PFD_TYPE_RGBA, // Request An RGBA Format
-			LOBYTE(forced.colorDepth), // Select Our Color Depth
-			0, 0, 0, 0, 0, 0, // Color Bits Ignored
-			0, // No Alpha Buffer
-			0, // Shift Bit Ignored
-			0, // No Accumulation Buffer
-			0, 0, 0, 0, // Accumulation Bits Ignored
-			LOBYTE(forced.zdepth), // Z-Buffer (Depth Buffer) 
-			forced.zdepth == 24 ? 8 : 0, // Stencil Buffer
-			0, // No Auxiliary Buffer
-			PFD_MAIN_PLANE, // Main Drawing Layer
-			0, // Reserved
-			0, 0, 0 // Layer Masks Ignored
-		};
+			PIXELFORMATDESCRIPTOR pfd;
+			DWORD pfIndex;
+			if (!PreparePixelFormat(&pfd, &pfIndex))
+			{
+				pfIndex = ChoosePixelFormat(hDc, &pfd);
+				if (pfIndex == NULL)
+					Main::ShowError("ChoosePixelFormat failed", __FILE__, "Create", __LINE__);
+				else if (pfd.dwFlags & PFD_NEED_PALETTE)
+					Main::ShowError("Needs palette", __FILE__, "Create", __LINE__);
+			}
 
-		DWORD pfIndex;
-		if (!PreparePixelFormat(&pfd, &pfIndex))
-		{
-			pfIndex = ChoosePixelFormat(hDc, &pfd);
-			if (pfIndex == NULL)
-				Main::ShowError("ChoosePixelFormat failed", __FILE__, "Create", __LINE__);
-			else if (pfd.dwFlags & PFD_NEED_PALETTE)
-				Main::ShowError("Needs palette", __FILE__, "Create", __LINE__);
+			if (!SetPixelFormat(hDc, pfIndex, &pfd))
+				Main::ShowError("SetPixelFormat failed", __FILE__, "Create", GetLastError());
+
+			ResetPixelFormatDescription(&pfd);
+			if (!DescribePixelFormat(hDc, pfIndex, sizeof(PIXELFORMATDESCRIPTOR), &pfd))
+				Main::ShowError("DescribePixelFormat failed", __FILE__, "Create", __LINE__);
+
+			if ((pfd.iPixelType != PFD_TYPE_RGBA) || (pfd.cRedBits < 5) || (pfd.cGreenBits < 5) || (pfd.cBlueBits < 5))
+				Main::ShowError("Bad pixel type", __FILE__, "Create", __LINE__);
 		}
 
-		if (!SetPixelFormat(hDc, pfIndex, &pfd))
-			Main::ShowError("SetPixelFormat failed", __FILE__, "Create", __LINE__);
-
-		memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
-		pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-		pfd.nVersion = 1;
-		if (DescribePixelFormat(hDc, pfIndex, sizeof(PIXELFORMATDESCRIPTOR), &pfd) == NULL)
-			Main::ShowError("DescribePixelFormat failed", __FILE__, "Create", __LINE__);
-
-		if ((pfd.iPixelType != PFD_TYPE_RGBA) ||
-			(pfd.cRedBits < 5) ||
-			(pfd.cGreenBits < 5) ||
-			(pfd.cBlueBits < 5))
-			Main::ShowError("Bad pixel type", __FILE__, "Create", __LINE__);
-
-		hGlRc = WGLCreateContext(hDc);
-		WGLMakeCurrent(hDc, hGlRc);
-		CreateContextAttribs(hDc, &hGlRc);
+		hRc = WGLCreateContext(hDc);
+		WGLMakeCurrent(hDc, hRc);
+		CreateContextAttribs(hDc, &hRc);
 
 		if (forced.vSync)
 		{
@@ -204,25 +183,26 @@ namespace Context
 
 	VOID __fastcall Release()
 	{
-		if (!hGlRc)
-			return;
-
-		Buffer::Draw();
-		GLFinish();
-		Texture::Reset();
-		Shaders::Release();
-		Buffer::Release();
-
-		if (hDc)
-			WGLMakeCurrent(hDc, NULL);
-
-		WGLDeleteContext(hGlRc);
-		hGlRc = NULL;
+		if (hRc)
+		{
+			Buffer::Draw();
+			GLFinish();
+			Texture::Reset();
+			Shaders::Release();
+			Buffer::Release();
+		}
 
 		if (hDc)
 		{
+			WGLMakeCurrent(hDc, NULL);
 			ReleaseDC(hWnd, hDc);
 			hDc = NULL;
+		}
+
+		if (hRc)
+		{
+			WGLDeleteContext(hRc);
+			hRc = NULL;
 		}
 	}
 }

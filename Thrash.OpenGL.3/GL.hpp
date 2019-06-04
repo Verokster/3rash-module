@@ -50,11 +50,17 @@ typedef BOOL(WINAPI * PFNWGLCHOOSEPIXELFORMATARBPROC) (HDC hdc, const int* piAtt
 
 #define WGL_DRAW_TO_WINDOW_ARB 0x2001
 #define WGL_SUPPORT_OPENGL_ARB 0x2010
+#define WGL_SUPPORT_GDI_ARB 0x200F
+#define WGL_SWAP_METHOD_ARB 0x2007
+#define WGL_SWAP_EXCHANGE_ARB 0x2028
+#define WGL_SWAP_COPY_ARB 0x2029
+#define WGL_STENCIL_BITS_ARB 0x2023
 #define WGL_DOUBLE_BUFFER_ARB 0x2011
 #define WGL_PIXEL_TYPE_ARB 0x2013
 #define WGL_TYPE_RGBA_ARB 0x202B
 #define WGL_COLOR_BITS_ARB 0x2014
 #define WGL_DEPTH_BITS_ARB 0x2022
+#define WGL_ACCUM_BITS_ARB 0x201D
 #define WGL_ACCELERATION_ARB 0x2003
 #define WGL_FULL_ACCELERATION_ARB 0x2027
 
@@ -108,12 +114,17 @@ typedef BOOL(WINAPI * PFNWGLCHOOSEPIXELFORMATARBPROC) (HDC hdc, const int* piAtt
 
 #define GL_MULTISAMPLE 0x809D
 
+#define ERROR_INVALID_VERSION_ARB 0x2095
+#define ERROR_INVALID_PROFILE_ARB 0x2096
+
 typedef PROC(__stdcall *WGLGETPROCADDRESS)(LPCSTR name);
 typedef BOOL(__stdcall *WGLMAKECURRENT)(HDC devContext, HGLRC glContext);
 typedef HGLRC(__stdcall *WGLCREATECONTEXT)(HDC devContext);
 typedef BOOL(__stdcall *WGLDELETECONTEXT)(HGLRC glContext);
 typedef BOOL(__stdcall *WGLSWAPBUFFERS)(HDC devContext);
-typedef HGLRC(__stdcall *WGLCREATECONTEXTATTRIBSARB)(HDC hDC, HGLRC hshareContext, const DWORD *attribList);
+
+typedef HGLRC(__stdcall *WGLCREATECONTEXTATTRIBS)(HDC hDC, HGLRC hshareContext, const DWORD *attribList);
+typedef BOOL(__stdcall* WGLCHOOSEPIXELFORMAT)(HDC hDC, const INT* piAttribIList, const FLOAT* pfAttribFList, UINT nMaxFormats, INT* piFormats, UINT* nNumFormats);
 typedef BOOL(__stdcall *WGLSWAPINTERVALEXT)(DWORD);
 
 typedef const GLubyte* (__stdcall *GLGETSTRING)(GLenum name);
@@ -195,7 +206,9 @@ extern WGLMAKECURRENT WGLMakeCurrent;
 extern WGLCREATECONTEXT WGLCreateContext;
 extern WGLDELETECONTEXT WGLDeleteContext;
 extern WGLSWAPBUFFERS WGLSwapBuffers;
-extern WGLCREATECONTEXTATTRIBSARB WGLCreateContextAttribs;
+
+extern WGLCREATECONTEXTATTRIBS WGLCreateContextAttribs;
+extern WGLCHOOSEPIXELFORMAT WGLChoosePixelFormat;
 extern WGLSWAPINTERVALEXT WGLSwapInterval;
 
 extern GLGETSTRING GLGetString;

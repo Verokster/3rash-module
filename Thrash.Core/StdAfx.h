@@ -22,27 +22,29 @@
 	SOFTWARE.
 */
 
-// stdafx.h : include file for standard system include files,
-//  or project specific include files that are used frequently, but
-//      are changed infrequently
-//
-
-#if !defined(AFX_STDAFX_H__F93C592A_DA90_4160_934B_3D8699462933__INCLUDED_)
-#define AFX_STDAFX_H__F93C592A_DA90_4160_934B_3D8699462933__INCLUDED_
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
-
 // Insert your headers here
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 
-#include <windows.h>
+#include "windows.h"
+#include "math.h"
+#include "wtypesbase.h"
 
-// TODO: reference additional headers your program requires here
+extern "C" _CRTIMP int __cdecl sprintf(char*, const char*, ...);
 
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
+#define MemoryAlloc(size) malloc(size)
+#define MemoryFree(block) free(block)
+#define MemorySet(dst, val, size) memset(dst, val, size)
+#define MemoryZero(dst, size) memset(dst, 0, size)
+#define MemoryCopy(dst, src, size) memcpy(dst, src, size)
+#define MathCeil(x) ceil(x)
+#define MathFloor(x) floor(x)
+#define MathPow(x, y) pow(x, y)
+#define StrPrint(buf, fmt, ...) sprintf(buf, fmt, __VA_ARGS__)
+#define StrStr(str, substr) strstr(str, substr)
+#define StrCopy(dst, src) strcpy(dst, src)
+#define StrCat(dst, src) strcat(dst, src)
+#define StrLastChar(str, ch) strrchr(str, ch)
+#define StrToInt(str) atoi(str)
+#define Exit(code) exit(code)
 
-#endif // !defined(AFX_STDAFX_H__F93C592A_DA90_4160_934B_3D8699462933__INCLUDED_)
+DOUBLE __fastcall MathRound(DOUBLE);

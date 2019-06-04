@@ -559,9 +559,9 @@ namespace State
 #pragma region Functions
 			case Functions:
 				if (value)
-					memcpy(&functions, (DWORD*)value, sizeof(ThrashFunctions));
+					MemoryCopy(&functions, (DWORD*)value, sizeof(ThrashFunctions));
 				else
-					memset(&functions, NULL, sizeof(ThrashFunctions));
+					MemoryZero(&functions, sizeof(ThrashFunctions));
 
 				break;
 
@@ -788,9 +788,9 @@ namespace State
 				clearColor = *(ThrashColor*)&value;
 
 				GLClearColor(
-					pow((FLOAT)clearColor.red / FLOAT_255, gamma),
-					pow((FLOAT)clearColor.green / FLOAT_255, gamma),
-					pow((FLOAT)clearColor.blue / FLOAT_255, gamma),
+					MathPow((FLOAT)clearColor.red / FLOAT_255, gamma),
+					MathPow((FLOAT)clearColor.green / FLOAT_255, gamma),
+					MathPow((FLOAT)clearColor.blue / FLOAT_255, gamma),
 					(FLOAT)clearColor.alpha / FLOAT_255);
 			}
 
@@ -878,9 +878,9 @@ namespace State
 				gamma = 1.0f / gamma;
 
 				GLClearColor(
-					pow((FLOAT)clearColor.red / FLOAT_255, gamma),
-					pow((FLOAT)clearColor.green / FLOAT_255, gamma),
-					pow((FLOAT)clearColor.blue / FLOAT_255, gamma),
+					MathPow((FLOAT)clearColor.red / FLOAT_255, gamma),
+					MathPow((FLOAT)clearColor.green / FLOAT_255, gamma),
+					MathPow((FLOAT)clearColor.blue / FLOAT_255, gamma),
 					(FLOAT)clearColor.alpha / FLOAT_255);
 			}
 			break;

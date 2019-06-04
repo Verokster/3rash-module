@@ -30,7 +30,9 @@ WGLMAKECURRENT WGLMakeCurrent;
 WGLCREATECONTEXT WGLCreateContext;
 WGLDELETECONTEXT WGLDeleteContext;
 WGLSWAPBUFFERS WGLSwapBuffers;
-WGLCREATECONTEXTATTRIBSARB WGLCreateContextAttribs;
+
+WGLCREATECONTEXTATTRIBS WGLCreateContextAttribs;
+WGLCHOOSEPIXELFORMAT WGLChoosePixelFormat;
 WGLSWAPINTERVALEXT WGLSwapInterval;
 
 GLGETSTRING GLGetString;
@@ -119,8 +121,8 @@ VOID __fastcall LoadGLFunction(CHAR* buffer, const CHAR* name, PROC* func, const
 		loadName = name;
 	else
 	{
-		strcpy(buffer, name);
-		strcat(buffer, sufix);
+		StrCopy(buffer, name);
+		StrCat(buffer, sufix);
 		loadName = buffer;
 	}
 
@@ -164,9 +166,9 @@ VOID __fastcall CreateContextAttribs(HDC devContext, HGLRC* glContext)
 		else
 		{
 			DWORD errorCode = GetLastError();
-			if (errorCode == 0x2095)
+			if (errorCode == ERROR_INVALID_VERSION_ARB)
 				Main::ShowError("Invalid version", __FILE__, "CreateContextAttribs", __LINE__);
-			else if (errorCode == 0x2096)
+			else if (errorCode == ERROR_INVALID_PROFILE_ARB)
 				Main::ShowError("Invalid profile", __FILE__, "CreateContextAttribs", __LINE__);
 		}
 	}
@@ -245,8 +247,6 @@ VOID __fastcall CreateContextAttribs(HDC devContext, HGLRC* glContext)
 	LoadGLFunction(buffer, "glUniform4f", (PROC*)&GLUniform4f);
 
 	LoadGLFunction(buffer, "glUniformMatrix4fv", (PROC*)&GLUniformMatrix4fv);
-
-	
 
 	if (GLGetString)
 	{

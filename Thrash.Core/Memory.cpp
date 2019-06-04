@@ -31,15 +31,15 @@ namespace Memory
 	{
 		if (functions.Malloc)
 			return functions.Malloc(size);
-		else if (malloc)
-			return malloc(size);
+		else
+			return MemoryAlloc(size);
 	}
 
 	VOID __fastcall Free(VOID* memory)
 	{
 		if (functions.Free)
 			functions.Free(memory);
-		else if (free)
-			free(memory);
+		else
+			MemoryFree(memory);
 	}
 }

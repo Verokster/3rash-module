@@ -801,9 +801,9 @@ namespace State
 #pragma region Functions
 			case Functions:
 				if (value)
-					memcpy(&functions, (DWORD*)value, sizeof(ThrashFunctions));
+					MemoryCopy(&functions, (DWORD*)value, sizeof(ThrashFunctions));
 				else
-					memset(&functions, NULL, sizeof(ThrashFunctions));
+					MemoryZero(&functions, sizeof(ThrashFunctions));
 
 				break;
 

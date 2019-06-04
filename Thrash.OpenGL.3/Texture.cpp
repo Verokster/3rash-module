@@ -148,13 +148,13 @@ namespace Texture
 		else if (!about.colorFormats[colorFormat])
 		{
 			CHAR fname[15];
-			sprintf(fname, "Bad color format: %d", colorFormat);
+			StrPrint(fname, "Bad color format: %d", colorFormat);
 			Main::ShowError(fname, __FILE__, "Allocate", __LINE__);
 		}
 		else if ((colorFormat == COLOR_INDEX_4 || colorFormat == COLOR_INDEX_8) && !about.indexFormats[indexFormat])
 		{
 			CHAR fname[15];
-			sprintf(fname, "Bad color index format: %d", indexFormat);
+			StrPrint(fname, "Bad color index format: %d", indexFormat);
 			Main::ShowError(fname, __FILE__, "Allocate", __LINE__);
 		}
 
@@ -406,7 +406,7 @@ namespace Texture
 		if (pallete)
 		{
 			palleteInit = TRUE;
-			memcpy(colorPallete, pallete, sizeof(colorPallete));
+			MemoryCopy(colorPallete, pallete, sizeof(colorPallete));
 		}
 
 		if (memory)
@@ -422,7 +422,7 @@ namespace Texture
 					if (forced.reconvert)
 					{
 						if (memory != texture->indexes)
-							memcpy(texture->indexes, memory, texture->pixels >> 1);
+							MemoryCopy(texture->indexes, memory, texture->pixels >> 1);
 
 						if (palleteInit)
 							memory = Convert_BGR_4_To_RGBA_32(texture);
@@ -432,7 +432,7 @@ namespace Texture
 					else
 					{
 						if (memory != texture->indexes)
-							memcpy(texture->indexes, memory, texture->pixels >> 1);
+							MemoryCopy(texture->indexes, memory, texture->pixels >> 1);
 
 						if (palleteInit)
 							memory = Convert_BGR_4_To_RGB_24(texture);
@@ -443,7 +443,7 @@ namespace Texture
 
 				case INDEX_ARGB:
 					if (memory != texture->indexes)
-						memcpy(texture->indexes, memory, texture->pixels >> 1);
+						MemoryCopy(texture->indexes, memory, texture->pixels >> 1);
 
 					if (palleteInit)
 						memory = Convert_BGRA_4_To_RGBA_32(texture);
@@ -464,7 +464,7 @@ namespace Texture
 					if (forced.reconvert)
 					{
 						if (memory != texture->indexes)
-							memcpy(texture->indexes, memory, texture->pixels);
+							MemoryCopy(texture->indexes, memory, texture->pixels);
 
 						if (palleteInit)
 							memory = Convert_BGR_8_To_RGBA_32(texture);
@@ -474,7 +474,7 @@ namespace Texture
 					else
 					{
 						if (memory != texture->indexes)
-							memcpy(texture->indexes, memory, texture->pixels);
+							MemoryCopy(texture->indexes, memory, texture->pixels);
 
 						if (palleteInit)
 							memory = Convert_BGR_8_To_RGB_24(texture);
@@ -485,7 +485,7 @@ namespace Texture
 
 				case INDEX_ARGB:
 					if (memory != texture->indexes)
-						memcpy(texture->indexes, memory, texture->pixels);
+						MemoryCopy(texture->indexes, memory, texture->pixels);
 
 					if (palleteInit)
 						memory = Convert_RGBA_8_To_RGBA_32(texture);

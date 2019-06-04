@@ -88,7 +88,7 @@ namespace Buffer
 
 			VOID* data = GLMapBufferRange(GL_ARRAY_BUFFER, buffer.offset, streamDataSize, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
 			if (data)
-				memcpy(data, buffer.data, streamDataSize);
+				MemoryCopy(data, buffer.data, streamDataSize);
 			GLUnmapBuffer(GL_ARRAY_BUFFER);
 
 			GLDrawArrays(buffer.type, buffer.offset / sizeof(ThrashVertexV1), buffer.size);

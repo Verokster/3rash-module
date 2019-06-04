@@ -23,3 +23,9 @@
 */
 
 #include "StdAfx.h"
+
+DOUBLE __fastcall MathRound(DOUBLE number)
+{
+	DOUBLE floorVal = MathFloor(number);
+	return floorVal + 0.5f > number ? floorVal : MathCeil(number);
+}

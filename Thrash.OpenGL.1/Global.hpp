@@ -42,7 +42,7 @@
 #define FLOAT_65536 65536.0f
 #define DEPTH_CORRECTION 2.0f / FLOAT_65536
 
-extern HGLRC hGlRc;
+extern HGLRC hRc;
 
 extern DWORD appWindowed;
 extern DWORD displayIndex;

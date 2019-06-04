@@ -32,7 +32,7 @@ namespace Main
 		if (functions.ErrorMessageBox)
 		{
 			CHAR dest[400];
-			sprintf(dest, "%s:\n%s\n\n\nFILE %s\nLINE %d", function, message, file, line);
+			StrPrint(dest, "%s:\n%s\n\n\nFILE %s\nLINE %d", function, message, file, line);
 			functions.ErrorMessageBox(0, dest);
 		}
 	}
@@ -43,30 +43,30 @@ namespace Main
 		CHAR destVal[12];
 		CHAR* val = NULL;
 
-		sprintf(dest, "%s_%s", prefix, name);
+		StrPrint(dest, "%s_%s", prefix, name);
 		if (GetPrivateProfileString("THRASH", dest, NULL, destVal, sizeof(destVal), iniFile))
 		{
 			SetEnvironmentVariable(dest, destVal);
-			return atoi(destVal);
+			return (DWORD)StrToInt(destVal);
 		}
 		else
 		{
-			sprintf(dest, "THRASH_%s", name);
+			StrPrint(dest, "THRASH_%s", name);
 			if (GetPrivateProfileString("THRASH", dest, NULL, destVal, sizeof(destVal), iniFile))
 			{
 				SetEnvironmentVariable(dest, destVal);
-				return atoi(destVal);
+				return (DWORD)StrToInt(destVal);
 			}
 			else
 			{
-				sprintf(dest, "%s_%s", prefix, name);
+				StrPrint(dest, "%s_%s", prefix, name);
 				if (GetEnvironmentVariable(dest, destVal, sizeof(destVal)))
-					return atoi(destVal);
+					return (DWORD)StrToInt(destVal);
 				else
 				{
-					sprintf(dest, "THRASH_%s", name);
+					StrPrint(dest, "THRASH_%s", name);
 					if (GetEnvironmentVariable(dest, destVal, sizeof(destVal)))
-						return atoi(destVal);
+						return (DWORD)StrToInt(destVal);
 				}
 			}
 		}

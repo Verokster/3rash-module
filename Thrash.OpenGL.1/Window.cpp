@@ -52,8 +52,8 @@ namespace Window
 
 		if (viewport.width != selectedResolution->width || viewport.height != selectedResolution->height)
 		{
-			DWORD width = Main::Round((FLOAT)window->width * viewport.clipFactor.x);
-			DWORD height = Main::Round((FLOAT)window->height * viewport.clipFactor.y);
+			DWORD width = (DWORD)MathRound((FLOAT)window->width * viewport.clipFactor.x);
+			DWORD height = (DWORD)MathRound((FLOAT)window->height * viewport.clipFactor.y);
 
 			DWORD count = width * height;
 			VOID* memory = Memory::Allocate(count * bytesPerPixel);
@@ -65,10 +65,10 @@ namespace Window
 				DWORD* write = (DWORD*)window->data;
 				for (DWORD y = 0; y < window->height; ++y)
 				{
-					DWORD step = Main::Round((FLOAT)y * viewport.clipFactor.y) * width;
+					DWORD step = (DWORD)MathRound((FLOAT)y * viewport.clipFactor.y) * width;
 					for (DWORD x = 0; x < window->width; ++x)
 					{
-						DWORD pos = step + Main::Round((FLOAT)x * viewport.clipFactor.x);
+						DWORD pos = step + (DWORD)MathRound((FLOAT)x * viewport.clipFactor.x);
 						*write++ = read[pos];
 					}
 				}
@@ -79,10 +79,10 @@ namespace Window
 				WORD* write = (WORD*)window->data;
 				for (DWORD y = 0; y < window->height; ++y)
 				{
-					DWORD step = Main::Round((FLOAT)y * viewport.clipFactor.y) * width;
+					DWORD step = (DWORD)MathRound((FLOAT)y * viewport.clipFactor.y) * width;
 					for (DWORD x = 0; x < window->width; ++x)
 					{
-						DWORD pos = step + Main::Round((FLOAT)x * viewport.clipFactor.x);
+						DWORD pos = step + (DWORD)MathRound((FLOAT)x * viewport.clipFactor.x);
 						*write++ = read[pos];
 					}
 				}
@@ -178,16 +178,16 @@ namespace Window
 						{
 							maxX = about.textureWidthMax;
 							if (maxY != about.textureHeightMax)
-								memset(memory, 0, memorySize);
+								MemoryZero(memory, memorySize);
 						}
 						else if (maxX != about.textureWidthMax)
-							memset(memory, 0, memorySize);
+							MemoryZero(memory, memorySize);
 
 						BYTE* read = (BYTE*)window->data + y * window->bytesPerRow + x * bytesPerPixel;
 						BYTE* write = (BYTE*)memory;
 
 						for (DWORD i = 0; i < maxY; ++i, read += window->bytesPerRow, write += step)
-							memcpy(write, read, maxX * bytesPerPixel);
+							MemoryCopy(write, read, maxX * bytesPerPixel);
 
 						Texture::Update(texture, memory, NULL);
 
@@ -262,7 +262,7 @@ namespace Window
 			GLViewport(viewport.rectangle.x, viewport.rectangle.y, viewport.rectangle.width, viewport.rectangle.height);
 
 			RECT rect = clipRect;
-			memset(&clipRect, 0, sizeof(RECT));
+			MemoryZero(&clipRect, sizeof(RECT));
 			Main::Clip(rect);
 		}
 

@@ -30,7 +30,9 @@ WGLMAKECURRENT WGLMakeCurrent;
 WGLCREATECONTEXT WGLCreateContext;
 WGLDELETECONTEXT WGLDeleteContext;
 WGLSWAPBUFFERS WGLSwapBuffers;
-WGLCREATECONTEXTATTRIBSARB WGLCreateContextAttribs;
+
+WGLCREATECONTEXTATTRIBS WGLCreateContextAttribs;
+WGLCHOOSEPIXELFORMAT WGLChoosePixelFormat;
 WGLSWAPINTERVALEXT WGLSwapInterval;
 
 GLGETSTRING GLGetString;
@@ -104,8 +106,8 @@ VOID __fastcall LoadGLFunction(CHAR* buffer, const CHAR* name, PROC* func, const
 		loadName = name;
 	else
 	{
-		strcpy(buffer, name);
-		strcat(buffer, sufix);
+		StrCopy(buffer, name);
+		StrCat(buffer, sufix);
 		loadName = buffer;
 	}
 
@@ -142,16 +144,17 @@ VOID CreateContextAttribs(HDC devContext, HGLRC* glContext)
 		HGLRC glHandler = WGLCreateContextAttribs(devContext, NULL, wglAttributes);
 		if (glHandler)
 		{
-			WGLMakeCurrent(devContext, glHandler);
+			WGLMakeCurrent(devContext, NULL);
 			WGLDeleteContext(*glContext);
+			WGLMakeCurrent(devContext, glHandler);
 			*glContext = glHandler;
 		}
 		else
 		{
 			DWORD errorCode = GetLastError();
-			if (errorCode == 0x2095)
+			if (errorCode == ERROR_INVALID_VERSION_ARB)
 				Main::ShowError("Invalid ARB version", __FILE__, "CreateContextAttribs", __LINE__);
-			else if (errorCode == 0x2096)
+			else if (errorCode == ERROR_INVALID_PROFILE_ARB)
 				Main::ShowError("Invalid ARB profile", __FILE__, "CreateContextAttribs", __LINE__);
 		}
 	}
@@ -233,26 +236,26 @@ VOID CreateContextAttribs(HDC devContext, HGLRC* glContext)
 		const GLubyte* extensions = GLGetString(GL_EXTENSIONS);
 
 		if (glVersion < GL_VER_1_2)
-			glCapsBGR = strstr((const CHAR*)extensions, "GL_EXT_bgra") != NULL;
+			glCapsBGR = StrStr((const CHAR*)extensions, "GL_EXT_bgra") != NULL;
 		else
 			glCapsBGR = TRUE;
 
 		if (glVersion < GL_VER_1_2)
-			glCapsBGRA = strstr((const CHAR*)extensions, "GL_EXT_bgra") != NULL || strstr((const CHAR*)extensions, "GL_EXT_texture_format_BGRA8888") != NULL || strstr((const CHAR*)extensions, "GL_APPLE_texture_format_BGRA8888") != NULL;
+			glCapsBGRA = StrStr((const CHAR*)extensions, "GL_EXT_bgra") != NULL || StrStr((const CHAR*)extensions, "GL_EXT_texture_format_BGRA8888") != NULL || StrStr((const CHAR*)extensions, "GL_APPLE_texture_format_BGRA8888") != NULL;
 		else
 			glCapsBGRA = TRUE;
 
 		if (glVersion < GL_VER_1_2)
-			glCapsClampToEdge = strstr((const CHAR*)extensions, "GL_EXT_texture_edge_clamp") != NULL || strstr((const CHAR*)extensions, "GL_SGIS_texture_edge_clamp") != NULL;
+			glCapsClampToEdge = StrStr((const CHAR*)extensions, "GL_EXT_texture_edge_clamp") != NULL || StrStr((const CHAR*)extensions, "GL_SGIS_texture_edge_clamp") != NULL;
 		else
 			glCapsClampToEdge = TRUE;
 
 		if (glVersion < GL_VER_1_4)
-			glCapsMirroredRepeat = strstr((const CHAR*)extensions, "GL_ARB_texture_mirrored_repeat") != NULL || strstr((const CHAR*)extensions, "GL_IBM_texture_mirrored_repeat") != NULL;
+			glCapsMirroredRepeat = StrStr((const CHAR*)extensions, "GL_ARB_texture_mirrored_repeat") != NULL || StrStr((const CHAR*)extensions, "GL_IBM_texture_mirrored_repeat") != NULL;
 		else
 			glCapsMirroredRepeat = TRUE;
 
-		glCapsAnisotropic = strstr((const CHAR*)extensions, "GL_EXT_texture_filter_anisotropic") != NULL;
+		glCapsAnisotropic = StrStr((const CHAR*)extensions, "GL_EXT_texture_filter_anisotropic") != NULL;
 	}
 	else
 		glVersion = GL_VER_1_1;

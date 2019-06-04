@@ -67,7 +67,7 @@ DWORD stencilPass;
 BOOL isInit, isForced;
 BOOL isWindowLocked;
 
-HGLRC hGlRc;
+HGLRC hRc;
 
 BOOL colorMask;
 
@@ -87,12 +87,6 @@ BOOL textureIndexFormats[INDEX_LAST + 1];
 
 namespace Main
 {
-	DWORD __fastcall Round(FLOAT number)
-	{
-		FLOAT floorVal = floor(number);
-		return DWORD(floorVal + 0.5f > number ? floorVal : ceil(number));
-	}
-
 	VOID __inline LoadForced()
 	{
 		if (isForced)
@@ -101,10 +95,10 @@ namespace Main
 
 		CHAR path[MAX_PATH];
 		GetModuleFileName(hDllModule, path, MAX_PATH);
-		CHAR* dot = strrchr(path, '.');
+		CHAR* dot = StrLastChar(path, '.');
 		*dot = NULL;
-		strcpy(iniFile, path);
-		strcat(iniFile, ".ini");
+		StrCopy(iniFile, path);
+		StrCat(iniFile, ".ini");
 
 		forced.windowed = GetEnvironmentValue(0, envPrefix, "WINDOWED");
 
@@ -161,8 +155,8 @@ namespace Main
 		{
 			LoadForced();
 
-			strcpy(about.signature, "OGL1"); strcpy(about.driverName, "OpenGL 1.4");
-			strcpy(about.deviceName, "D3D Device");
+			StrCopy(about.signature, "OGL1"); StrCopy(about.driverName, "OpenGL 1.4");
+			StrCopy(about.deviceName, "D3D Device");
 
 			about.size = sizeof(ThrashAbout);
 			about.version = API_VERSION;
@@ -214,22 +208,22 @@ namespace Main
 			if (rect.left <= 0)
 				rect.left = viewport.rectangle.x;
 			else if (viewport.rectangle.x || viewport.rectangle.width != selectedResolution->width)
-				rect.left = Round(viewport.point.x + viewport.clipFactor.x * (FLOAT)rect.left);
+				rect.left = (LONG)MathRound(viewport.point.x + viewport.clipFactor.x * (FLOAT)rect.left);
 
 			if (rect.left >= viewport.rectangle.x + viewport.rectangle.width)
 				rect.right = viewport.rectangle.x + viewport.rectangle.width;
 			else if (viewport.rectangle.x || viewport.rectangle.width != selectedResolution->width)
-				rect.right = Round(viewport.point.x + viewport.clipFactor.x * (FLOAT)rect.right);
+				rect.right = (LONG)MathRound(viewport.point.x + viewport.clipFactor.x * (FLOAT)rect.right);
 
 			if (rect.top <= 0)
 				rect.top = viewport.rectangle.y;
 			else if (viewport.rectangle.y || viewport.rectangle.height != selectedResolution->height)
-				rect.top = Round(viewport.point.y + viewport.clipFactor.y * (FLOAT)rect.top);
+				rect.top = (LONG)MathRound(viewport.point.y + viewport.clipFactor.y * (FLOAT)rect.top);
 
 			if (rect.bottom >= viewport.rectangle.y + viewport.rectangle.height)
 				rect.bottom = viewport.rectangle.y + viewport.rectangle.height;
 			else if (viewport.rectangle.y || viewport.rectangle.height != selectedResolution->height)
-				rect.bottom = Round(viewport.point.y + viewport.clipFactor.y * (FLOAT)rect.bottom);
+				rect.bottom = (LONG)MathRound(viewport.point.y + viewport.clipFactor.y * (FLOAT)rect.bottom);
 
 			GLScissor(rect.left, viewport.height - rect.bottom, rect.right - rect.left, rect.bottom - rect.top);
 		}
@@ -249,9 +243,9 @@ namespace Main
 
 			CHAR library[MAX_PATH];
 			GetModuleFileName(hDllModule, library, sizeof(library));
-			CHAR* p = strrchr(library, '\\') + 1;
+			CHAR* p = StrLastChar(library, '\\') + 1;
 			*p = NULL;
-			strcat(library, "OPENGL32.DLL");
+			StrCat(library, "OPENGL32.DLL");
 			hModule = LoadLibrary(library);
 			if (!hModule)
 			{
@@ -403,7 +397,7 @@ namespace Main
 			GLClear(GL_COLOR_BUFFER_BIT);
 
 		GLEnable(GL_SCISSOR_TEST);
-		memset(&clipRect, NULL, sizeof(RECT));
+		MemoryZero(&clipRect, sizeof(RECT));
 		RECT rect = { 0, 0, selectedResolution->width, selectedResolution->height };
 		Clip(rect);
 

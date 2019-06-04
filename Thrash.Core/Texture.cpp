@@ -46,7 +46,7 @@ namespace Texture
 		if (!texture->pallete)
 			Main::ShowError("Out of memory.", __FILE__, "PrepareIndexed", __LINE__);
 
-		memcpy(texture->pallete, colorPallete, sizeof(colorPallete));
+		MemoryCopy(texture->pallete, colorPallete, sizeof(colorPallete));
 
 		Prepare(texture);
 	}
