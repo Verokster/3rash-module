@@ -40,11 +40,10 @@ namespace Context
 	{
 		ResetPixelFormatDescription(pfd);
 
-		pfd->dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER | PFD_DEPTH_DONTCARE | PFD_STEREO_DONTCARE | PFD_SWAP_EXCHANGE;
+		pfd->dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER | PFD_SWAP_EXCHANGE;
 		pfd->cColorBits = LOBYTE(forced.colorDepth);
 		pfd->cDepthBits = LOBYTE(forced.zdepth);
 		pfd->cStencilBits = 8;
-		pfd->iLayerType = PFD_MAIN_PLANE;
 	}
 
 	BOOL __fastcall PreparePixelFormat(PIXELFORMATDESCRIPTOR* pfd, DWORD* pixelFormat)
@@ -60,7 +59,6 @@ namespace Context
 
 		if (RegisterClass(&wc))
 		{
-
 			HWND hWndDraw = CreateWindowEx(
 				WS_EX_APPWINDOW,
 				WC_DRAW,
@@ -109,7 +107,7 @@ namespace Context
 										};
 
 										if (WGLChoosePixelFormat(hDcDraw, glAttributes, NULL, sizeof(piFormats) / sizeof(INT), piFormats, &nNumFormats) && nNumFormats)
-											res = piFormats[0];
+											*pixelFormat = piFormats[0];
 									}
 
 									res = TRUE;
