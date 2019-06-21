@@ -94,7 +94,7 @@
       <AssemblyDebug>true</AssemblyDebug>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;vcruntime.lib;ucrt.lib;crt.lib;msvcrt.lib</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
-      <OutputFile>D:\Games\IIS\Need For Speed\Need For Speed 5 PU\common\Drivers\opengl1\opengl1z$(TargetExt)</OutputFile>
+      <OutputFile>D:\Games\IIS\Need For Speed\Need For Speed 3 HP\common\Drivers\opengl1\opengl1z$(TargetExt)</OutputFile>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <FixedBaseAddress>true</FixedBaseAddress>

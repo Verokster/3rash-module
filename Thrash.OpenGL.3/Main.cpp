@@ -37,7 +37,7 @@ ThrashViewport viewport;
 DWORD appWindowed;
 DWORD displayIndex = 0;
 ThrashResolution resolutionsList[100];
-DWORD resolutionsListCount = sizeof(resolutionsList) / sizeof(ThrashResolution);
+DWORD resolutionsListCount;
 
 BOOL texturesEnabled;
 DWORD textureMipMap;

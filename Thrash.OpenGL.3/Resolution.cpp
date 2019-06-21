@@ -240,9 +240,9 @@ namespace Resolution
 		ThrashResolution* resList = resolutionsList + 1;
 		DWORD attempt = 0;
 
-		for (DWORD i = 1; i < resolutionsListCount; ++i, ++resList, attempt = 0)
+		for (DWORD i = 1; i < RES_COUNT; ++i, ++resList, attempt = 0)
 		{
-			if (resList->width == 0)
+			if (!resList->width)
 			{
 				resList->width = devMode->dmPelsWidth;
 				resList->height = devMode->dmPelsHeight;
@@ -291,7 +291,8 @@ namespace Resolution
 
 	BOOL __fastcall LoadList()
 	{
-		MemoryZero(resolutionsList, resolutionsListCount);
+		MemoryZero(resolutionsList, RES_COUNT * sizeof(ThrashResolution));
+		resolutionsListCount = 0;
 
 		if (forced.add640x480x16)
 		{
@@ -361,8 +362,13 @@ namespace Resolution
 		{
 			if (devMode.dmPelsWidth >= 640 && devMode.dmPelsHeight >= 480 && devMode.dmBitsPerPel == forced.colorDepth)
 			{
-				if (Resolution::Add(&devMode))
+				DWORD idx = Add(&devMode);
+				if (idx)
+				{
 					res = TRUE;
+					if (resolutionsListCount < idx)
+						resolutionsListCount = idx;
+				}
 				else
 					break;
 			}
